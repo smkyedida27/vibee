@@ -1,0 +1,14 @@
+# Production: secrets come from the environment (ECS injects them from AWS Secrets Manager):
+# SPRING_DATASOURCE_URL / SPRING_DATASOURCE_USERNAME / SPRING_DATASOURCE_PASSWORD, APP_JWT_SECRET,
+# APP_PLAY_SERVICE_ACCOUNT_JSON, APP_FIREBASE_PROJECT_ID, APP_PLAY_PACKAGE_NAME, APP_ENVIRONMENT.
+springdoc:
+  api-docs:
+    enabled: ${OPENAPI_ENABLED:true}
+  swagger-ui:
+    enabled: ${OPENAPI_ENABLED:true}
+
+puzzlehub:
+  firebase:
+    mode: google
+  play:
+    mode: google

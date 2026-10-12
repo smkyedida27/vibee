@@ -1,0 +1,210 @@
+{
+  "uid": "puzzlehub-api",
+  "title": "Puzzle Hub \u2014 API",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "tags": [
+    "puzzlehub"
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "API requests / s",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_server_requests_seconds_count{uri!~\"/actuator.*\"}[1m])) by (uri)",
+          "legendFormat": "{{uri}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "API latency p95",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{uri!~\"/actuator.*\"}[5m])) by (le, uri))",
+          "legendFormat": "{{uri}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "5xx error rate",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count[5m])), 1e-9)",
+          "legendFormat": "5xx ratio"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "JVM heap used",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(jvm_memory_used_bytes{area=\"heap\"})",
+          "legendFormat": "heap used"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(jvm_memory_max_bytes{area=\"heap\"})",
+          "legendFormat": "heap max"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "DB connection pool (Hikari)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "hikaricp_connections_active",
+          "legendFormat": "active"
+        },
+        {
+          "refId": "B",
+          "expr": "hikaricp_connections_idle",
+          "legendFormat": "idle"
+        },
+        {
+          "refId": "C",
+          "expr": "hikaricp_connections_pending",
+          "legendFormat": "pending"
+        },
+        {
+          "refId": "D",
+          "expr": "hikaricp_connections_max",
+          "legendFormat": "max"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "GC pause / s",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(jvm_gc_pause_seconds_sum[1m]))",
+          "legendFormat": "gc"
+        }
+      ]
+    }
+  ],
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  }
+}

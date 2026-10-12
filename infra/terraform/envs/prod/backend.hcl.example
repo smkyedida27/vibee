@@ -1,0 +1,3 @@
+# terraform init -backend-config=backend.hcl
+bucket = "puzzlehub-terraform-state-<account-id>"
+region = "us-east-1"

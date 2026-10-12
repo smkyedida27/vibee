@@ -1,0 +1,73 @@
+# Local development stack for Puzzle Hub.
+#   docker compose -f infra/docker-compose.yml up -d                 # db + backend
+#   docker compose -f infra/docker-compose.yml --profile observability up -d   # + prometheus/grafana
+name: puzzlehub
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: puzzlehub
+      POSTGRES_USER: puzzlehub
+      POSTGRES_PASSWORD: puzzlehub
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U puzzlehub -d puzzlehub"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/puzzlehub
+      SPRING_DATASOURCE_USERNAME: puzzlehub
+      SPRING_DATASOURCE_PASSWORD: puzzlehub
+      # Dev-only signing secret. Production reads it from AWS Secrets Manager.
+      APP_JWT_SECRET: dev-only-insecure-jwt-secret-change-me-0123456789abcdef
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75"
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health/readiness || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    profiles: ["observability"]
+    depends_on: [backend]
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    profiles: ["observability"]
+    depends_on: [prometheus]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:

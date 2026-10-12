@@ -1,0 +1,1895 @@
+{
+ "version": 1,
+ "puzzles": [
+  {
+   "id": "c001",
+   "words": [
+    "ROSE",
+    "MANGO",
+    "SOFA",
+    "TIGER",
+    "TULIP",
+    "JAGUAR",
+    "DAISY",
+    "APPLE",
+    "TABLE",
+    "LION",
+    "BENCH",
+    "CHAIR",
+    "CHERRY",
+    "BANANA",
+    "LEOPARD",
+    "LILY"
+   ],
+   "groups": [
+    {
+     "title": "Fruits",
+     "level": 0,
+     "words": [
+      "APPLE",
+      "BANANA",
+      "MANGO",
+      "CHERRY"
+     ]
+    },
+    {
+     "title": "Flowers",
+     "level": 1,
+     "words": [
+      "ROSE",
+      "TULIP",
+      "DAISY",
+      "LILY"
+     ]
+    },
+    {
+     "title": "Big cats",
+     "level": 2,
+     "words": [
+      "TIGER",
+      "LION",
+      "LEOPARD",
+      "JAGUAR"
+     ]
+    },
+    {
+     "title": "Furniture",
+     "level": 3,
+     "words": [
+      "TABLE",
+      "CHAIR",
+      "SOFA",
+      "BENCH"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c002",
+   "words": [
+    "ROOK",
+    "MOCHA",
+    "MARS",
+    "MEAT",
+    "KNIGHT",
+    "AMERICANO",
+    "JUPITER",
+    "FOOT",
+    "LATTE",
+    "VENUS",
+    "SATURN",
+    "BISHOP",
+    "SNOW",
+    "KING",
+    "ESPRESSO",
+    "BASKET"
+   ],
+   "groups": [
+    {
+     "title": "Planets",
+     "level": 0,
+     "words": [
+      "MARS",
+      "VENUS",
+      "SATURN",
+      "JUPITER"
+     ]
+    },
+    {
+     "title": "Coffee drinks",
+     "level": 1,
+     "words": [
+      "LATTE",
+      "MOCHA",
+      "ESPRESSO",
+      "AMERICANO"
+     ]
+    },
+    {
+     "title": "Chess pieces",
+     "level": 2,
+     "words": [
+      "KING",
+      "BISHOP",
+      "KNIGHT",
+      "ROOK"
+     ]
+    },
+    {
+     "title": "___ball",
+     "level": 3,
+     "words": [
+      "BASKET",
+      "FOOT",
+      "SNOW",
+      "MEAT"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c003",
+   "words": [
+    "LADLE",
+    "YELLOW",
+    "SNAP",
+    "GREEN",
+    "HAIL",
+    "FROST",
+    "BRIDGE",
+    "POKER",
+    "GRATER",
+    "SPATULA",
+    "SLEET",
+    "RED",
+    "BLUE",
+    "RUMMY",
+    "WHISK",
+    "BLIZZARD"
+   ],
+   "groups": [
+    {
+     "title": "Colors",
+     "level": 0,
+     "words": [
+      "RED",
+      "GREEN",
+      "BLUE",
+      "YELLOW"
+     ]
+    },
+    {
+     "title": "Kitchen tools",
+     "level": 1,
+     "words": [
+      "WHISK",
+      "LADLE",
+      "SPATULA",
+      "GRATER"
+     ]
+    },
+    {
+     "title": "Winter weather",
+     "level": 2,
+     "words": [
+      "HAIL",
+      "SLEET",
+      "FROST",
+      "BLIZZARD"
+     ]
+    },
+    {
+     "title": "Card games",
+     "level": 3,
+     "words": [
+      "POKER",
+      "BRIDGE",
+      "RUMMY",
+      "SNAP"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c004",
+   "words": [
+    "SHARK",
+    "PIANO",
+    "DOLPHIN",
+    "JAZZ",
+    "FOLK",
+    "BLUES",
+    "LOAFER",
+    "MAP",
+    "LOCK",
+    "WHALE",
+    "BOOT",
+    "KEYBOARD",
+    "SANDAL",
+    "SNEAKER",
+    "OCTOPUS",
+    "ROCK"
+   ],
+   "groups": [
+    {
+     "title": "Ocean animals",
+     "level": 0,
+     "words": [
+      "WHALE",
+      "SHARK",
+      "DOLPHIN",
+      "OCTOPUS"
+     ]
+    },
+    {
+     "title": "Shoes",
+     "level": 1,
+     "words": [
+      "BOOT",
+      "SANDAL",
+      "SNEAKER",
+      "LOAFER"
+     ]
+    },
+    {
+     "title": "Music genres",
+     "level": 2,
+     "words": [
+      "JAZZ",
+      "BLUES",
+      "ROCK",
+      "FOLK"
+     ]
+    },
+    {
+     "title": "Things with keys",
+     "level": 3,
+     "words": [
+      "PIANO",
+      "KEYBOARD",
+      "MAP",
+      "LOCK"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c005",
+   "words": [
+    "BRATTY",
+    "WAFFLE",
+    "OMELET",
+    "BEARD",
+    "SCATTER",
+    "RUMBA",
+    "TANGO",
+    "PINE",
+    "PANCAKE",
+    "MAPLE",
+    "BIRCH",
+    "OAK",
+    "WALTZ",
+    "SALSA",
+    "BAGEL",
+    "DOGMA"
+   ],
+   "groups": [
+    {
+     "title": "Breakfast foods",
+     "level": 0,
+     "words": [
+      "PANCAKE",
+      "WAFFLE",
+      "OMELET",
+      "BAGEL"
+     ]
+    },
+    {
+     "title": "Trees",
+     "level": 1,
+     "words": [
+      "OAK",
+      "PINE",
+      "MAPLE",
+      "BIRCH"
+     ]
+    },
+    {
+     "title": "Dances",
+     "level": 2,
+     "words": [
+      "TANGO",
+      "SALSA",
+      "WALTZ",
+      "RUMBA"
+     ]
+    },
+    {
+     "title": "Hidden animals",
+     "level": 3,
+     "words": [
+      "SCATTER",
+      "BRATTY",
+      "DOGMA",
+      "BEARD"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c006",
+   "words": [
+    "POODLE",
+    "BOXER",
+    "WRIST",
+    "ANKLE",
+    "HUSKY",
+    "BEAGLE",
+    "WORKS",
+    "RUBY",
+    "WALL",
+    "SAPPHIRE",
+    "PLACE",
+    "KNEE",
+    "DIAMOND",
+    "EMERALD",
+    "FLY",
+    "ELBOW"
+   ],
+   "groups": [
+    {
+     "title": "Body parts",
+     "level": 0,
+     "words": [
+      "ELBOW",
+      "KNEE",
+      "ANKLE",
+      "WRIST"
+     ]
+    },
+    {
+     "title": "Dog breeds",
+     "level": 1,
+     "words": [
+      "BEAGLE",
+      "POODLE",
+      "BOXER",
+      "HUSKY"
+     ]
+    },
+    {
+     "title": "Gems",
+     "level": 2,
+     "words": [
+      "RUBY",
+      "EMERALD",
+      "SAPPHIRE",
+      "DIAMOND"
+     ]
+    },
+    {
+     "title": "Fire___",
+     "level": 3,
+     "words": [
+      "WORKS",
+      "PLACE",
+      "FLY",
+      "WALL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c007",
+   "words": [
+    "EAGLE",
+    "POTATO",
+    "LIGHT",
+    "HOCKEY",
+    "RUGBY",
+    "WALK",
+    "STONE",
+    "PEPPER",
+    "ROBIN",
+    "BEAM",
+    "PARROT",
+    "GOLF",
+    "CARROT",
+    "TENNIS",
+    "SPARROW",
+    "ONION"
+   ],
+   "groups": [
+    {
+     "title": "Vegetables",
+     "level": 0,
+     "words": [
+      "CARROT",
+      "POTATO",
+      "ONION",
+      "PEPPER"
+     ]
+    },
+    {
+     "title": "Sports",
+     "level": 1,
+     "words": [
+      "TENNIS",
+      "GOLF",
+      "HOCKEY",
+      "RUGBY"
+     ]
+    },
+    {
+     "title": "Birds",
+     "level": 2,
+     "words": [
+      "EAGLE",
+      "ROBIN",
+      "SPARROW",
+      "PARROT"
+     ]
+    },
+    {
+     "title": "Moon___",
+     "level": 3,
+     "words": [
+      "LIGHT",
+      "WALK",
+      "BEAM",
+      "STONE"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c008",
+   "words": [
+    "TOKYO",
+    "PARIS",
+    "DOORBELL",
+    "ALARM",
+    "GUITAR",
+    "RAVIOLI",
+    "FLUTE",
+    "VIOLIN",
+    "LIMA",
+    "PENNE",
+    "PHONE",
+    "DRUM",
+    "CAIRO",
+    "LASAGNA",
+    "FUSILLI",
+    "BELL"
+   ],
+   "groups": [
+    {
+     "title": "Instruments",
+     "level": 0,
+     "words": [
+      "VIOLIN",
+      "GUITAR",
+      "FLUTE",
+      "DRUM"
+     ]
+    },
+    {
+     "title": "Pasta",
+     "level": 1,
+     "words": [
+      "PENNE",
+      "FUSILLI",
+      "RAVIOLI",
+      "LASAGNA"
+     ]
+    },
+    {
+     "title": "Capitals",
+     "level": 2,
+     "words": [
+      "PARIS",
+      "TOKYO",
+      "CAIRO",
+      "LIMA"
+     ]
+    },
+    {
+     "title": "Things that ring",
+     "level": 3,
+     "words": [
+      "BELL",
+      "PHONE",
+      "ALARM",
+      "DOORBELL"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c009",
+   "words": [
+    "SURF",
+    "PIE",
+    "DART",
+    "MOTH",
+    "BEETLE",
+    "SILVER",
+    "GOLD",
+    "IRON",
+    "CHALK",
+    "BROWNIE",
+    "COOKIE",
+    "SKATE",
+    "CAKE",
+    "CRICKET",
+    "ANT",
+    "COPPER"
+   ],
+   "groups": [
+    {
+     "title": "Desserts",
+     "level": 0,
+     "words": [
+      "CAKE",
+      "PIE",
+      "COOKIE",
+      "BROWNIE"
+     ]
+    },
+    {
+     "title": "Insects",
+     "level": 1,
+     "words": [
+      "ANT",
+      "BEETLE",
+      "MOTH",
+      "CRICKET"
+     ]
+    },
+    {
+     "title": "Metals",
+     "level": 2,
+     "words": [
+      "IRON",
+      "COPPER",
+      "SILVER",
+      "GOLD"
+     ]
+    },
+    {
+     "title": "___board",
+     "level": 3,
+     "words": [
+      "SKATE",
+      "SURF",
+      "CHALK",
+      "DART"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c010",
+   "words": [
+    "TRIANGLE",
+    "PILOT",
+    "CIRCLE",
+    "OVAL",
+    "GLOVE",
+    "HAT",
+    "RAT",
+    "MAT",
+    "NURSE",
+    "CHEF",
+    "SCARF",
+    "BAT",
+    "JACKET",
+    "SHIRT",
+    "SQUARE",
+    "PLUMBER"
+   ],
+   "groups": [
+    {
+     "title": "Shapes",
+     "level": 0,
+     "words": [
+      "CIRCLE",
+      "SQUARE",
+      "TRIANGLE",
+      "OVAL"
+     ]
+    },
+    {
+     "title": "Jobs",
+     "level": 1,
+     "words": [
+      "NURSE",
+      "PILOT",
+      "CHEF",
+      "PLUMBER"
+     ]
+    },
+    {
+     "title": "Clothing",
+     "level": 2,
+     "words": [
+      "SHIRT",
+      "JACKET",
+      "SCARF",
+      "GLOVE"
+     ]
+    },
+    {
+     "title": "Rhymes with CAT",
+     "level": 3,
+     "words": [
+      "HAT",
+      "BAT",
+      "MAT",
+      "RAT"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c011",
+   "words": [
+    "GOAT",
+    "COAT",
+    "STAPLER",
+    "NUTMEG",
+    "BOW",
+    "CINNAMON",
+    "PAPRIKA",
+    "SHEEP",
+    "COW",
+    "DROP",
+    "PEN",
+    "CLIP",
+    "PIG",
+    "CUMIN",
+    "FOREST",
+    "FOLDER"
+   ],
+   "groups": [
+    {
+     "title": "Farm animals",
+     "level": 0,
+     "words": [
+      "COW",
+      "PIG",
+      "SHEEP",
+      "GOAT"
+     ]
+    },
+    {
+     "title": "Office items",
+     "level": 1,
+     "words": [
+      "STAPLER",
+      "PEN",
+      "FOLDER",
+      "CLIP"
+     ]
+    },
+    {
+     "title": "Spices",
+     "level": 2,
+     "words": [
+      "CUMIN",
+      "PAPRIKA",
+      "CINNAMON",
+      "NUTMEG"
+     ]
+    },
+    {
+     "title": "Rain___",
+     "level": 3,
+     "words": [
+      "BOW",
+      "COAT",
+      "DROP",
+      "FOREST"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c012",
+   "words": [
+    "SNAIL",
+    "BEST",
+    "AMAZON",
+    "EGG",
+    "PITA",
+    "DANUBE",
+    "BAGUETTE",
+    "NILE",
+    "WORST",
+    "CIABATTA",
+    "MOST",
+    "BRIOCHE",
+    "THAMES",
+    "LEAST",
+    "CLAM",
+    "TURTLE"
+   ],
+   "groups": [
+    {
+     "title": "Breads",
+     "level": 0,
+     "words": [
+      "BAGUETTE",
+      "PITA",
+      "CIABATTA",
+      "BRIOCHE"
+     ]
+    },
+    {
+     "title": "Rivers",
+     "level": 1,
+     "words": [
+      "NILE",
+      "AMAZON",
+      "THAMES",
+      "DANUBE"
+     ]
+    },
+    {
+     "title": "Superlatives",
+     "level": 2,
+     "words": [
+      "BEST",
+      "WORST",
+      "MOST",
+      "LEAST"
+     ]
+    },
+    {
+     "title": "Things with shells",
+     "level": 3,
+     "words": [
+      "EGG",
+      "TURTLE",
+      "SNAIL",
+      "CLAM"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c013",
+   "words": [
+    "YACHT",
+    "SHIP",
+    "GO",
+    "GLASSES",
+    "BRIE",
+    "RISE",
+    "FERRY",
+    "FLOWER",
+    "CHEDDAR",
+    "CANOE",
+    "FETA",
+    "LUDO",
+    "GOUDA",
+    "CHECKERS",
+    "SET",
+    "CHESS"
+   ],
+   "groups": [
+    {
+     "title": "Boats",
+     "level": 0,
+     "words": [
+      "SHIP",
+      "FERRY",
+      "CANOE",
+      "YACHT"
+     ]
+    },
+    {
+     "title": "Cheese",
+     "level": 1,
+     "words": [
+      "CHEDDAR",
+      "BRIE",
+      "GOUDA",
+      "FETA"
+     ]
+    },
+    {
+     "title": "Board games",
+     "level": 2,
+     "words": [
+      "CHESS",
+      "CHECKERS",
+      "LUDO",
+      "GO"
+     ]
+    },
+    {
+     "title": "Sun___",
+     "level": 3,
+     "words": [
+      "FLOWER",
+      "SET",
+      "RISE",
+      "GLASSES"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c014",
+   "words": [
+    "RATIO",
+    "DIGIT",
+    "BADGER",
+    "CANINE",
+    "ANGLE",
+    "OTTER",
+    "BOB",
+    "BEAVER",
+    "SUM",
+    "WEASEL",
+    "BRAID",
+    "BUN",
+    "LONELY",
+    "PONYTAIL",
+    "OFTEN",
+    "WEIGHT"
+   ],
+   "groups": [
+    {
+     "title": "Math terms",
+     "level": 0,
+     "words": [
+      "SUM",
+      "ANGLE",
+      "RATIO",
+      "DIGIT"
+     ]
+    },
+    {
+     "title": "Mammals",
+     "level": 1,
+     "words": [
+      "OTTER",
+      "BEAVER",
+      "BADGER",
+      "WEASEL"
+     ]
+    },
+    {
+     "title": "Hairstyles",
+     "level": 2,
+     "words": [
+      "BOB",
+      "BUN",
+      "BRAID",
+      "PONYTAIL"
+     ]
+    },
+    {
+     "title": "Hidden numbers",
+     "level": 3,
+     "words": [
+      "OFTEN",
+      "LONELY",
+      "WEIGHT",
+      "CANINE"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c015",
+   "words": [
+    "SUMMER",
+    "CASHEW",
+    "WEDGE",
+    "PECAN",
+    "WALNUT",
+    "FRIENDS",
+    "SATIN",
+    "AUTUMN",
+    "WINTER",
+    "MONK",
+    "SPRING",
+    "SAW",
+    "HAMMER",
+    "WRENCH",
+    "DRILL",
+    "ALMOND"
+   ],
+   "groups": [
+    {
+     "title": "Seasons",
+     "level": 0,
+     "words": [
+      "SPRING",
+      "SUMMER",
+      "AUTUMN",
+      "WINTER"
+     ]
+    },
+    {
+     "title": "Tools",
+     "level": 1,
+     "words": [
+      "HAMMER",
+      "WRENCH",
+      "SAW",
+      "DRILL"
+     ]
+    },
+    {
+     "title": "Nuts",
+     "level": 2,
+     "words": [
+      "ALMOND",
+      "CASHEW",
+      "PECAN",
+      "WALNUT"
+     ]
+    },
+    {
+     "title": "Start with a weekday",
+     "level": 3,
+     "words": [
+      "MONK",
+      "WEDGE",
+      "FRIENDS",
+      "SATIN"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c016",
+   "words": [
+    "IGUANA",
+    "LEMON",
+    "ORANGE",
+    "FOLD",
+    "CREAM",
+    "GECKO",
+    "SKATE",
+    "LIME",
+    "BLUFF",
+    "COBRA",
+    "FLUSH",
+    "LIZARD",
+    "CUBE",
+    "GRAPEFRUIT",
+    "BERG",
+    "STRAIGHT"
+   ],
+   "groups": [
+    {
+     "title": "Citrus",
+     "level": 0,
+     "words": [
+      "LEMON",
+      "LIME",
+      "ORANGE",
+      "GRAPEFRUIT"
+     ]
+    },
+    {
+     "title": "Reptiles",
+     "level": 1,
+     "words": [
+      "LIZARD",
+      "GECKO",
+      "IGUANA",
+      "COBRA"
+     ]
+    },
+    {
+     "title": "Ice___",
+     "level": 2,
+     "words": [
+      "CREAM",
+      "BERG",
+      "CUBE",
+      "SKATE"
+     ]
+    },
+    {
+     "title": "Poker terms",
+     "level": 3,
+     "words": [
+      "FLUSH",
+      "STRAIGHT",
+      "BLUFF",
+      "FOLD"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c017",
+   "words": [
+    "HEARTS",
+    "SPADES",
+    "PROUD",
+    "SIGMA",
+    "DELTA",
+    "OMEGA",
+    "COMPASS",
+    "TENT",
+    "DIAMONDS",
+    "ALPHA",
+    "CLUBS",
+    "LANTERN",
+    "TORCH",
+    "HAPPY",
+    "SCARED",
+    "ANGRY"
+   ],
+   "groups": [
+    {
+     "title": "Emotions",
+     "level": 0,
+     "words": [
+      "HAPPY",
+      "ANGRY",
+      "SCARED",
+      "PROUD"
+     ]
+    },
+    {
+     "title": "Camping gear",
+     "level": 1,
+     "words": [
+      "TENT",
+      "LANTERN",
+      "COMPASS",
+      "TORCH"
+     ]
+    },
+    {
+     "title": "Card suits",
+     "level": 2,
+     "words": [
+      "HEARTS",
+      "SPADES",
+      "CLUBS",
+      "DIAMONDS"
+     ]
+    },
+    {
+     "title": "Greek letters",
+     "level": 3,
+     "words": [
+      "ALPHA",
+      "DELTA",
+      "SIGMA",
+      "OMEGA"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c018",
+   "words": [
+    "ADDER",
+    "PYTHON",
+    "WATER",
+    "MAMBA",
+    "FLOOR",
+    "CEILING",
+    "SWIFT",
+    "TEA",
+    "KOTLIN",
+    "RUST",
+    "DOOR",
+    "SODA",
+    "VIPER",
+    "WINDOW",
+    "JAVA",
+    "JUICE"
+   ],
+   "groups": [
+    {
+     "title": "Drinks",
+     "level": 0,
+     "words": [
+      "WATER",
+      "JUICE",
+      "SODA",
+      "TEA"
+     ]
+    },
+    {
+     "title": "Parts of a room",
+     "level": 1,
+     "words": [
+      "CEILING",
+      "FLOOR",
+      "WINDOW",
+      "DOOR"
+     ]
+    },
+    {
+     "title": "Snakes",
+     "level": 2,
+     "words": [
+      "PYTHON",
+      "VIPER",
+      "ADDER",
+      "MAMBA"
+     ]
+    },
+    {
+     "title": "Programming languages",
+     "level": 3,
+     "words": [
+      "JAVA",
+      "RUST",
+      "SWIFT",
+      "KOTLIN"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c019",
+   "words": [
+    "MUFFIN",
+    "DECADE",
+    "BOARD",
+    "DUST",
+    "ORION",
+    "SECOND",
+    "DONUT",
+    "FISH",
+    "DRACO",
+    "MINUTE",
+    "CROISSANT",
+    "LYRA",
+    "PEGASUS",
+    "LIGHT",
+    "SCONE",
+    "HOUR"
+   ],
+   "groups": [
+    {
+     "title": "Bakery",
+     "level": 0,
+     "words": [
+      "MUFFIN",
+      "SCONE",
+      "CROISSANT",
+      "DONUT"
+     ]
+    },
+    {
+     "title": "Constellations",
+     "level": 1,
+     "words": [
+      "ORION",
+      "DRACO",
+      "LYRA",
+      "PEGASUS"
+     ]
+    },
+    {
+     "title": "Units of time",
+     "level": 2,
+     "words": [
+      "SECOND",
+      "MINUTE",
+      "HOUR",
+      "DECADE"
+     ]
+    },
+    {
+     "title": "Star___",
+     "level": 3,
+     "words": [
+      "FISH",
+      "DUST",
+      "LIGHT",
+      "BOARD"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c020",
+   "words": [
+    "DENIM",
+    "BLACK",
+    "HUM",
+    "DENALI",
+    "BUZZ",
+    "GRIZZLY",
+    "FUJI",
+    "CLANG",
+    "COTTON",
+    "VELVET",
+    "PANDA",
+    "POLAR",
+    "THUD",
+    "SILK",
+    "KILIMANJARO",
+    "EVEREST"
+   ],
+   "groups": [
+    {
+     "title": "Mountains",
+     "level": 0,
+     "words": [
+      "EVEREST",
+      "DENALI",
+      "FUJI",
+      "KILIMANJARO"
+     ]
+    },
+    {
+     "title": "Fabrics",
+     "level": 1,
+     "words": [
+      "COTTON",
+      "SILK",
+      "DENIM",
+      "VELVET"
+     ]
+    },
+    {
+     "title": "Kinds of bear",
+     "level": 2,
+     "words": [
+      "POLAR",
+      "GRIZZLY",
+      "PANDA",
+      "BLACK"
+     ]
+    },
+    {
+     "title": "Sounds",
+     "level": 3,
+     "words": [
+      "BUZZ",
+      "HUM",
+      "CLANG",
+      "THUD"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c021",
+   "words": [
+    "PAN",
+    "CUP",
+    "ZOMBIE",
+    "TOASTER",
+    "GHOST",
+    "KETTLE",
+    "ROCKET",
+    "SPONGE",
+    "PUMPKIN",
+    "BLENDER",
+    "CHEESE",
+    "WITCH",
+    "PLANE",
+    "KITE",
+    "OVEN",
+    "DRONE"
+   ],
+   "groups": [
+    {
+     "title": "Halloween",
+     "level": 0,
+     "words": [
+      "GHOST",
+      "WITCH",
+      "PUMPKIN",
+      "ZOMBIE"
+     ]
+    },
+    {
+     "title": "Kitchen appliances",
+     "level": 1,
+     "words": [
+      "OVEN",
+      "TOASTER",
+      "BLENDER",
+      "KETTLE"
+     ]
+    },
+    {
+     "title": "Things that fly",
+     "level": 2,
+     "words": [
+      "KITE",
+      "PLANE",
+      "DRONE",
+      "ROCKET"
+     ]
+    },
+    {
+     "title": "___cake",
+     "level": 3,
+     "words": [
+      "CUP",
+      "PAN",
+      "CHEESE",
+      "SPONGE"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c022",
+   "words": [
+    "TROUT",
+    "MIRROR",
+    "LIGHT",
+    "BRAKE",
+    "TUNA",
+    "MALTA",
+    "ENGINE",
+    "CRETE",
+    "CUBA",
+    "SALMON",
+    "BALI",
+    "WARE",
+    "TREE",
+    "COD",
+    "WHEEL",
+    "GREEN"
+   ],
+   "groups": [
+    {
+     "title": "Car parts",
+     "level": 0,
+     "words": [
+      "ENGINE",
+      "WHEEL",
+      "BRAKE",
+      "MIRROR"
+     ]
+    },
+    {
+     "title": "Islands",
+     "level": 1,
+     "words": [
+      "BALI",
+      "CRETE",
+      "MALTA",
+      "CUBA"
+     ]
+    },
+    {
+     "title": "Fish",
+     "level": 2,
+     "words": [
+      "SALMON",
+      "TROUT",
+      "COD",
+      "TUNA"
+     ]
+    },
+    {
+     "title": "___house",
+     "level": 3,
+     "words": [
+      "GREEN",
+      "LIGHT",
+      "TREE",
+      "WARE"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c023",
+   "words": [
+    "DOLL",
+    "PUZZLE",
+    "BLOCKS",
+    "SHIPYARD",
+    "EARTH",
+    "TEMPO",
+    "MELODY",
+    "VULTURE",
+    "TEDDY",
+    "CHORD",
+    "RHYTHM",
+    "SCORPION",
+    "CHINA",
+    "MEERKAT",
+    "CAMEL",
+    "HANDLE"
+   ],
+   "groups": [
+    {
+     "title": "Music terms",
+     "level": 0,
+     "words": [
+      "TEMPO",
+      "CHORD",
+      "MELODY",
+      "RHYTHM"
+     ]
+    },
+    {
+     "title": "Desert animals",
+     "level": 1,
+     "words": [
+      "CAMEL",
+      "SCORPION",
+      "MEERKAT",
+      "VULTURE"
+     ]
+    },
+    {
+     "title": "Toys",
+     "level": 2,
+     "words": [
+      "DOLL",
+      "PUZZLE",
+      "BLOCKS",
+      "TEDDY"
+     ]
+    },
+    {
+     "title": "Hidden body parts",
+     "level": 3,
+     "words": [
+      "CHINA",
+      "SHIPYARD",
+      "EARTH",
+      "HANDLE"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c024",
+   "words": [
+    "BALLOON",
+    "CARD",
+    "RECEIPT",
+    "SILK",
+    "PHOTO",
+    "CASH",
+    "GLOW",
+    "CONFETTI",
+    "CANDLE",
+    "GALAXY",
+    "BOOK",
+    "COMET",
+    "NEBULA",
+    "GIFT",
+    "INCH",
+    "ASTEROID"
+   ],
+   "groups": [
+    {
+     "title": "Party",
+     "level": 0,
+     "words": [
+      "BALLOON",
+      "CANDLE",
+      "GIFT",
+      "CONFETTI"
+     ]
+    },
+    {
+     "title": "Space",
+     "level": 1,
+     "words": [
+      "COMET",
+      "GALAXY",
+      "NEBULA",
+      "ASTEROID"
+     ]
+    },
+    {
+     "title": "In a wallet",
+     "level": 2,
+     "words": [
+      "CASH",
+      "CARD",
+      "RECEIPT",
+      "PHOTO"
+     ]
+    },
+    {
+     "title": "___worm",
+     "level": 3,
+     "words": [
+      "BOOK",
+      "SILK",
+      "INCH",
+      "GLOW"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c025",
+   "words": [
+    "SEAL",
+    "RAKE",
+    "SHOVEL",
+    "CIVIC",
+    "NARWHAL",
+    "TROWEL",
+    "BUTTER",
+    "HOSE",
+    "WALRUS",
+    "LEVEL",
+    "HONEY",
+    "CARIBOU",
+    "HUMMUS",
+    "KAYAK",
+    "JAM",
+    "RADAR"
+   ],
+   "groups": [
+    {
+     "title": "Garden tools",
+     "level": 0,
+     "words": [
+      "SHOVEL",
+      "RAKE",
+      "HOSE",
+      "TROWEL"
+     ]
+    },
+    {
+     "title": "Spreads",
+     "level": 1,
+     "words": [
+      "BUTTER",
+      "JAM",
+      "HONEY",
+      "HUMMUS"
+     ]
+    },
+    {
+     "title": "Arctic animals",
+     "level": 2,
+     "words": [
+      "WALRUS",
+      "NARWHAL",
+      "SEAL",
+      "CARIBOU"
+     ]
+    },
+    {
+     "title": "Palindromes",
+     "level": 3,
+     "words": [
+      "KAYAK",
+      "LEVEL",
+      "RADAR",
+      "CIVIC"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c026",
+   "words": [
+    "MONITOR",
+    "GERBIL",
+    "CHIPMUNK",
+    "MOUSE",
+    "SOUR",
+    "HAMSTER",
+    "MODEM",
+    "SQUIRREL",
+    "SPOT",
+    "POTS",
+    "SWEET",
+    "TOPS",
+    "OPTS",
+    "BITTER",
+    "SALTY",
+    "SPEAKER"
+   ],
+   "groups": [
+    {
+     "title": "Tastes",
+     "level": 0,
+     "words": [
+      "SWEET",
+      "SOUR",
+      "SALTY",
+      "BITTER"
+     ]
+    },
+    {
+     "title": "Computer parts",
+     "level": 1,
+     "words": [
+      "MOUSE",
+      "MONITOR",
+      "SPEAKER",
+      "MODEM"
+     ]
+    },
+    {
+     "title": "Rodents",
+     "level": 2,
+     "words": [
+      "HAMSTER",
+      "SQUIRREL",
+      "GERBIL",
+      "CHIPMUNK"
+     ]
+    },
+    {
+     "title": "Anagrams of STOP",
+     "level": 3,
+     "words": [
+      "POTS",
+      "TOPS",
+      "SPOT",
+      "OPTS"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c027",
+   "words": [
+    "PLANK",
+    "VEIL",
+    "ARCHERY",
+    "RING",
+    "PARROT",
+    "HEAD",
+    "DEAD",
+    "FENCING",
+    "BRIDE",
+    "LIFE",
+    "DIVING",
+    "VOWS",
+    "ROWING",
+    "SKY",
+    "CANNON",
+    "TREASURE"
+   ],
+   "groups": [
+    {
+     "title": "Wedding",
+     "level": 0,
+     "words": [
+      "BRIDE",
+      "VEIL",
+      "RING",
+      "VOWS"
+     ]
+    },
+    {
+     "title": "Pirates",
+     "level": 1,
+     "words": [
+      "PARROT",
+      "PLANK",
+      "TREASURE",
+      "CANNON"
+     ]
+    },
+    {
+     "title": "Olympic sports",
+     "level": 2,
+     "words": [
+      "FENCING",
+      "ROWING",
+      "DIVING",
+      "ARCHERY"
+     ]
+    },
+    {
+     "title": "___line",
+     "level": 3,
+     "words": [
+      "DEAD",
+      "SKY",
+      "HEAD",
+      "LIFE"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c028",
+   "words": [
+    "SCIENCE",
+    "HOUSE",
+    "CANYON",
+    "LEMONADE",
+    "HISTORY",
+    "FIRE",
+    "SANDWICH",
+    "VALLEY",
+    "GLACIER",
+    "ART",
+    "BASKET",
+    "DRAGON",
+    "BUTTER",
+    "PLATEAU",
+    "BLANKET",
+    "MUSIC"
+   ],
+   "groups": [
+    {
+     "title": "School subjects",
+     "level": 0,
+     "words": [
+      "HISTORY",
+      "SCIENCE",
+      "ART",
+      "MUSIC"
+     ]
+    },
+    {
+     "title": "Picnic",
+     "level": 1,
+     "words": [
+      "BASKET",
+      "BLANKET",
+      "SANDWICH",
+      "LEMONADE"
+     ]
+    },
+    {
+     "title": "Landforms",
+     "level": 2,
+     "words": [
+      "CANYON",
+      "VALLEY",
+      "PLATEAU",
+      "GLACIER"
+     ]
+    },
+    {
+     "title": "___fly",
+     "level": 3,
+     "words": [
+      "BUTTER",
+      "DRAGON",
+      "FIRE",
+      "HOUSE"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c029",
+   "words": [
+    "INCH",
+    "PLIE",
+    "YARD",
+    "BARRE",
+    "THYME",
+    "SEA",
+    "PEA",
+    "POINTE",
+    "BASIL",
+    "METER",
+    "TUTU",
+    "EYE",
+    "PARSLEY",
+    "MILE",
+    "JAY",
+    "MINT"
+   ],
+   "groups": [
+    {
+     "title": "Herbs",
+     "level": 0,
+     "words": [
+      "BASIL",
+      "MINT",
+      "PARSLEY",
+      "THYME"
+     ]
+    },
+    {
+     "title": "Units of length",
+     "level": 1,
+     "words": [
+      "METER",
+      "INCH",
+      "MILE",
+      "YARD"
+     ]
+    },
+    {
+     "title": "Ballet",
+     "level": 2,
+     "words": [
+      "PLIE",
+      "TUTU",
+      "POINTE",
+      "BARRE"
+     ]
+    },
+    {
+     "title": "Sound like letters",
+     "level": 3,
+     "words": [
+      "SEA",
+      "PEA",
+      "EYE",
+      "JAY"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c030",
+   "words": [
+    "ACROBAT",
+    "NACHOS",
+    "PRETZEL",
+    "CIRRUS",
+    "SAND",
+    "STRATUS",
+    "TRAPEZE",
+    "POPCORN",
+    "CLOWN",
+    "CHIPS",
+    "CUMULUS",
+    "NIMBUS",
+    "TISSUE",
+    "JUGGLER",
+    "WALL",
+    "NEWS"
+   ],
+   "groups": [
+    {
+     "title": "Circus",
+     "level": 0,
+     "words": [
+      "CLOWN",
+      "JUGGLER",
+      "ACROBAT",
+      "TRAPEZE"
+     ]
+    },
+    {
+     "title": "Snacks",
+     "level": 1,
+     "words": [
+      "POPCORN",
+      "PRETZEL",
+      "CHIPS",
+      "NACHOS"
+     ]
+    },
+    {
+     "title": "Clouds",
+     "level": 2,
+     "words": [
+      "CIRRUS",
+      "CUMULUS",
+      "STRATUS",
+      "NIMBUS"
+     ]
+    },
+    {
+     "title": "___paper",
+     "level": 3,
+     "words": [
+      "NEWS",
+      "SAND",
+      "WALL",
+      "TISSUE"
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+puzzlehub:
+  jwt:
+    hmac-secret: test-secret-0123456789abcdef0123456789abcdef
+  firebase:
+    mode: fake
+  play:
+    mode: fake
+  daily:
+    generate-on-startup: false
+  rate-limit:
+    auth-per-minute: 1000
+    submit-per-minute: 1000
+    leaderboard-per-minute: 1000

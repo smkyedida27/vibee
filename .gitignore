@@ -1,0 +1,62 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+key.properties
+google-services.json
+GoogleService-Info.plist
+*service-account*.json
+*.pem
+*.p12
+
+# Flutter / Dart
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/.packages
+app/build/
+app/coverage/
+app/android/.gradle/
+app/android/local.properties
+app/android/app/release/
+app/ios/Pods/
+app/ios/.symlinks/
+app/ios/Flutter/Generated.xcconfig
+app/ios/Flutter/flutter_export_environment.sh
+**/generated_plugin_registrant.*
+*.g.dart.tmp
+
+# Maven / Java
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+*.class
+*.log
+hs_err_pid*
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+backend.hcl
+override.tf
+override.tf.json
+*_override.tf
+tfplan
+plan.txt
+ci.auto.tfvars

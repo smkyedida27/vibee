@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.5.6</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>com.puzzlehub</groupId>
+  <artifactId>puzzlehub-api</artifactId>
+  <version>1.0.0</version>
+  <name>puzzlehub-api</name>
+  <description>Puzzle Hub backend — modular monolith</description>
+
+  <properties>
+    <java.version>21</java.version>
+    <maven.compiler.release>21</maven.compiler.release>
+    <testcontainers.version>1.21.4</testcontainers.version>
+    <springdoc.version>2.8.13</springdoc.version>
+    <bucket4j.version>8.14.0</bucket4j.version>
+    <logstash.version>8.1</logstash.version>
+    <google-auth.version>1.30.0</google-auth.version>
+  </properties>
+
+  <dependencies>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-validation</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-jdbc</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-oauth2-resource-server</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
+    <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-prometheus</artifactId></dependency>
+    <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId></dependency>
+    <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-database-postgresql</artifactId></dependency>
+    <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><scope>runtime</scope></dependency>
+    <dependency><groupId>org.springdoc</groupId><artifactId>springdoc-openapi-starter-webmvc-ui</artifactId><version>${springdoc.version}</version></dependency>
+    <dependency><groupId>com.bucket4j</groupId><artifactId>bucket4j_jdk17-core</artifactId><version>${bucket4j.version}</version></dependency>
+    <dependency><groupId>com.github.ben-manes.caffeine</groupId><artifactId>caffeine</artifactId></dependency>
+    <dependency><groupId>net.logstash.logback</groupId><artifactId>logstash-logback-encoder</artifactId><version>${logstash.version}</version></dependency>
+    <dependency><groupId>com.google.auth</groupId><artifactId>google-auth-library-oauth2-http</artifactId><version>${google-auth.version}</version></dependency>
+
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-testcontainers</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>org.testcontainers</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>org.testcontainers</groupId><artifactId>postgresql</artifactId><scope>test</scope></dependency>
+  </dependencies>
+
+  <build>
+    <finalName>puzzlehub-api</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <layers><enabled>true</enabled></layers>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes><exclude>**/*IT.java</exclude></excludes>
+          <argLine>-XX:+EnableDynamicAgentLoading -Duser.timezone=UTC</argLine>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <includes><include>**/*IT.java</include></includes>
+          <argLine>-XX:+EnableDynamicAgentLoading -Duser.timezone=UTC</argLine>
+        </configuration>
+        <executions>
+          <execution><goals><goal>integration-test</goal><goal>verify</goal></goals></execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

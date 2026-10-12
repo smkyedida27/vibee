@@ -1,0 +1,35 @@
+name: content-check
+
+on:
+  pull_request:
+    paths: ["content/**", "app/assets/content/**", "backend/src/main/resources/content/**", "scripts/sync-content.sh"]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    name: Shared puzzle content in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/sync-content.sh --check
+      - name: Validate content files
+        run: |
+          python3 - <<'PY'
+          import json, re, sys
+          words = open("content/words4.txt").read().split()
+          assert all(re.fullmatch(r"[A-Z]{4}", w) for w in words), "words4.txt must be 4 uppercase letters per line"
+          assert len(words) == len(set(words)), "duplicate words in words4.txt"
+          data = json.load(open("content/connect.json"))
+          ids = set()
+          for p in data["puzzles"]:
+              assert p["id"] not in ids, f"duplicate id {p['id']}"
+              ids.add(p["id"])
+              grouped = [w for g in p["groups"] for w in g["words"]]
+              assert len(p["groups"]) == 4 and all(len(g["words"]) == 4 for g in p["groups"]), p["id"]
+              assert sorted(grouped) == sorted(p["words"]) and len(set(grouped)) == 16, p["id"]
+          print(f"ok: {len(words)} words, {len(ids)} connect puzzles")
+          PY

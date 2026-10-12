@@ -1,0 +1,89 @@
+spring:
+  application:
+    name: puzzlehub-api
+  threads:
+    virtual:
+      enabled: true
+  jackson:
+    default-property-inclusion: always
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
+  datasource:
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      connection-timeout: 5000
+  flyway:
+    enabled: true
+  mvc:
+    problemdetails:
+      enabled: true
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+  forward-headers-strategy: native
+  error:
+    include-stacktrace: never
+  tomcat:
+    max-swallow-size: 1MB
+    max-http-form-post-size: 64KB
+
+management:
+  info:
+    env:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  metrics:
+    tags:
+      application: puzzlehub-api
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+
+puzzlehub:
+  environment: ${APP_ENVIRONMENT:local}
+  jwt:
+    issuer: puzzlehub
+    hmac-secret: ${APP_JWT_SECRET:${JWT_HMAC_SECRET:}}
+    private-key: ${JWT_PRIVATE_KEY:}
+    public-key: ${JWT_PUBLIC_KEY:}
+    access-ttl: 60m
+    refresh-ttl: 90d
+  firebase:
+    mode: ${FIREBASE_MODE:google}
+    project-id: ${APP_FIREBASE_PROJECT_ID:${FIREBASE_PROJECT_ID:}}
+  play:
+    mode: ${PLAY_MODE:google}
+    package-name: ${APP_PLAY_PACKAGE_NAME:com.puzzlehub.app}
+    # Either the JSON content (APP_PLAY_SERVICE_ACCOUNT_JSON, from Secrets Manager) or a file path.
+    service-account-json: ${APP_PLAY_SERVICE_ACCOUNT_JSON:}
+    service-account-json-path: ${PLAY_SERVICE_ACCOUNT_JSON_PATH:}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+  rate-limit:
+    auth-per-minute: 20
+    submit-per-minute: 60
+    leaderboard-per-minute: 120
+  daily:
+    days-ahead: 2
+    generate-on-startup: true
+
+info:
+  app:
+    name: puzzlehub-api
+    environment: ${APP_ENVIRONMENT:local}
