@@ -9,6 +9,7 @@ import '../../core/ui/dialogs.dart';
 import '../../core/ui/outlined_text.dart';
 import '../../core/ui/panels.dart';
 import '../../services/api_client.dart';
+import '../../services/firebase_setup.dart';
 import '../../services/services.dart';
 import '../../state/player.dart';
 
@@ -59,6 +60,7 @@ class SettingsScreen extends StatelessWidget {
                     value: st.reminders,
                     onChanged: (v) {
                       set((x) => x.reminders = v);
+                      if (v) FirebaseSetup.enablePush(s.api).catchError((Object _) => false);
                       s.api.updatePreferences({'notificationsEnabled': v, 'reminderTime': '${st.reminderHour.toString().padLeft(2, '0')}:00'}).catchError((Object _) {});
                     },
                   ),

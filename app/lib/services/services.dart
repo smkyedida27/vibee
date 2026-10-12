@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,6 +10,7 @@ import 'ads_service.dart';
 import 'analytics.dart';
 import 'api_client.dart';
 import 'content_repo.dart';
+import 'firebase_setup.dart';
 import 'purchase_service.dart';
 
 /// Composition root: every long-lived service, created once in main().
@@ -28,7 +30,10 @@ class AppServices {
     final p = prefs ?? await SharedPreferences.getInstance();
     final player = PlayerStore(p);
     final client = api ?? ApiClient(p);
-    final analytics = Analytics();
+    final analytics = Analytics([
+      if (kDebugMode) DebugAnalyticsSink(),
+      if (FirebaseSetup.ready) FirebaseAnalyticsSink(),
+    ]);
     final content = ContentRepo(p, client);
     await content.init();
     final s = AppServices._(
@@ -58,6 +63,10 @@ class AppServices {
     unawaited(ads.init().catchError((Object e) => debugPrint('ads init: $e')));
     unawaited(purchases.init().catchError((Object e) => debugPrint('iap init: $e')));
     unawaited(sync.pull());
+    FirebaseSetup.setUser(api.userId);
+    if (player.data.settings.reminders) {
+      unawaited(FirebaseSetup.refreshPush(api).catchError((Object e) => debugPrint('push: $e')));
+    }
   }
 }
 

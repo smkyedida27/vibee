@@ -7,6 +7,13 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Firebase (Crashlytics, Analytics, FCM) is enabled only when google-services.json is present
+// (never committed; CI writes it from the GOOGLE_SERVICES_JSON secret).
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+    apply(plugin = "com.google.firebase.crashlytics")
+}
+
 // Release signing comes from android/key.properties (never committed; CI writes it from secrets).
 val keystoreProperties = Properties().apply {
     val f = rootProject.file("key.properties")
