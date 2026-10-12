@@ -3,6 +3,7 @@ import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
+    id("org.jetbrains.kotlin.android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -18,6 +19,17 @@ if (file("google-services.json").exists()) {
 val keystoreProperties = Properties().apply {
     val f = rootProject.file("key.properties")
     if (f.exists()) load(FileInputStream(f))
+}
+
+// Store builds (release-android workflow passes -PstoreRelease=true) must never fall back to
+// debug signing or Google's test AdMob app id — either would ship a build that can't be
+// updated or earns nothing.
+val admobAppId = project.findProperty("ADMOB_APP_ID") as String?
+if (project.findProperty("storeRelease") == "true") {
+    require(keystoreProperties.isNotEmpty()) { "storeRelease: android/key.properties is missing" }
+    require(!admobAppId.isNullOrBlank() && !admobAppId.startsWith("ca-app-pub-3940256099942544")) {
+        "storeRelease: pass the production AdMob app id with -PADMOB_APP_ID=ca-app-pub-...~..."
+    }
 }
 
 android {
@@ -43,8 +55,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         // AdMob app id; Google's public test id unless overridden for release builds.
-        manifestPlaceholders["admobAppId"] =
-            (project.findProperty("ADMOB_APP_ID") as String?) ?: "ca-app-pub-3940256099942544~3347511713"
+        manifestPlaceholders["admobAppId"] = admobAppId ?: "ca-app-pub-3940256099942544~3347511713"
     }
 
     signingConfigs {

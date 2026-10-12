@@ -136,7 +136,7 @@ MERGE 3★ reach target, 2★ reach target/2, 1★ reach target/4.
 | `GET /leaderboards/daily?date&gameType&scope=GLOBAL\|COUNTRY\|FRIENDS&page&size` | `gameType` omitted = overall (sum) |
 | `GET /leaderboards/weekly?scope&page&size` | ISO week, overall |
 | `GET /me/wallet` | `{coins, gems}` (server-authoritative gems) |
-| `POST /me/wallet/spend` | `{sku, idempotencyKey}`; skus: `HEART_REFILL`(30 gems), `HINT_PACK_5`(20), `COINS_1000`(25) |
+| `POST /me/wallet/spend` | `{sku, idempotencyKey}`; skus: `HEART_REFILL`(30 gems), `HINT_PACK_5`(20), `COINS_1000`(25), `CONTINUE`(12). The wallet holds **purchased** gems only; free gems (starter, calendar, spin) live in the local snapshot and are spent first |
 | `POST /me/rewards/daily-claim` | 7-day login calendar; idempotent per UTC day |
 | `GET /store/products` | IAP catalog (product ids, grants) |
 | `POST /purchases/google/verify` | `{productId, purchaseToken}` → grants; idempotent per token |

@@ -114,31 +114,31 @@ class _LivesBodyState extends State<_LivesBody> {
   }
 }
 
-/// Spends gems server-side when a session exists (server-authoritative), falling back
-/// to local balance only when the account has never synced (pure guest offline).
+/// Spends free (local) gems first; otherwise spends purchased gems through the
+/// server wallet, which is the only authority for them (docs/CONTRACT.md §6).
 Future<bool> _spendGems(BuildContext context, String sku, int cost) async {
   final s = context.services;
-  if (s.player.data.gems < cost) {
+  final d = s.player.data;
+  if (d.gems >= cost) return s.player.spendGems(cost);
+  if (d.paidGems < cost) {
     toast(context, 'Not enough gems — visit the Shop');
     return false;
   }
-  if (s.api.hasSession) {
-    try {
-      final res = await s.api.spend(sku);
-      final w = res['wallet'] as Map<String, dynamic>? ?? res;
-      if (w['gems'] != null) s.player.setGems((w['gems'] as num).toInt());
-      return true;
-    } on ApiException catch (e) {
-      if (!e.isOffline) {
-        if (context.mounted) toast(context, e.message);
-        return false;
-      }
+  try {
+    final res = await s.api.spend(sku);
+    final w = res['wallet'] as Map<String, dynamic>? ?? res;
+    if (w['gems'] != null) s.player.setPaidGems((w['gems'] as num).toInt());
+    return true;
+  } on ApiException catch (e) {
+    if (context.mounted) {
+      toast(context, e.isOffline ? 'Connect to the internet to use purchased gems' : e.message);
     }
+    if (e.code == 'INSUFFICIENT_FUNDS') unawaited(s.sync.refreshWallet());
+    return false;
   }
-  return s.player.spendGems(cost);
 }
 
-/// Exposed for the shop screen.
+/// Exposed for the shop screen and results overlay.
 Future<bool> spendGemsFor(BuildContext context, String sku, int cost) => _spendGems(context, sku, cost);
 
 class ShopHeader extends StatelessWidget {

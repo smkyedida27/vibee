@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -25,11 +27,27 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   Future<Map<String, dynamic>>? _remote;
+  Future<List<dynamic>>? _friends;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _remote ??= context.services.api.profile();
+    _friends ??= context.services.api.friends();
+  }
+
+  void _reloadFriends() => setState(() => _friends = context.services.api.friends());
+
+  Future<void> _removeFriend(Map<String, dynamic> f) async {
+    final ok = await confirmDialog(context,
+        title: 'Remove friend?', message: 'Remove ${f['displayName']} from your friends?', yes: 'Remove', candy: Candy.red);
+    if (!ok || !mounted) return;
+    try {
+      await context.services.api.removeFriend('${f['userId']}');
+      _reloadFriends();
+    } on ApiException catch (e) {
+      if (mounted) toast(context, e.isOffline ? 'You're offline' : e.message, icon: Icons.error_rounded);
+    }
   }
 
   Future<void> _editName() async {
@@ -56,9 +74,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         CandyButton(label: 'Save', candy: Candy.green, height: 56, onTap: () => Navigator.pop(ctx, ctrl.text)),
       ]),
     );
-    if (name == null || name.trim().isEmpty) return;
+    if (name == null) return;
+    if (cleanDisplayName(name) == null) {
+      if (mounted) toast(context, 'Names need 2–20 letters or numbers');
+      return;
+    }
     s.player.updateProfile(name: name);
-    s.api.updatePreferences({'displayName': name.trim()}).catchError((Object _) {});
+    unawaited(s.pushProfile());
   }
 
   @override
@@ -108,7 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   itemBuilder: (_, i) => Pressable(
                     onTap: () {
                       s.player.updateProfile(avatar: i);
-                      s.api.updatePreferences({'avatarId': i}).catchError((Object _) {});
+                      unawaited(s.pushProfile());
                     },
                     semanticLabel: 'Avatar ${i + 1}',
                     child: Container(
@@ -162,6 +184,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             },
                           ),
                       ]),
+                      FutureBuilder<List<dynamic>>(
+                        future: _friends,
+                        builder: (context, fs) {
+                          final list = fs.data ?? const [];
+                          if (list.isEmpty) return const SizedBox.shrink();
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Column(children: [
+                              for (final f in list.cast<Map<String, dynamic>>())
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Row(children: [
+                                    Avatar(index: (f['avatarId'] as num?)?.toInt() ?? 0, size: 38),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text('${f['displayName']}',
+                                          overflow: TextOverflow.ellipsis, style: AppText.display(18, color: Colors.white)),
+                                    ),
+                                    IconButton(
+                                      tooltip: 'Remove friend',
+                                      icon: const Icon(Icons.person_remove_rounded, color: Colors.white70),
+                                      onPressed: () => _removeFriend(f),
+                                    ),
+                                  ]),
+                                ),
+                            ]),
+                          );
+                        },
+                      ),
                       const SizedBox(height: 10),
                       CandyButton(
                         label: 'Add a friend',
@@ -206,8 +257,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
     if (code == null || code.isEmpty || !context.mounted) return;
     try {
-      await context.services.api.addFriend(code);
+      await context.services.api.addFriend(code.toUpperCase());
       if (context.mounted) toast(context, 'Friend added!', icon: Icons.favorite_rounded);
+      _reloadFriends();
     } on ApiException catch (e) {
       if (context.mounted) toast(context, e.isOffline ? 'You\'re offline' : e.message, icon: Icons.error_rounded);
     }

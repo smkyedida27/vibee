@@ -43,12 +43,6 @@ class SettingsScreen extends StatelessWidget {
                     value: st.reducedMotion,
                     onChanged: (v) => set((x) => x.reducedMotion = v),
                   ),
-                  _Toggle(
-                    icon: Icons.contrast_rounded,
-                    label: 'High contrast boards',
-                    value: st.highContrast,
-                    onChanged: (v) => set((x) => x.highContrast = v),
-                  ),
                 ]),
               ),
               const SectionTitle('Reminders'),
@@ -111,6 +105,16 @@ class SettingsScreen extends StatelessWidget {
                     height: 52,
                     onTap: s.purchases.restore,
                   ),
+                  if (s.ads.privacyOptionsRequired) ...[
+                    const SizedBox(height: 10),
+                    CandyButton(
+                      label: 'Privacy & ad choices',
+                      icon: Icons.privacy_tip_rounded,
+                      candy: Candy.teal,
+                      height: 52,
+                      onTap: s.ads.showPrivacyOptions,
+                    ),
+                  ],
                   const SizedBox(height: 10),
                   CandyButton(
                     label: 'Delete account',

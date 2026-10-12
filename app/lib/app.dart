@@ -122,7 +122,8 @@ GoRouter buildRouter(AppServices s) {
           return GameLauncher(
             resolve: (svc) async {
               final set = await svc.content.daily();
-              final p = set.puzzles[g]!;
+              final p = set.puzzles[g];
+              if (p == null) throw StateError('Today's ${g.title} puzzle isn't available. Try another game!');
               return PlayRequest(game: g, difficulty: p.difficulty, source: PlaySource.daily, seed: 0, daily: p);
             },
           );

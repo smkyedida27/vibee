@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -41,7 +42,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       final s = context.services;
       s.player.completeOnboarding(name: _name.text, avatar: _avatar);
       s.analytics.log('onboarding_complete', {'avatar': _avatar});
-      s.api.updatePreferences({'displayName': s.player.data.displayName, 'avatarId': _avatar}).catchError((Object _) {});
+      unawaited(s.pushProfile());
       Audio.instance.fx(Sfx.unlock, HapticKind.heavy);
       // First session goes straight into a quick, satisfying first level.
       context.go('/');

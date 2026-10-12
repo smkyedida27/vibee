@@ -253,12 +253,31 @@ class ApiFlowIT {
         assertThat(api.post("/api/v1/me/wallet/spend", spend, s.access()).body().get("wallet").get("gems").asInt()).isEqualTo(50);
         assertThat(api.get("/api/v1/me/wallet", s.access()).body().get("gems").asInt()).isEqualTo(50);
 
-        api.post("/api/v1/purchases/google/verify", Map.of("productId", "remove_ads", "purchaseToken", "test-valid-ra-" + UUID.randomUUID()), s.access());
+        Map<String, String> removeAds = Map.of("productId", "remove_ads", "purchaseToken", "test-valid-ra-" + UUID.randomUUID());
+        api.post("/api/v1/purchases/google/verify", removeAds, s.access());
         api.post("/api/v1/purchases/google/verify", Map.of("productId", "vip_monthly", "purchaseToken", "test-valid-vip-" + UUID.randomUUID()), s.access());
         JsonNode ent = api.get("/api/v1/me/entitlements", s.access()).body();
         assertThat(ent.get("removeAds").asBoolean()).isTrue();
         assertThat(ent.get("vipActive").asBoolean()).isTrue();
-        assertThat(api.get("/api/v1/store/products", null).body()).hasSize(6);
+
+        // Non-consumables follow the Play account to a new guest (e.g. after a reinstall).
+        assertThat(api.post("/api/v1/purchases/google/verify", removeAds, other.access()).status()).isEqualTo(200);
+        assertThat(api.get("/api/v1/me/entitlements", other.access()).body().get("removeAds").asBoolean()).isTrue();
+
+        Map<String, String> cont = Map.of("sku", "CONTINUE", "idempotencyKey", "spend-0003");
+        assertThat(api.post("/api/v1/me/wallet/spend", cont, s.access()).body().get("wallet").get("gems").asInt()).isEqualTo(38);
+        // Starter pack: gems once per token + remove-ads; a transfer moves the entitlement only.
+        Session fresh = guest();
+        Session reinstall = guest();
+        Map<String, String> starter = Map.of("productId", "starter_pack", "purchaseToken", "test-valid-sp-" + UUID.randomUUID());
+        JsonNode sp = api.post("/api/v1/purchases/google/verify", starter, fresh.access()).body();
+        assertThat(sp.get("wallet").get("gems").asInt()).isEqualTo(80);
+        assertThat(sp.get("entitlements").get("removeAds").asBoolean()).isTrue();
+        JsonNode moved = api.post("/api/v1/purchases/google/verify", starter, reinstall.access()).body();
+        assertThat(moved.get("wallet").get("gems").asInt()).isZero();
+        assertThat(moved.get("entitlements").get("removeAds").asBoolean()).isTrue();
+
+        assertThat(api.get("/api/v1/store/products", null).body()).hasSize(7);
     }
 
     @Test

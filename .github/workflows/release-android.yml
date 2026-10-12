@@ -53,13 +53,31 @@ jobs:
           PROPS
           if [ -n "$GOOGLE_SERVICES_JSON" ]; then echo "$GOOGLE_SERVICES_JSON" > android/app/google-services.json; fi
 
+      - name: Check production config
+        env:
+          PROD_API_URL: ${{ vars.PROD_API_URL }}
+          ADMOB_APP_ID: ${{ vars.ADMOB_APP_ID_ANDROID }}
+          ADMOB_REWARDED: ${{ vars.ADMOB_REWARDED_ANDROID }}
+          ADMOB_INTERSTITIAL: ${{ vars.ADMOB_INTERSTITIAL_ANDROID }}
+        run: |
+          missing=0
+          for v in PROD_API_URL ADMOB_APP_ID ADMOB_REWARDED ADMOB_INTERSTITIAL; do
+            if [ -z "${!v}" ]; then echo "::error::Repository variable for $v is not set"; missing=1; fi
+          done
+          exit $missing
+
       - name: Build signed app bundle
+        env:
+          ORG_GRADLE_PROJECT_storeRelease: "true"
+          ORG_GRADLE_PROJECT_ADMOB_APP_ID: ${{ vars.ADMOB_APP_ID_ANDROID }}
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           flutter build appbundle --release \
             --build-name="$VERSION" --build-number="${{ github.run_number }}" \
             --obfuscate --split-debug-info=build/symbols \
-            --dart-define=API_BASE_URL=${{ vars.PROD_API_URL }}
+            --dart-define=API_BASE_URL=${{ vars.PROD_API_URL }} \
+            --dart-define=ADMOB_REWARDED_ANDROID=${{ vars.ADMOB_REWARDED_ANDROID }} \
+            --dart-define=ADMOB_INTERSTITIAL_ANDROID=${{ vars.ADMOB_INTERSTITIAL_ANDROID }}
 
       - name: Upload to Play internal track
         uses: r0adkll/upload-google-play@v1

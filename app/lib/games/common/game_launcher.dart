@@ -60,7 +60,10 @@ class _GameLauncherState extends State<GameLauncher> {
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               const OutlinedText('Oops!', size: 40),
               const SizedBox(height: 8),
-              Text('We couldn\'t load this puzzle.\n${snap.error}',
+              Text(
+                  snap.error is StateError
+                      ? (snap.error! as StateError).message
+                      : 'We couldn\'t load this puzzle. Check your connection and try again.',
                   textAlign: TextAlign.center, style: AppText.body(16, color: Colors.white)),
               const SizedBox(height: 20),
               CandyButton(

@@ -86,7 +86,13 @@ class PlayerData {
   String? country;
 
   int coins = Economy.startCoins;
+
+  /// Free gems (starter grant, login calendar, spin). Local-first like coins.
   int gems = Economy.startGems;
+
+  /// Purchased gems: a cached mirror of the server wallet (`GET /me/wallet`), which is
+  /// the only authority for them. Spent only through `POST /me/wallet/spend`.
+  int paidGems = 0;
   int hints = Economy.startHints;
   int hearts = Economy.maxHearts;
   int? heartClockStart; // epoch ms when regen timer started
@@ -115,6 +121,9 @@ class PlayerData {
   // Ads pacing.
   int levelsSinceInterstitial = 0;
   int? lastInterstitialAt;
+  int? firstSeenAt; // epoch ms of first launch; no interstitials in the first 2 days
+  String? rewardedDate; // UTC day the counts below belong to
+  Map<String, int> rewardedCounts = {};
 
   Settings settings = Settings();
   int snapshotVersion = 0;
@@ -124,6 +133,7 @@ class PlayerData {
   int get totalStars => levelStars.values.fold(0, (a, b) => a + b);
   bool get isVip => vipUntil != null && vipUntil! > DateTime.now().millisecondsSinceEpoch;
   bool get adsDisabled => removeAds || isVip;
+  int get totalGems => gems + paidGems;
 
   Map<String, dynamic> toJson() => {
         'onboarded': onboarded,
@@ -132,6 +142,7 @@ class PlayerData {
         'country': country,
         'coins': coins,
         'gems': gems,
+        'paidGems': paidGems,
         'hints': hints,
         'hearts': hearts,
         'heartClockStart': heartClockStart,
@@ -151,6 +162,9 @@ class PlayerData {
         'vipUntil': vipUntil,
         'levelsSinceInterstitial': levelsSinceInterstitial,
         'lastInterstitialAt': lastInterstitialAt,
+        'firstSeenAt': firstSeenAt,
+        'rewardedDate': rewardedDate,
+        'rewardedCounts': rewardedCounts,
         'settings': settings.toJson(),
         'snapshotVersion': snapshotVersion,
       };
@@ -163,6 +177,7 @@ class PlayerData {
       ..country = j['country']
       ..coins = j['coins'] ?? Economy.startCoins
       ..gems = j['gems'] ?? Economy.startGems
+      ..paidGems = j['paidGems'] ?? 0
       ..hints = j['hints'] ?? Economy.startHints
       ..hearts = j['hearts'] ?? Economy.maxHearts
       ..heartClockStart = j['heartClockStart']
@@ -183,10 +198,23 @@ class PlayerData {
       ..vipUntil = j['vipUntil']
       ..levelsSinceInterstitial = j['levelsSinceInterstitial'] ?? 0
       ..lastInterstitialAt = j['lastInterstitialAt']
+      ..firstSeenAt = j['firstSeenAt']
+      ..rewardedDate = j['rewardedDate']
+      ..rewardedCounts = ((j['rewardedCounts'] ?? {}) as Map).map((k, v) => MapEntry('$k', (v as num).toInt()))
       ..settings = Settings.fromJson(((j['settings'] ?? {}) as Map).cast<String, dynamic>())
       ..snapshotVersion = j['snapshotVersion'] ?? 0;
     return d;
   }
+}
+
+final _nameDisallowed = RegExp(r'[^\p{L}\p{N} _.-]', unicode: true);
+
+/// Normalises a display name to what the server accepts (2–20 letters, digits, space, `_.-`).
+/// Returns null when nothing usable is left.
+String? cleanDisplayName(String raw) {
+  var n = raw.replaceAll(_nameDisallowed, '').replaceAll(RegExp(r'\s+'), ' ').trim();
+  if (n.length > 20) n = n.substring(0, 20).trim();
+  return n.length >= 2 ? n : null;
 }
 
 String utcDate([DateTime? t]) {
@@ -217,6 +245,7 @@ class PlayerStore extends ChangeNotifier {
         _prefs.setString('$_key.corrupt', raw);
       }
     }
+    data.firstSeenAt ??= _now;
     _tickHearts();
     _rollDaily();
     _heartTimer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -327,8 +356,10 @@ class PlayerStore extends ChangeNotifier {
     return true;
   }
 
-  void setGems(int n) {
-    data.gems = n;
+  /// Mirrors the server wallet balance (purchased gems).
+  void setPaidGems(int n) {
+    if (data.paidGems == n) return;
+    data.paidGems = n;
     _changed();
   }
 
@@ -468,9 +499,26 @@ class PlayerStore extends ChangeNotifier {
   bool shouldShowInterstitial() {
     if (data.adsDisabled) return false;
     if (data.currentLevel <= 8) return false; // protect the first session
+    if (_now - (data.firstSeenAt ?? _now) < const Duration(days: 2).inMilliseconds) return false;
     if (data.levelsSinceInterstitial < 3) return false;
     final last = data.lastInterstitialAt;
     return last == null || _now - last > const Duration(minutes: 3).inMilliseconds;
+  }
+
+  /// Rewarded views today for [placement], or in total when null.
+  int rewardedCount(String? placement) {
+    if (data.rewardedDate != utcDate(_clock())) return 0;
+    return placement == null ? data.rewardedCounts.values.fold(0, (a, b) => a + b) : data.rewardedCounts[placement] ?? 0;
+  }
+
+  void recordRewarded(String placement) {
+    final today = utcDate(_clock());
+    if (data.rewardedDate != today) {
+      data.rewardedDate = today;
+      data.rewardedCounts = {};
+    }
+    data.rewardedCounts[placement] = (data.rewardedCounts[placement] ?? 0) + 1;
+    _changed();
   }
 
   void markInterstitialShown() {
@@ -483,13 +531,14 @@ class PlayerStore extends ChangeNotifier {
   void completeOnboarding({required String name, required int avatar}) {
     data
       ..onboarded = true
-      ..displayName = name.trim().isEmpty ? 'Player' : name.trim()
+      ..displayName = cleanDisplayName(name) ?? 'Player'
       ..avatar = avatar;
     _changed();
   }
 
   void updateProfile({String? name, int? avatar, String? country}) {
-    if (name != null && name.trim().isNotEmpty) data.displayName = name.trim();
+    final clean = name == null ? null : cleanDisplayName(name);
+    if (clean != null) data.displayName = clean;
     if (avatar != null) data.avatar = avatar;
     if (country != null) data.country = country;
     _changed();

@@ -17,7 +17,7 @@ public class WalletService {
     public record Wallet(long coins, long gems) {}
 
     public enum Sku {
-        HEART_REFILL(30, 0), HINT_PACK_5(20, 0), COINS_1000(25, 1000);
+        HEART_REFILL(30, 0), HINT_PACK_5(20, 0), COINS_1000(25, 1000), CONTINUE(12, 0);
 
         final int gemCost;
         final int coinGrant;

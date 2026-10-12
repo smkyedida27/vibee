@@ -41,7 +41,7 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
   int hintsUsed = 0;
   int continuesUsed = 0;
   bool finished = false;
-  String? _attemptId;
+  Future<String?>? _attempt;
   Timer? _clockTick;
 
   /// Elapsed play time; screens rebuild every second for the timer pill.
@@ -56,10 +56,9 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
     s.analytics.puzzleStart(request.game.wire, request.source.name, request.difficulty.wire);
     final daily = request.daily;
     if (daily != null && daily.puzzleId != null) {
-      s.api.createAttempt(daily.puzzleId!).then((a) {
-        _attemptId = '${a['attemptId']}';
-      }, onError: (Object e) {
+      _attempt = s.api.createAttempt(daily.puzzleId!).then<String?>((a) => '${a['attemptId']}', onError: (Object e) {
         debugPrint('attempt create failed (offline play continues): $e');
+        return null;
       });
     }
   }
@@ -138,7 +137,7 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
         hintsUsed: hintsUsed,
       );
       if (!mounted) return;
-      await _afterRound(action);
+      await _afterRound(action, won: true);
     } else {
       Audio.instance.fx(Sfx.lose, HapticKind.heavy);
       final canContinue = onContinue != null && continuesUsed < 2;
@@ -153,15 +152,16 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
       }
       if (request.source == PlaySource.level) s.player.failLevel(game: request.game, durationMs: ms);
       unawaited(s.sync.push());
-      await _afterRound(action);
+      await _afterRound(action, won: false);
     }
   }
 
   Future<Map<String, dynamic>?> _submitDaily(RoundResult r, int ms) async {
-    final id = _attemptId;
+    final api = context.services.api;
+    final id = await _attempt;
     if (id == null) return null;
     try {
-      return await context.services.api
+      return await api
           .submitAttempt(id, submission: r.submission, hintsUsed: hintsUsed, clientDurationMs: ms);
     } on ApiException catch (e) {
       debugPrint('daily submit failed: $e');
@@ -169,10 +169,11 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
     }
   }
 
-  Future<void> _afterRound(ResultAction? action) async {
+  Future<void> _afterRound(ResultAction? action, {required bool won}) async {
     final s = context.services;
     final router = GoRouter.of(context);
-    if (request.source == PlaySource.level && s.player.shouldShowInterstitial() && action != ResultAction.retry) {
+    // Interstitials only after a won level, never after a loss or on retry (docs/MONETIZATION.md).
+    if (won && request.source == PlaySource.level && s.player.shouldShowInterstitial() && action != ResultAction.retry) {
       s.player.markInterstitialShown();
       await s.ads.showInterstitial();
     }
@@ -284,7 +285,13 @@ class GameScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = request.game.candy;
     final hints = context.player.data.hints;
-    return Scaffold(
+    // System back runs the same confirm-and-forfeit flow as the on-screen back button.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmLeave(context);
+      },
+      child: Scaffold(
       body: CandyBackground(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -306,20 +313,7 @@ class GameScaffold extends StatelessWidget {
                           candy: Candy.purple,
                           size: 46,
                           semanticLabel: 'Back',
-                          onTap: () async {
-                            final leave = await confirmDialog(context,
-                                title: 'Leave puzzle?',
-                                message: request.source == PlaySource.level
-                                    ? 'Quitting a level costs a life.'
-                                    : 'Your progress on this puzzle will be lost.',
-                                yes: 'Leave');
-                            if (leave && context.mounted) {
-                              if (request.source == PlaySource.level) {
-                                context.services.player.failLevel(game: request.game, durationMs: elapsed.inMilliseconds);
-                              }
-                              context.pop();
-                            }
-                          },
+                          onTap: () => _confirmLeave(context),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -365,7 +359,27 @@ class GameScaffold extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
+  }
+
+  Future<void> _confirmLeave(BuildContext context) async {
+    final leave = await confirmDialog(context,
+        title: 'Leave puzzle?',
+        message: request.source == PlaySource.level && !context.player.unlimitedHearts
+            ? 'Quitting a level costs a life.'
+            : 'Your progress on this puzzle will be lost.',
+        yes: 'Leave');
+    if (leave && context.mounted) {
+      if (request.source == PlaySource.level) {
+        context.services.player.failLevel(game: request.game, durationMs: elapsed.inMilliseconds);
+      }
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/');
+      }
+    }
   }
 }
 

@@ -10,6 +10,7 @@ import '../../core/ui/dialogs.dart';
 import '../../core/ui/game_art.dart';
 import '../../core/ui/outlined_text.dart';
 import '../../core/ui/panels.dart';
+import '../../features/shop/shop_sheets.dart';
 import '../../services/content_repo.dart';
 import '../../services/services.dart';
 import '../../state/player.dart';
@@ -173,8 +174,12 @@ class _ResultsBodyState extends State<_ResultsBody> with TickerProviderStateMixi
               }
               final d = snap.data;
               if (d == null || d['result'] != 'SOLVED') {
-                return Text('Offline — your streak is saved on this device.',
-                    textAlign: TextAlign.center, style: AppText.body(14, color: AppColors.inkSoft));
+                return Text(
+                    d == null
+                        ? 'Couldn't reach the leaderboard — your streak is saved on this device.'
+                        : 'Solved with a continue — not ranked today, but your streak counts!',
+                    textAlign: TextAlign.center,
+                    style: AppText.body(14, color: AppColors.inkSoft));
               }
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -363,11 +368,9 @@ Future<ResultAction?> showFail(BuildContext context,
               height: 60,
               pulse: true,
               trailing: const GameArt(ArtKind.gem, size: 26),
-              onTap: () {
-                if (s.player.spendGems(continueCost)) {
+              onTap: () async {
+                if (await spendGemsFor(ctx, 'CONTINUE', continueCost) && ctx.mounted) {
                   Navigator.pop(ctx, ResultAction.continuePlay);
-                } else {
-                  toast(ctx, 'Not enough gems — visit the Shop');
                 }
               },
             ),

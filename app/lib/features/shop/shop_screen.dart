@@ -55,6 +55,7 @@ class _ShopScreenState extends State<ShopScreen> {
       default:
         break;
     }
+    iap.acknowledgeState();
     setState(() {});
   }
 

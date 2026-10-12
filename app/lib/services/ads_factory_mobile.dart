@@ -41,6 +41,8 @@ class AdMobService implements AdsService {
       ConsentRequestParameters(),
       () async {
         await ConsentForm.loadAndShowConsentFormIfRequired((_) {});
+        _privacyRequired = await ConsentInformation.instance.getPrivacyOptionsRequirementStatus() ==
+            PrivacyOptionsRequirementStatus.required;
         if (!done.isCompleted) done.complete();
       },
       (error) {
@@ -129,6 +131,19 @@ class AdMobService implements AdsService {
       },
     );
     await ad.show();
+    return done.future;
+  }
+
+  @override
+  bool get privacyOptionsRequired => _privacyRequired;
+  bool _privacyRequired = false;
+
+  @override
+  Future<void> showPrivacyOptions() {
+    final done = Completer<void>();
+    ConsentForm.showPrivacyOptionsForm((_) {
+      if (!done.isCompleted) done.complete();
+    });
     return done.future;
   }
 }

@@ -40,7 +40,18 @@ public class PurchaseService {
         Optional<UUID> owner = db.sql("select user_id from purchases where purchase_token = :t for update")
                 .param("t", purchaseToken).query((rs, i) -> rs.getObject(1, UUID.class)).optional();
         if (owner.isPresent() && !userId.equals(owner.get())) {
-            throw ApiException.conflict("PURCHASE_ALREADY_CLAIMED", "This purchase belongs to another account");
+            // Consumables (gems) are granted exactly once. Remove-ads and VIP follow whoever
+            // holds the Play account (a reinstall creates a new guest), so they move over
+            // once Google confirms the token is still valid.
+            if (product.type() == Product.Type.CONSUMABLE) {
+                throw ApiException.conflict("PURCHASE_ALREADY_CLAIMED", "This purchase belongs to another account");
+            }
+            PurchaseVerifier.Verification v = verifier.verify(product, purchaseToken);
+            if (!v.valid()) throw ApiException.badRequest("PURCHASE_INVALID", "Purchase could not be verified");
+            db.sql("update purchases set user_id = :u where purchase_token = :t")
+                    .param("u", userId).param("t", purchaseToken).update();
+            grantEntitlement(userId, product, v);
+            return new Grant(productId, "GRANTED", wallet.get(userId), entitlements(userId));
         }
         if (owner.isEmpty() || product.type() == Product.Type.SUBSCRIPTION) {
             PurchaseVerifier.Verification v = verifier.verify(product, purchaseToken);
@@ -60,9 +71,17 @@ public class PurchaseService {
     }
 
     private void grant(UUID userId, Product product, String token, PurchaseVerifier.Verification v) {
+        // Gems are granted once per purchase token (bundles included); entitlements may move.
+        if (product.gems() > 0) {
+            wallet.apply(userId, WalletService.Currency.GEMS, product.gems(), "PURCHASE_" + product.productId(),
+                    "purchase:" + token);
+        }
+        grantEntitlement(userId, product, v);
+    }
+
+    private void grantEntitlement(UUID userId, Product product, PurchaseVerifier.Verification v) {
         switch (product.type()) {
-            case CONSUMABLE -> wallet.apply(userId, WalletService.Currency.GEMS, product.gems(),
-                    "PURCHASE_" + product.productId(), "purchase:" + token);
+            case CONSUMABLE -> { }
             case NON_CONSUMABLE -> db.sql("""
                     insert into entitlements (user_id, remove_ads) values (:u, true)
                     on conflict (user_id) do update set remove_ads = true""").param("u", userId).update();

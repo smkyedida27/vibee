@@ -71,11 +71,25 @@ class ApiClient {
     await _prefs.remove('auth.user');
   }
 
-  Future<void> ensureSession() async {
-    if (hasSession) return;
-    final j = await _send('POST', '/api/v1/auth/guest', body: {'deviceId': deviceId}, auth: false);
-    await _storeSession(j as Map<String, dynamic>);
+  Future<void>? _creatingSession;
+
+  /// Creates the guest account once, even when several requests race on first launch.
+  Future<void> ensureSession() {
+    if (hasSession) return Future.value();
+    return _creatingSession ??= () async {
+      try {
+        final j = await _send('POST', '/api/v1/auth/guest', body: {'deviceId': deviceId}, auth: false);
+        await _storeSession(j as Map<String, dynamic>);
+        onNewAccount?.call();
+      } finally {
+        _creatingSession = null;
+      }
+    }();
   }
+
+  /// Called after a new guest account was created (first launch, or the old session
+  /// became unrecoverable) so local progress and purchases can be re-attached.
+  VoidCallback? onNewAccount;
 
   Completer<bool>? _refreshing;
 
@@ -151,7 +165,7 @@ class ApiClient {
 
   // ------------------------------------------------------------- endpoints
   Future<Map<String, dynamic>> dailyChallenge({String? date}) async =>
-      await _send('GET', '/api/v1/daily-challenge', query: {'date': ?date}) as Map<String, dynamic>;
+      await _send('GET', '/api/v1/daily-challenge', query: {'date': ?date}, auth: false) as Map<String, dynamic>;
 
   Future<Map<String, dynamic>> createAttempt(String puzzleId) {
     final key = newId();
@@ -204,6 +218,10 @@ class ApiClient {
       await _send('PUT', '/api/v1/me/progress', body: {'version': version, 'data': data}) as Map<String, dynamic>;
 
   Future<void> addFriend(String code) => _send('POST', '/api/v1/me/friends', body: {'friendCode': code});
+  Future<List<dynamic>> friends() async => await _send('GET', '/api/v1/me/friends') as List<dynamic>? ?? const [];
+  Future<void> removeFriend(String userId) => _send('DELETE', '/api/v1/me/friends/$userId');
+  Future<Map<String, dynamic>> claimDailyReward() async =>
+      await _send('POST', '/api/v1/me/rewards/daily-claim') as Map<String, dynamic>;
 
   Future<void> registerPushToken(String token) =>
       _send('POST', '/api/v1/me/push-token', body: {

@@ -103,7 +103,21 @@ class PurchaseService extends ChangeNotifier {
       products[p.id] = p;
     }
     notifyListeners();
+    await resyncOwned();
   }
+
+  /// Re-delivers purchases Play still holds (owned non-consumables and any purchase whose
+  /// verification failed earlier) so they are verified and acknowledged before Play's
+  /// 3-day auto-refund, and re-attached after a new account. The server grants each
+  /// purchase token at most once. No UI feedback.
+  Future<void> resyncOwned() async {
+    if (!available) return;
+    _silentRestore = true;
+    await InAppPurchase.instance.restorePurchases();
+    Timer(const Duration(seconds: 20), () => _silentRestore = false);
+  }
+
+  bool _silentRestore = false;
 
   String priceOf(StoreItem item) => products[item.id]?.price ?? item.fallbackPrice;
 
@@ -143,19 +157,20 @@ class PurchaseService extends ChangeNotifier {
           _set(PurchaseState.idle);
           if (p.pendingCompletePurchase) await InAppPurchase.instance.completePurchase(p);
         case PurchaseStatus.purchased:
-        case PurchaseStatus.restored:
           await _verifyAndGrant(p);
+        case PurchaseStatus.restored:
+          await _verifyAndGrant(p, silent: _silentRestore);
       }
     }
   }
 
-  Future<void> _verifyAndGrant(PurchaseDetails p) async {
-    _set(PurchaseState.verifying);
+  Future<void> _verifyAndGrant(PurchaseDetails p, {bool silent = false}) async {
+    if (!silent) _set(PurchaseState.verifying);
     try {
       final res = await _api.verifyGooglePurchase(p.productID, p.verificationData.serverVerificationData);
       // Server is the source of truth for balances and entitlements.
       final wallet = res['wallet'] as Map<String, dynamic>?;
-      if (wallet != null) _player.setGems((wallet['gems'] as num).toInt());
+      if (wallet != null) _player.setPaidGems((wallet['gems'] as num).toInt());
       final ent = res['entitlements'] as Map<String, dynamic>?;
       if (ent != null) {
         final vip = ent['vipUntil'] as String?;
@@ -169,9 +184,11 @@ class PurchaseService extends ChangeNotifier {
         final android = InAppPurchase.instance.getPlatformAddition<InAppPurchaseAndroidPlatformAddition>();
         await android.consumePurchase(p);
       }
+      if (silent) return;
       _analytics.log('purchase_success', {'product': p.productID});
       _set(PurchaseState.success);
     } on ApiException catch (e) {
+      if (silent) return;
       // Leave the purchase un-acknowledged; Play re-delivers it on next launch and
       // refunds automatically if it is never acknowledged.
       lastError = e.isOffline ? 'You appear to be offline. We\'ll finish this purchase when you reconnect.' : e.message;
@@ -182,6 +199,13 @@ class PurchaseService extends ChangeNotifier {
   void _set(PurchaseState s) {
     state = s;
     notifyListeners();
+  }
+
+  /// Called by the UI after it has shown a terminal state (success/failed) to the player.
+  void acknowledgeState() {
+    if (state == PurchaseState.success || state == PurchaseState.failed || state == PurchaseState.unavailable) {
+      state = PurchaseState.idle;
+    }
   }
 
   @override

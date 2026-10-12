@@ -14,6 +14,7 @@ public record Product(String productId, Type type, String title, String descript
             new Product("gems_large", Type.CONSUMABLE, "Chest of Gems", "1200 gems", 1200),
             new Product("gems_mega", Type.CONSUMABLE, "Vault of Gems", "3000 gems", 3000),
             new Product("remove_ads", Type.NON_CONSUMABLE, "Remove Ads", "No interstitial or banner ads, forever", 0),
+            new Product("starter_pack", Type.NON_CONSUMABLE, "Starter Pack", "80 gems + no ads forever (one-time offer)", 80),
             new Product("vip_monthly", Type.SUBSCRIPTION, "VIP Pass",
                     "No ads, unlimited hearts, 2× coins and 3 free hints every day", 0));
 

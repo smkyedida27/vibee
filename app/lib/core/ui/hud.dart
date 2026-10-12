@@ -136,7 +136,7 @@ class TopHud extends StatelessWidget {
                 const SizedBox(width: 6),
                 CurrencyPill(art: ArtKind.coin, text: _short(d.coins), onPlus: onCoins),
                 const SizedBox(width: 6),
-                CurrencyPill(art: ArtKind.gem, text: _short(d.gems), onPlus: onGems),
+                CurrencyPill(art: ArtKind.gem, text: _short(d.totalGems), onPlus: onGems),
               ]),
             ),
           ),

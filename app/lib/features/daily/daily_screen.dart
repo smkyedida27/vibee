@@ -23,9 +23,10 @@ class DailyScreen extends StatefulWidget {
 class _DailyScreenState extends State<DailyScreen> {
   late Future<DailySet> _set;
 
+  // Fetched once per visit (and on pull-to-refresh) — not on every player change.
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
     _set = context.services.content.daily();
   }
 

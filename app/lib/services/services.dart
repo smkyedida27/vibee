@@ -41,13 +41,20 @@ class AppServices {
       player,
       client,
       content,
-      ads ?? AdsService.create(),
+      CappedAdsService(ads ?? AdsService.create(), player),
       PurchaseService(client, player, analytics),
       analytics,
       SyncService(client, player),
     );
     _applySettings(player);
     player.addListener(() => _applySettings(player));
+    // A fresh guest account (first launch, or an unrecoverable session) gets the local
+    // progress, profile and any Play purchases re-attached.
+    client.onNewAccount = () {
+      unawaited(s.sync.push());
+      unawaited(s.purchases.resyncOwned().catchError((Object e) => debugPrint('iap resync: $e')));
+      if (player.data.onboarded) unawaited(s.pushProfile());
+    };
     return s;
   }
 
@@ -57,13 +64,36 @@ class AppServices {
       ..hapticsOn = p.data.settings.haptics;
   }
 
+  /// Sends name, avatar, country and locale to the server (leaderboards, Country scope).
+  /// Fire-and-forget: the local profile is the source of truth for display.
+  Future<void> pushProfile() async {
+    final d = player.data;
+    final loc = PlatformDispatcher.instance.locale;
+    final cc = loc.countryCode;
+    final country = d.country ?? ((cc != null && RegExp(r'^[A-Z]{2}$').hasMatch(cc)) ? cc : null);
+    if (country != null && d.country == null) player.updateProfile(country: country);
+    final lang = loc.languageCode.toLowerCase();
+    try {
+      await api.updatePreferences({
+        'displayName': ?cleanDisplayName(d.displayName),
+        'avatarId': d.avatar.clamp(0, 63),
+        'country': ?country,
+        if (RegExp(r'^[a-z]{2,3}$').hasMatch(lang)) 'locale': country == null ? lang : '$lang-$country',
+      });
+    } catch (e) {
+      debugPrint('profile push skipped: $e');
+    }
+  }
+
   /// Non-blocking startup work (network, ads, billing). Failures never block play.
   void warmUp() {
     unawaited(Audio.instance.init());
     unawaited(ads.init().catchError((Object e) => debugPrint('ads init: $e')));
     unawaited(purchases.init().catchError((Object e) => debugPrint('iap init: $e')));
-    unawaited(sync.pull());
-    FirebaseSetup.setUser(api.userId);
+    unawaited(sync.pull().then((_) {
+      FirebaseSetup.setUser(api.userId);
+      if (player.data.onboarded) return pushProfile();
+    }));
     if (player.data.settings.reminders) {
       unawaited(FirebaseSetup.refreshPush(api).catchError((Object e) => debugPrint('push: $e')));
     }
@@ -93,6 +123,7 @@ class SyncService {
         removeAds: ent['removeAds'] == true,
         vipUntil: vip == null ? null : DateTime.parse(vip).millisecondsSinceEpoch,
       );
+      await refreshWallet();
     } on ApiException catch (e) {
       debugPrint('sync pull skipped: $e');
     } catch (e) {
@@ -100,7 +131,17 @@ class SyncService {
     }
   }
 
-  Future<void> push() async {
+  /// Refreshes the cached purchased-gem balance from the server wallet.
+  Future<void> refreshWallet() async {
+    try {
+      final w = await _api.wallet();
+      _player.setPaidGems((w['gems'] as num?)?.toInt() ?? 0);
+    } on ApiException catch (e) {
+      debugPrint('wallet refresh skipped: $e');
+    }
+  }
+
+  Future<void> push({int attempt = 0}) async {
     if (_busy) return;
     _busy = true;
     try {
@@ -110,12 +151,12 @@ class SyncService {
       if (e.isConflict && e.body != null) {
         // The 409 body is the server's current snapshot: {version, data, updatedAt}.
         final current = e.body!;
-        if (current['version'] != null) {
+        if (current['version'] != null && attempt < 3) {
           _serverVersion = (current['version'] as num?)?.toInt() ?? _serverVersion;
           final data = current['data'] as Map<String, dynamic>?;
           if (data != null) _merge(data);
           _busy = false;
-          return push();
+          return push(attempt: attempt + 1);
         }
       }
       debugPrint('sync push skipped: $e');
