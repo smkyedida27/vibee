@@ -1,196 +1,140 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/palette.dart';
 import '../../core/ui/candy_button.dart';
-import '../../core/ui/game_art.dart';
-import '../../core/ui/hud.dart';
+import '../../core/ui/game_cover.dart';
+import '../../core/ui/outlined_text.dart';
 import '../../core/ui/panels.dart';
 import '../../games/common/game_type.dart';
-import '../../services/content_repo.dart';
 import '../../services/services.dart';
-import '../home/home_screen.dart';
-import '../shop/shop_sheets.dart';
+import '../../state/player.dart';
 
-class DailyScreen extends StatefulWidget {
+const _flame = Color(0xFFFF7A1A);
+
+/// The one daily puzzle everyone plays today, plus the streak it keeps alive.
+class DailyScreen extends StatelessWidget {
   const DailyScreen({super.key});
-  @override
-  State<DailyScreen> createState() => _DailyScreenState();
-}
-
-class _DailyScreenState extends State<DailyScreen> {
-  late Future<DailySet> _set;
-
-  // Fetched once per visit (and on pull-to-refresh) — not on every player change.
-  @override
-  void initState() {
-    super.initState();
-    _set = context.services.content.daily();
-  }
 
   @override
   Widget build(BuildContext context) {
     final p = context.player;
-    final done = GameType.values.where(p.dailyCompleted).length;
+    final d = p.data;
+    final game = dailyFeatured();
+    final done = p.dailyCompleted(game);
+    final now = DateTime.now().toUtc();
+    final reset = DateTime.utc(now.year, now.month, now.day + 1).difference(now);
     return SafeArea(
-      child: Column(
+      bottom: false,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
         children: [
-          TopHud(onAvatar: () => context.push('/profile'), onHearts: () => showOutOfLives(context, browsing: true)),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                setState(() => _set = context.services.content.daily());
-                await _set;
-              },
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
-                children: [
-                  Text(_prettyDate().toUpperCase(), style: AppText.label(11)),
-                  const SizedBox(height: 4),
-                  Text("Today's Challenge", style: AppText.display(30)),
-                  const SizedBox(height: 16),
-                  _StreakCard(streak: p.data.streak, best: p.data.bestStreak),
-                  const SizedBox(height: 24),
-                  Text('PUZZLES', style: AppText.label(11)),
-                  const SizedBox(height: 12),
-                  FutureBuilder<DailySet>(
-                    future: _set,
-                    builder: (context, snap) {
-                      if (!snap.hasData) {
-                        return const Padding(
-                          padding: EdgeInsets.all(40),
-                          child: Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3)),
-                        );
-                      }
-                      final set = snap.data!;
-                      return Column(
+          const Center(child: OutlinedText('Daily Puzzle', size: 40, stroke: Color(0xFF172873))),
+          Center(
+            child: OutlinedText(
+              done ? 'Next puzzle in ${reset.inHours}h ${reset.inMinutes % 60}m' : 'Same puzzle for everyone today',
+              size: 16,
+              stroke: const Color(0xFF172873),
+              shadow: false,
+            ),
+          ),
+          const SizedBox(height: 62),
+          Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.topCenter,
+            children: [
+              CandyPanel(
+                rim: game.candy,
+                padding: const EdgeInsets.fromLTRB(18, 64, 18, 20),
+                child: Column(
+                  children: [
+                    Text(game.title, style: AppText.display(30)),
+                    const SizedBox(height: 4),
+                    Text(
+                      game.tagline,
+                      textAlign: TextAlign.center,
+                      style: AppText.body(15, color: AppColors.inkSoft),
+                    ),
+                    const SizedBox(height: 18),
+                    if (done) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE6F8DE),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.check_circle_rounded, color: AppColors.success),
+                            const SizedBox(width: 8),
+                            Text('Solved today!', style: AppText.display(18, color: AppColors.success)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      CandyButton(
+                        label: "Today's leaderboard",
+                        icon: Icons.emoji_events_rounded,
+                        candy: Candy.ink,
+                        height: 56,
+                        onTap: () => context.go('/leaders'),
+                      ),
+                    ] else
+                      CandyButton(
+                        label: 'Play now',
+                        icon: Icons.play_arrow_rounded,
+                        candy: Candy.green,
+                        height: 64,
+                        pulse: true,
+                        onTap: () => context.push('/play/daily/${game.name}'),
+                      ),
+                  ],
+                ),
+              ),
+              Positioned(
+                top: -40,
+                child: GameBadge(game: game, size: 96)
+                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .moveY(begin: -3, end: 3, duration: 1500.ms, curve: Curves.easeInOut),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          GlassPanel(
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.local_fire_department_rounded, color: _flame, size: 40),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (set.offline)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: GlassPanel(
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.cloud_off_rounded, color: AppColors.inkSoft),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        'Offline mode — your streak still counts, but offline scores aren\'t ranked. Go online to compete on the leaderboard.',
-                                        style: AppText.body(13, color: AppColors.inkSoft),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          for (final g in GameType.values)
-                            if (set.puzzles[g] != null)
-                              _DailyRow(game: g, puzzle: set.puzzles[g]!, done: p.dailyCompleted(g)),
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  CandyPanel(
-                    rim: Candy.gold,
-                    accent: true,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(color: Candy.gold.light, borderRadius: BorderRadius.circular(14)),
-                          child: const GameArt(ArtKind.chest, size: 36),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Complete all 5', style: AppText.display(17)),
-                              const SizedBox(height: 2),
-                              Text('Earn a +300 coin bonus chest', style: AppText.body(13, color: AppColors.inkSoft)),
-                              const SizedBox(height: 10),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(999),
-                                child: LinearProgressIndicator(
-                                  value: done / 5,
-                                  minHeight: 8,
-                                  backgroundColor: AppColors.divider,
-                                  color: AppColors.success,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            d.streak == 0 ? 'Start your streak' : '${d.streak}-day streak',
+                            style: AppText.display(22),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Text('$done/5', style: AppText.display(22, color: AppColors.primary)),
+                          Text(
+                            'Solve the daily puzzle every day to grow it',
+                            style: AppText.body(13, color: AppColors.inkSoft),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      children: [
+                        Text('BEST', style: AppText.label(10)),
+                        Text('${d.bestStreak}', style: AppText.display(22)),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _prettyDate() {
-    final d = DateTime.now().toUtc();
-    const m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${m[d.month - 1]} ${d.day}, ${d.year} · Resets 00:00 UTC';
-  }
-}
-
-class _StreakCard extends StatelessWidget {
-  const _StreakCard({required this.streak, required this.best});
-  final int streak;
-  final int best;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: AppColors.primary,
-        boxShadow: AppColors.cardShadow,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.16),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0.85, end: 1),
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeOutBack,
-              builder: (_, s, child) => Transform.scale(scale: s, child: child),
-              child: const Icon(Icons.local_fire_department_rounded, color: Color(0xFFFFC94D), size: 34),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('STREAK', style: AppText.label(11, color: Colors.white.withValues(alpha: 0.72))),
-                const SizedBox(height: 2),
-                Text('$streak day${streak == 1 ? '' : 's'}', style: AppText.display(26, color: Colors.white)),
-                const SizedBox(height: 2),
-                Text(
-                  streak == 0 ? 'Solve any daily puzzle to start one' : 'Best: $best days · keep it alive',
-                  style: AppText.body(13, color: Colors.white.withValues(alpha: 0.8)),
+                  ],
                 ),
+                const SizedBox(height: 12),
+                _Week(data: d),
               ],
             ),
           ),
@@ -200,62 +144,46 @@ class _StreakCard extends StatelessWidget {
   }
 }
 
-class _DailyRow extends StatelessWidget {
-  const _DailyRow({required this.game, required this.puzzle, required this.done});
-  final GameType game;
-  final DailyPuzzle puzzle;
-  final bool done;
+class _Week extends StatelessWidget {
+  const _Week({required this.data});
+  final PlayerData data;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: GlassPanel(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            GameBadge(game: game, size: 48),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(game.title, style: AppText.display(16)),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${puzzle.difficulty.label} · ${game.tagline}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppText.body(13, color: AppColors.inkSoft),
-                  ),
-                ],
+    final playedToday = data.lastStreakDate == utcDate();
+    final now = DateTime.now();
+    final covered = <int>{};
+    if (data.streak > 0 && data.lastStreakDate != null) {
+      final endOffset = playedToday ? 0 : 1;
+      for (var i = 0; i < data.streak && i + endOffset < 7; i++) {
+        covered.add(i + endOffset);
+      }
+    }
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        for (var back = 6; back >= 0; back--)
+          Column(
+            children: [
+              Text(
+                'MTWTFSS'[now.subtract(Duration(days: back)).weekday - 1],
+                style: AppText.body(12, color: back == 0 ? AppColors.ink : AppColors.inkFaint, weight: FontWeight.w700),
               ),
-            ),
-            const SizedBox(width: 8),
-            done
-                ? Container(
-                    height: 40,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(color: Candy.green.light, borderRadius: BorderRadius.circular(999)),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.check_rounded, color: AppColors.success, size: 18),
-                        const SizedBox(width: 4),
-                        Text('Done', style: AppText.display(14, color: AppColors.success)),
-                      ],
-                    ),
-                  )
-                : CandyButton(
-                    label: 'Play',
-                    candy: game.candy,
-                    height: 44,
-                    width: 88,
-                    onTap: () => context.push('/play/daily/${game.name}'),
-                  ),
-          ],
-        ),
-      ),
+              const SizedBox(height: 4),
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: covered.contains(back) ? Candy.orange.face : null,
+                  color: covered.contains(back) ? null : const Color(0xFFF0E1C2),
+                  border: back == 0 && !covered.contains(back) ? Border.all(color: _flame, width: 2.5) : null,
+                ),
+                child: covered.contains(back) ? const Icon(Icons.check_rounded, color: Colors.white, size: 20) : null,
+              ),
+            ],
+          ),
+      ],
     );
   }
 }

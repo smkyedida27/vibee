@@ -53,6 +53,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: CandyBackground(
+        density: 0,
         child: SafeArea(
           child: Column(
             children: [

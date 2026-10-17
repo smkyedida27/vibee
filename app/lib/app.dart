@@ -154,9 +154,9 @@ GoRouter buildRouter(AppServices s) {
             st,
             GameLauncher(
               resolve: (svc) async {
-                // Quick play scales with the player's journey progress.
-                final lvl = svc.player.data.currentLevel;
-                final diff = Difficulty.values[(lvl ~/ 40).clamp(0, 3)];
+                // The player picks the difficulty (`?d=medium`); Easy if none given.
+                final d = st.uri.queryParameters['d'];
+                final diff = Difficulty.values.firstWhere((x) => x.name == d, orElse: () => Difficulty.easy);
                 return PlayRequest(
                   game: g,
                   difficulty: diff,
@@ -212,14 +212,12 @@ class MainShell extends StatelessWidget {
   static const _tabs = [
     ('/', Icons.home_rounded, 'Home'),
     ('/daily', Icons.calendar_month_rounded, 'Daily'),
-    ('/journey', Icons.play_arrow_rounded, 'Play'),
     ('/leaders', Icons.emoji_events_rounded, 'Ranks'),
     ('/shop', Icons.storefront_rounded, 'Shop'),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final isMap = location == '/journey';
     return Scaffold(
       extendBody: true,
       body: CandyBackground(child: child),
@@ -245,9 +243,7 @@ class MainShell extends StatelessWidget {
             children: [
               for (final t in _tabs)
                 Expanded(
-                  child: t.$1 == '/journey'
-                      ? _PlayTab(selected: isMap)
-                      : _Tab(icon: t.$2, label: t.$3, selected: location == t.$1, path: t.$1),
+                  child: _Tab(icon: t.$2, label: t.$3, selected: location == t.$1, path: t.$1),
                 ),
             ],
           ),
@@ -290,48 +286,6 @@ class _Tab extends StatelessWidget {
             style: AppText.body(11, color: selected ? Colors.white : Colors.white70, weight: FontWeight.w700),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _PlayTab extends StatelessWidget {
-  const _PlayTab({required this.selected});
-  final bool selected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Pressable(
-      onTap: () => context.go('/journey'),
-      sound: Sfx.pop,
-      semanticLabel: 'Journey',
-      child: OverflowBox(
-        maxHeight: 110,
-        child: Transform.translate(
-          offset: const Offset(0, -18),
-          child: Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                center: const Alignment(-0.3, -0.5),
-                colors: [Candy.green.light, Candy.green.base, Candy.green.dark],
-              ),
-              border: Border.all(color: Colors.white, width: 4),
-              boxShadow: [
-                BoxShadow(color: Candy.green.dark, offset: const Offset(0, 5)),
-                BoxShadow(color: Candy.green.base.withValues(alpha: selected ? 0.8 : 0.35), blurRadius: 18),
-              ],
-            ),
-            child: const Icon(
-              Icons.play_arrow_rounded,
-              color: Colors.white,
-              size: 48,
-              shadows: [Shadow(color: Color(0xFF16810C), offset: Offset(0, 2))],
-            ),
-          ),
-        ),
       ),
     );
   }

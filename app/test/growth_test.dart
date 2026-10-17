@@ -82,4 +82,18 @@ void main() {
       expect(xp >= PlayerData.xpForLevel(level) && xp < PlayerData.xpForLevel(level + 1), isTrue);
     }
   });
+
+  test('daily featured puzzle rotates through every game without back-to-back repeats', () {
+    final start = DateTime.utc(2026, 1, 1, 12);
+    final seen = <GameType>{};
+    GameType? prev;
+    for (var i = 0; i < 60; i++) {
+      final g = dailyFeatured(start.add(Duration(days: i)));
+      expect(g, isNot(prev), reason: 'day $i repeats');
+      prev = g;
+      seen.add(g);
+    }
+    expect(seen, GameType.values.toSet());
+    expect(dailyFeatured(DateTime.utc(2026, 10, 17, 1)), dailyFeatured(DateTime.utc(2026, 10, 17, 23)));
+  });
 }

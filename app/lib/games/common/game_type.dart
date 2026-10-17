@@ -78,3 +78,14 @@ extension DifficultyX on Difficulty {
     Difficulty.expert => Candy.red,
   };
 }
+
+/// Today's featured daily puzzle — one game per UTC day, the same for every player.
+/// Days walk through a shuffled cycle so the same game never repeats two days running.
+GameType dailyFeatured([DateTime? now]) {
+  final d = (now ?? DateTime.now()).toUtc();
+  final day = DateTime.utc(d.year, d.month, d.day).difference(DateTime.utc(2026, 1, 1)).inDays;
+  const order = [GameType.connect, GameType.sudoku, GameType.queens, GameType.merge, GameType.ladder];
+  final cycle = day ~/ order.length;
+  final shift = (cycle * 2) % order.length; // vary the order between cycles
+  return order[(day + shift) % order.length];
+}
