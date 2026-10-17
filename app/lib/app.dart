@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'core/audio/sfx.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/palette.dart';
+import 'core/ui/candy_background.dart';
 import 'core/ui/phone_frame.dart';
 import 'core/ui/pressable.dart';
 import 'features/daily/daily_screen.dart';
@@ -201,7 +202,8 @@ CustomTransitionPage<void> _tabPage(GoRouterState st, Widget child) => CustomTra
   ),
 );
 
-/// Bottom-tab shell: a clean white tab bar with a raised primary "Play" button.
+/// Bottom-tab shell: the animated world behind every tab and a glossy royal-navy tab bar
+/// with a raised green "Play" jewel.
 class MainShell extends StatelessWidget {
   const MainShell({super.key, required this.location, required this.child});
   final String location;
@@ -209,37 +211,45 @@ class MainShell extends StatelessWidget {
 
   static const _tabs = [
     ('/', Icons.home_rounded, 'Home'),
-    ('/daily', Icons.calendar_today_rounded, 'Daily'),
+    ('/daily', Icons.calendar_month_rounded, 'Daily'),
     ('/journey', Icons.play_arrow_rounded, 'Play'),
-    ('/leaders', Icons.leaderboard_rounded, 'Ranks'),
-    ('/shop', Icons.shopping_bag_rounded, 'Shop'),
+    ('/leaders', Icons.emoji_events_rounded, 'Ranks'),
+    ('/shop', Icons.storefront_rounded, 'Shop'),
   ];
 
   @override
   Widget build(BuildContext context) {
     final isMap = location == '/journey';
     return Scaffold(
-      backgroundColor: AppColors.bg,
-      body: child,
-      bottomNavigationBar: DecoratedBox(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: AppColors.border)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: SizedBox(
-            height: 64,
-            child: Row(
-              children: [
-                for (final t in _tabs)
-                  Expanded(
-                    child: t.$1 == '/journey'
-                        ? _PlayTab(selected: isMap)
-                        : _Tab(icon: t.$2, label: t.$3, selected: location == t.$1, path: t.$1),
-                  ),
-              ],
+      extendBody: true,
+      body: CandyBackground(child: child),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Container(
+          height: 76,
+          margin: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF4A6BDB), Color(0xFF2E4BB8), Color(0xFF223C9E)],
             ),
+            border: Border.all(color: Colors.white, width: 3),
+            boxShadow: const [
+              BoxShadow(color: Color(0xFF172873), offset: Offset(0, 5)),
+              BoxShadow(color: Color(0x66172873), blurRadius: 18, offset: Offset(0, 10)),
+            ],
+          ),
+          child: Row(
+            children: [
+              for (final t in _tabs)
+                Expanded(
+                  child: t.$1 == '/journey'
+                      ? _PlayTab(selected: isMap)
+                      : _Tab(icon: t.$2, label: t.$3, selected: location == t.$1, path: t.$1),
+                ),
+            ],
           ),
         ),
       ),
@@ -256,7 +266,6 @@ class _Tab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.primary : AppColors.inkFaint;
     return Pressable(
       onTap: () => context.go(path),
       sound: Sfx.tap,
@@ -264,20 +273,21 @@ class _Tab extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
-            decoration: BoxDecoration(
-              color: selected ? Candy.gold.light : Colors.transparent,
-              borderRadius: BorderRadius.circular(14),
+          AnimatedScale(
+            scale: selected ? 1.2 : 1,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.elasticOut,
+            child: Icon(
+              icon,
+              color: selected ? AppColors.gold : Colors.white70,
+              size: 28,
+              shadows: selected ? const [Shadow(color: Color(0xFFC77800), offset: Offset(0, 2))] : null,
             ),
-            child: Icon(icon, color: color, size: 23),
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 2),
           Text(
             label,
-            style: AppText.body(11, color: color, weight: selected ? FontWeight.w700 : FontWeight.w600),
+            style: AppText.body(11, color: selected ? Colors.white : Colors.white70, weight: FontWeight.w700),
           ),
         ],
       ),
@@ -295,23 +305,32 @@ class _PlayTab extends StatelessWidget {
       onTap: () => context.go('/journey'),
       sound: Sfx.pop,
       semanticLabel: 'Journey',
-      child: Center(
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: selected ? 0.45 : 0.28),
-                blurRadius: selected ? 16 : 10,
-                offset: const Offset(0, 4),
+      child: OverflowBox(
+        maxHeight: 110,
+        child: Transform.translate(
+          offset: const Offset(0, -18),
+          child: Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                center: const Alignment(-0.3, -0.5),
+                colors: [Candy.green.light, Candy.green.base, Candy.green.dark],
               ),
-            ],
+              border: Border.all(color: Colors.white, width: 4),
+              boxShadow: [
+                BoxShadow(color: Candy.green.dark, offset: const Offset(0, 5)),
+                BoxShadow(color: Candy.green.base.withValues(alpha: selected ? 0.8 : 0.35), blurRadius: 18),
+              ],
+            ),
+            child: const Icon(
+              Icons.play_arrow_rounded,
+              color: Colors.white,
+              size: 48,
+              shadows: [Shadow(color: Color(0xFF16810C), offset: Offset(0, 2))],
+            ),
           ),
-          child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 32),
         ),
       ),
     );

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/palette.dart';
+import '../../core/ui/candy_background.dart';
+import '../../core/ui/outlined_text.dart';
 
 /// Opening screen: the Quintile mark (a serif Q whose tail is a puzzle piece) settles in,
 /// then the masthead and today's dateline. Self-contained: runs before app services exist.
@@ -18,12 +20,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1300))
     ..forward();
 
-  static const _days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
-  static const _months = [
-    'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', //
-    'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER',
-  ];
-
   @override
   void dispose() {
     _c.dispose();
@@ -36,9 +32,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) _c.value = 1;
-    final now = DateTime.now();
-    return ColoredBox(
-      color: AppColors.bg,
+    return CandyBackground(
       child: AnimatedBuilder(
         animation: _c,
         builder: (context, _) => Center(
@@ -46,34 +40,60 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             mainAxisSize: MainAxisSize.min,
             children: [
               Transform.scale(
-                scale: 0.85 + 0.15 * _t(0, 0.4, Curves.easeOutBack),
+                scale: _t(0, 0.45, Curves.elasticOut),
+                child: Container(
+                  width: 128,
+                  height: 128,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(34),
+                    border: Border.all(color: Colors.white, width: 5),
+                    boxShadow: const [
+                      BoxShadow(color: Color(0xFF172873), offset: Offset(0, 7)),
+                      BoxShadow(color: Color(0x66172873), blurRadius: 24, offset: Offset(0, 12)),
+                    ],
+                  ),
+                  child: CustomPaint(painter: QuintileMark(_c.value)),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Transform.translate(
+                offset: Offset(0, 20 * (1 - _t(0.3, 0.7, Curves.easeOutBack))),
                 child: Opacity(
-                  opacity: _t(0, 0.25),
-                  child: SizedBox.square(dimension: 104, child: CustomPaint(painter: QuintileMark(_c.value))),
+                  opacity: _t(0.3, 0.6),
+                  child: const OutlinedText('Quintile', size: 58, stroke: Color(0xFF172873)),
                 ),
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 4),
               Opacity(
-                opacity: _t(0.35, 0.7),
-                child: Transform.translate(
-                  offset: Offset(0, 10 * (1 - _t(0.35, 0.75))),
-                  child: Text('Quintile', style: AppText.display(46)),
+                opacity: _t(0.5, 0.8),
+                child: const OutlinedText(
+                  'Five puzzles · one daily streak',
+                  size: 18,
+                  stroke: Color(0xFF172873),
+                  shadow: false,
                 ),
               ),
-              const SizedBox(height: 14),
-              Container(width: 120 * _t(0.5, 0.85), height: 1, color: AppColors.ink),
-              const SizedBox(height: 14),
+              const SizedBox(height: 28),
               Opacity(
-                opacity: _t(0.6, 0.95),
-                child: Column(
-                  children: [
-                    Text(
-                      '${_days[now.weekday - 1]}, ${_months[now.month - 1]} ${now.day}',
-                      style: AppText.label(12, color: AppColors.ink),
+                opacity: _t(0.6, 0.9),
+                child: Container(
+                  width: 200,
+                  height: 22,
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xCC172873),
+                    borderRadius: BorderRadius.circular(11),
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: FractionallySizedBox(
+                      widthFactor: 0.15 + 0.85 * _t(0.55, 1),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(gradient: Candy.green.face, borderRadius: BorderRadius.circular(8)),
+                      ),
                     ),
-                    const SizedBox(height: 6),
-                    Text('Five puzzles. One daily ritual.', style: AppText.body(14, color: AppColors.inkSoft)),
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -104,7 +124,7 @@ class QuintileMark extends CustomPainter {
           fontFamily: AppFonts.display,
           fontSize: u * 0.68,
           height: 1,
-          color: AppColors.bg,
+          color: Colors.white,
           fontVariations: const [FontVariation('wght', 900), FontVariation('SOFT', 100), FontVariation('opsz', 144)],
         ),
       ),

@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/audio/sfx.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/palette.dart';
+import '../../core/ui/candy_background.dart';
 import '../../core/ui/candy_button.dart';
 import '../../core/ui/dialogs.dart';
 import '../../core/ui/game_art.dart';
@@ -37,7 +38,7 @@ Future<ResultAction?> showResults(
     context: context,
     barrierDismissible: false,
     barrierLabel: 'Results',
-    barrierColor: AppColors.bg,
+    barrierColor: const Color(0xFF3A9CFF),
     transitionDuration: const Duration(milliseconds: 380),
     pageBuilder: (ctx, _, _) => _ResultsBody(
       request: request,
@@ -183,233 +184,235 @@ class _ResultsBodyState extends State<_ResultsBody> with TickerProviderStateMixi
       PlaySource.quick => ('Continue', ResultAction.home),
     };
     return Material(
-      color: AppColors.bg,
-      child: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-          children: [
-            Row(
-              children: [
-                Text(_kicker, style: AppText.label(11)),
-                const Spacer(),
-                IconButton(
-                  tooltip: 'Home',
-                  onPressed: () => Navigator.pop(context, ResultAction.home),
-                  icon: const Icon(Icons.close_rounded, color: AppColors.ink),
-                ),
-              ],
-            ),
-            // Hero: the game's colour block with its artwork, the headline and stars.
-            Container(
-              height: 236,
-              decoration: BoxDecoration(color: c.base, borderRadius: BorderRadius.circular(24)),
-              clipBehavior: Clip.antiAlias,
-              child: Stack(
+      type: MaterialType.transparency,
+      child: CandyBackground(
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+            children: [
+              Row(
                 children: [
-                  Positioned.fill(child: GameArtwork(game: r.game, radius: 0, corner: true, compact: true)),
-                  Padding(
-                    padding: const EdgeInsets.all(22),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Spacer(),
-                        Text(_headline, style: AppText.display(42, color: c.on))
-                            .animate()
-                            .fadeIn(duration: 300.ms)
-                            .scaleXY(begin: 0.9, end: 1, curve: Curves.easeOutBack, duration: 450.ms),
-                        if (widget.result.detail != null)
-                          Text(
-                            widget.result.detail!,
-                            style: AppText.body(15, color: c.on.withValues(alpha: 0.85), weight: FontWeight.w600),
-                          ),
-                        const SizedBox(height: 14),
-                        AnimatedBuilder(
-                          animation: _stars,
-                          builder: (_, _) => Row(children: [for (var i = 0; i < 3; i++) _star(i)]),
-                        ),
-                      ],
-                    ),
+                  Text(_kicker, style: AppText.label(11)),
+                  const Spacer(),
+                  IconButton(
+                    tooltip: 'Home',
+                    onPressed: () => Navigator.pop(context, ResultAction.home),
+                    icon: const Icon(Icons.close_rounded, color: AppColors.ink),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
-            ...[
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _Stat(icon: Icons.timer_outlined, label: 'Time', value: _fmt(widget.elapsed)),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _Stat(
-                          icon: Icons.lightbulb_outline_rounded,
-                          label: 'Hints',
-                          value: '${widget.hintsUsed}',
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: AnimatedBuilder(
-                          animation: _count,
-                          builder: (_, _) => _Stat(
-                            art: ArtKind.coin,
-                            label: 'Coins',
-                            value: _coins == 0
-                                ? '—'
-                                : '+${(_coins * (_doubled ? 2 : 1) * Curves.easeOut.transform(_count.value)).round()}',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (widget.xpGained > 0) ...[const SizedBox(height: 12), _XpRow(gained: widget.xpGained)],
-                  if (widget.dailySubmit != null) ...[
-                    const SizedBox(height: 12),
-                    FutureBuilder<Map<String, dynamic>?>(
-                      future: widget.dailySubmit,
-                      builder: (context, snap) {
-                        if (snap.connectionState != ConnectionState.done) {
-                          return Text(
-                            'Submitting your score…',
-                            textAlign: TextAlign.center,
-                            style: AppText.body(14, color: AppColors.inkSoft),
-                          );
-                        }
-                        final sd = snap.data;
-                        final ranked = sd != null && (sd['result'] == 'SOLVED' || sd['rank'] != null);
-                        if (!ranked) {
-                          final String msg;
-                          if (sd == null) {
-                            msg = "Couldn't reach the leaderboard — your streak is saved on this device.";
-                          } else if (sd['counted'] == false) {
-                            msg = 'Only your first attempt is ranked — nice practice run!';
-                          } else if (sd['result'] == 'FAILED') {
-                            // Only a continue past the mistake limit turns a solved board into FAILED.
-                            msg = 'Solved with a continue — not ranked today, but your streak counts!';
-                          } else {
-                            msg = "This run couldn't be verified for the leaderboard, but your streak counts!";
-                          }
-                          return Text(
-                            msg,
-                            textAlign: TextAlign.center,
-                            style: AppText.body(14, color: AppColors.inkSoft),
-                          );
-                        }
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppColors.border),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("TODAY'S SCORE", style: AppText.label(10)),
-                                    Text('${sd['score']}', style: AppText.display(26)),
-                                  ],
-                                ),
-                              ),
-                              if (sd['rank'] != null)
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text('RANK', style: AppText.label(10)),
-                                    Text('#${sd['rank']}', style: AppText.display(26, color: c.dark)),
-                                  ],
-                                ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                  if (r.source == PlaySource.daily && d.streak > 0) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFBE6DF),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
+              // Hero: the game's colour block with its artwork, the headline and stars.
+              Container(
+                height: 236,
+                decoration: BoxDecoration(color: c.base, borderRadius: BorderRadius.circular(24)),
+                clipBehavior: Clip.antiAlias,
+                child: Stack(
+                  children: [
+                    Positioned.fill(child: GameArtwork(game: r.game, radius: 0, corner: true, compact: true)),
+                    Padding(
+                      padding: const EdgeInsets.all(22),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.local_fire_department_rounded, color: Color(0xFFE4572E), size: 30)
-                              .animate(onPlay: (ctl) => ctl.repeat(reverse: true))
-                              .scaleXY(begin: 0.92, end: 1.08, duration: 700.ms, curve: Curves.easeInOut),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              '${d.streak}-day streak! Come back tomorrow to make it ${d.streak + 1}.',
-                              style: AppText.body(14, weight: FontWeight.w700),
+                          const Spacer(),
+                          Text(_headline, style: AppText.display(42, color: c.on))
+                              .animate()
+                              .fadeIn(duration: 300.ms)
+                              .scaleXY(begin: 0.9, end: 1, curve: Curves.easeOutBack, duration: 450.ms),
+                          if (widget.result.detail != null)
+                            Text(
+                              widget.result.detail!,
+                              style: AppText.body(15, color: c.on.withValues(alpha: 0.85), weight: FontWeight.w600),
                             ),
+                          const SizedBox(height: 14),
+                          AnimatedBuilder(
+                            animation: _stars,
+                            builder: (_, _) => Row(children: [for (var i = 0; i < 3; i++) _star(i)]),
                           ),
                         ],
                       ),
                     ),
                   ],
-                  const SizedBox(height: 20),
-                  CandyButton(
-                    label: primary.$1,
-                    candy: Candy.ink,
-                    depth: 0,
-                    height: 56,
-                    onTap: () => Navigator.pop(context, primary.$2),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CandyButton(
-                          label: r.source == PlaySource.daily ? 'Share result' : 'Share',
-                          icon: Icons.ios_share_rounded,
-                          candy: Candy.white,
-                          depth: 0,
-                          height: 52,
-                          onTap: () => _share(context),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _Stat(icon: Icons.timer_outlined, label: 'Time', value: _fmt(widget.elapsed)),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      CandyIconButton(
-                        icon: Icons.replay_rounded,
-                        candy: Candy.ink,
-                        size: 52,
-                        semanticLabel: 'Replay',
-                        onTap: () => Navigator.pop(context, ResultAction.retry),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _Stat(
+                            icon: Icons.lightbulb_outline_rounded,
+                            label: 'Hints',
+                            value: '${widget.hintsUsed}',
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: AnimatedBuilder(
+                            animation: _count,
+                            builder: (_, _) => _Stat(
+                              art: ArtKind.coin,
+                              label: 'Coins',
+                              value: _coins == 0
+                                  ? '—'
+                                  : '+${(_coins * (_doubled ? 2 : 1) * Curves.easeOut.transform(_count.value)).round()}',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (widget.xpGained > 0) ...[const SizedBox(height: 12), _XpRow(gained: widget.xpGained)],
+                    if (widget.dailySubmit != null) ...[
+                      const SizedBox(height: 12),
+                      FutureBuilder<Map<String, dynamic>?>(
+                        future: widget.dailySubmit,
+                        builder: (context, snap) {
+                          if (snap.connectionState != ConnectionState.done) {
+                            return Text(
+                              'Submitting your score…',
+                              textAlign: TextAlign.center,
+                              style: AppText.body(14, color: AppColors.inkSoft),
+                            );
+                          }
+                          final sd = snap.data;
+                          final ranked = sd != null && (sd['result'] == 'SOLVED' || sd['rank'] != null);
+                          if (!ranked) {
+                            final String msg;
+                            if (sd == null) {
+                              msg = "Couldn't reach the leaderboard — your streak is saved on this device.";
+                            } else if (sd['counted'] == false) {
+                              msg = 'Only your first attempt is ranked — nice practice run!';
+                            } else if (sd['result'] == 'FAILED') {
+                              // Only a continue past the mistake limit turns a solved board into FAILED.
+                              msg = 'Solved with a continue — not ranked today, but your streak counts!';
+                            } else {
+                              msg = "This run couldn't be verified for the leaderboard, but your streak counts!";
+                            }
+                            return Text(
+                              msg,
+                              textAlign: TextAlign.center,
+                              style: AppText.body(14, color: AppColors.inkSoft),
+                            );
+                          }
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text("TODAY'S SCORE", style: AppText.label(10)),
+                                      Text('${sd['score']}', style: AppText.display(26)),
+                                    ],
+                                  ),
+                                ),
+                                if (sd['rank'] != null)
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text('RANK', style: AppText.label(10)),
+                                      Text('#${sd['rank']}', style: AppText.display(26, color: c.dark)),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                     ],
-                  ),
-                  if (!_doubled && r.source == PlaySource.level && _coins > 0) ...[
-                    const SizedBox(height: 10),
+                    if (r.source == PlaySource.daily && d.streak > 0) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFBE6DF),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.local_fire_department_rounded, color: Color(0xFFE4572E), size: 30)
+                                .animate(onPlay: (ctl) => ctl.repeat(reverse: true))
+                                .scaleXY(begin: 0.92, end: 1.08, duration: 700.ms, curve: Curves.easeInOut),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                '${d.streak}-day streak! Come back tomorrow to make it ${d.streak + 1}.',
+                                style: AppText.body(14, weight: FontWeight.w700),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 20),
                     CandyButton(
-                      label: 'Watch an ad to double your coins',
-                      icon: Icons.play_circle_outline_rounded,
-                      candy: Candy.gold,
+                      label: primary.$1,
+                      candy: Candy.ink,
                       depth: 0,
-                      height: 50,
-                      onTap: () async {
-                        final s = context.services;
-                        final ok = await s.ads.showRewarded('double_coins');
-                        if (ok && mounted) {
-                          s.player.addCoins(_coins);
-                          setState(() => _doubled = true);
-                          _count.forward(from: 0);
-                          Audio.instance.play(Sfx.coin);
-                        } else if (context.mounted) {
-                          toast(context, 'No ad available right now');
-                        }
-                      },
+                      height: 56,
+                      onTap: () => Navigator.pop(context, primary.$2),
                     ),
-                  ],
-                ]
-                .animate(interval: 60.ms, delay: 250.ms)
-                .fadeIn(duration: 320.ms)
-                .slideY(begin: 0.12, end: 0, curve: Curves.easeOutCubic),
-          ],
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CandyButton(
+                            label: r.source == PlaySource.daily ? 'Share result' : 'Share',
+                            icon: Icons.ios_share_rounded,
+                            candy: Candy.white,
+                            depth: 0,
+                            height: 52,
+                            onTap: () => _share(context),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        CandyIconButton(
+                          icon: Icons.replay_rounded,
+                          candy: Candy.ink,
+                          size: 52,
+                          semanticLabel: 'Replay',
+                          onTap: () => Navigator.pop(context, ResultAction.retry),
+                        ),
+                      ],
+                    ),
+                    if (!_doubled && r.source == PlaySource.level && _coins > 0) ...[
+                      const SizedBox(height: 10),
+                      CandyButton(
+                        label: 'Watch an ad to double your coins',
+                        icon: Icons.play_circle_outline_rounded,
+                        candy: Candy.gold,
+                        depth: 0,
+                        height: 50,
+                        onTap: () async {
+                          final s = context.services;
+                          final ok = await s.ads.showRewarded('double_coins');
+                          if (ok && mounted) {
+                            s.player.addCoins(_coins);
+                            setState(() => _doubled = true);
+                            _count.forward(from: 0);
+                            Audio.instance.play(Sfx.coin);
+                          } else if (context.mounted) {
+                            toast(context, 'No ad available right now');
+                          }
+                        },
+                      ),
+                    ],
+                  ]
+                  .animate(interval: 60.ms, delay: 250.ms)
+                  .fadeIn(duration: 320.ms)
+                  .slideY(begin: 0.12, end: 0, curve: Curves.easeOutCubic),
+            ],
+          ),
         ),
       ),
     );

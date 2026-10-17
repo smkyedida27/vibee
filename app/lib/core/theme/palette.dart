@@ -1,77 +1,81 @@
 import 'package:flutter/material.dart';
 
-/// Accent colours. Flat and confident: [base] is the fill, [dark] the pressed/edge
-/// shade, [light] a soft tint for backgrounds behind the accent.
-///
-/// (The name is historical; the look is flat, not glossy.)
+/// Glossy candy accents (Royal Match / Candy Crush style): [light] is the specular top,
+/// [base] the body, [dark] the 3D lip and outline.
 class Candy {
   const Candy(this.light, this.base, this.dark);
   final Color light;
   final Color base;
   final Color dark;
 
-  /// Solid fill kept as a gradient so existing decorations keep working.
-  LinearGradient get face => LinearGradient(colors: [base, base]);
+  /// Jelly face: bright top into the body colour.
+  LinearGradient get face =>
+      LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [light, base]);
 
   /// Text/icon colour that reads on [base].
-  Color get on => (this == white || this == grey || this == gold) ? AppColors.ink : const Color(0xFFFFFDF8);
+  Color get on => (this == white || this == grey) ? AppColors.ink : Colors.white;
 
-  static const pink = Candy(Color(0xFFFBE7EC), Color(0xFFD9577E), Color(0xFFB03F62));
-  static const gold = Candy(Color(0xFFFBF0D6), Color(0xFFE9B23D), Color(0xFFC08E22)); // mustard
-  static const blue = Candy(Color(0xFFE4EAFA), Color(0xFF2D5BD3), Color(0xFF1F44A6)); // cobalt
-  static const purple = Candy(Color(0xFFF0E8F5), Color(0xFF8E5BA8), Color(0xFF6E4285)); // plum
-  static const green = Candy(Color(0xFFE5EFE6), Color(0xFF5E9468), Color(0xFF467350)); // sage
-  static const orange = Candy(Color(0xFFFBE6DF), Color(0xFFE4572E), Color(0xFFB8401C)); // tomato
-  static const teal = Candy(Color(0xFFDFEFEE), Color(0xFF2E8C88), Color(0xFF206866));
-  static const red = Candy(Color(0xFFFBE3E1), Color(0xFFD6423A), Color(0xFFAA2E27));
-  static const grey = Candy(Color(0xFFEFEBE2), Color(0xFFE3DED2), Color(0xFFC9C2B3));
-  static const white = Candy(Color(0xFFFFFFFF), Color(0xFFFFFDF8), Color(0xFFE3DDCF));
+  static const pink = Candy(Color(0xFFFF9CC2), Color(0xFFFF3F8E), Color(0xFFB8125A));
+  static const gold = Candy(Color(0xFFFFE885), Color(0xFFFFC21A), Color(0xFFC77800));
+  static const blue = Candy(Color(0xFF8FDBFF), Color(0xFF2D8CFF), Color(0xFF1349B8));
+  static const purple = Candy(Color(0xFFD8B0FF), Color(0xFF9B4DFF), Color(0xFF5A1DB5));
+  static const green = Candy(Color(0xFFA6F57A), Color(0xFF3CC61E), Color(0xFF16810C));
+  static const orange = Candy(Color(0xFFFFC489), Color(0xFFFF7B1C), Color(0xFFC14A00));
+  static const teal = Candy(Color(0xFF8CFFEF), Color(0xFF16C7BF), Color(0xFF07807E));
+  static const red = Candy(Color(0xFFFF9C9C), Color(0xFFFF3B4E), Color(0xFFB0102A));
+  static const grey = Candy(Color(0xFFF2EEF8), Color(0xFFC9C1DC), Color(0xFF8C82A8));
+  static const white = Candy(Color(0xFFFFFFFF), Color(0xFFFFF6E3), Color(0xFFD9B98A));
 
-  /// Ink: the primary action colour (black pills, like a newspaper's puzzle section).
-  static const ink = Candy(Color(0xFFE8E3D8), Color(0xFF111111), Color(0xFF000000));
+  /// The royal navy used for secondary actions and the tab bar.
+  static const ink = Candy(Color(0xFF6E8BE8), Color(0xFF2E4BB8), Color(0xFF172873));
 }
 
 class AppColors {
-  // Surfaces.
-  static const bg = Color(0xFFF4F1EA); // newsprint paper
-  static const surface = Color(0xFFFFFDF8);
-  static const border = Color(0xFFE3DDCF);
-  static const divider = Color(0xFFE8E3D8);
+  // Surfaces: cream parchment panels with golden rims, over the illustrated world.
+  static const bg = Color(0xFF7FCBFF); // sky, shown where no scene is painted
+  static const surface = Color(0xFFFFF8EA);
+  static const border = Color(0xFFF1D8A6);
+  static const divider = Color(0xFFF0E1C2);
 
-  // Text.
-  static const ink = Color(0xFF111111);
-  static const inkSoft = Color(0xFF5E5A52);
-  static const inkFaint = Color(0xFF9C968A);
+  // Text: deep navy reads warmer and more "game" than black.
+  static const ink = Color(0xFF22306B);
+  static const inkSoft = Color(0xFF55608F);
+  static const inkFaint = Color(0xFF9AA0C0);
 
   // Brand.
-  static const primary = Color(0xFF111111);
+  static const primary = Color(0xFF2E4BB8);
   static const royal = primary;
-  static const sky = Color(0xFF2D5BD3);
-  static const accent = Color(0xFFE9B23D); // mustard
+  static const sky = Color(0xFF2D8CFF);
+  static const accent = Color(0xFFFFC21A);
 
-  /// Dark surfaces (snackbars, dark chips).
-  static const night = Color(0xFF111111);
-  static const deep = Color(0xFF2A2824);
+  static const night = Color(0xFF172873);
+  static const deep = Color(0xFF2E4BB8);
 
-  // Legacy surface names, now mapped onto the editorial palette.
   static const panel = surface;
   static const panelEdge = border;
 
   // Semantic.
-  static const gold = Color(0xFFE9B23D);
-  static const goldDeep = Color(0xFFC08E22);
-  static const heart = Color(0xFFD6423A);
-  static const gem = Color(0xFF2D5BD3);
-  static const success = Color(0xFF467350);
-  static const danger = Color(0xFFD6423A);
+  static const gold = Color(0xFFFFC21A);
+  static const goldDeep = Color(0xFFC77800);
+  static const heart = Color(0xFFFF3B6B);
+  static const gem = Color(0xFF39D2FF);
+  static const success = Color(0xFF3CC61E);
+  static const danger = Color(0xFFFF3B4E);
 
-  /// Soft, warm elevation for cards.
-  static const List<BoxShadow> cardShadow = [
-    BoxShadow(color: Color(0x14403A2E), blurRadius: 18, offset: Offset(0, 6)),
-    BoxShadow(color: Color(0x0D403A2E), blurRadius: 2, offset: Offset(0, 1)),
-  ];
+  static const List<BoxShadow> cardShadow = [BoxShadow(color: Color(0x40172873), blurRadius: 16, offset: Offset(0, 8))];
 
-  /// App background (kept as gradients for API compatibility; both are flat paper).
-  static const LinearGradient worldBg = LinearGradient(colors: [bg, bg]);
-  static const LinearGradient nightBg = LinearGradient(colors: [bg, bg]);
+  /// Daytime sky (top → horizon).
+  static const LinearGradient worldBg = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFF3A9CFF), Color(0xFF7FCBFF), Color(0xFFC9F0FF)],
+    stops: [0, 0.55, 1],
+  );
+
+  /// Dusk sky for game screens: calmer so boards pop.
+  static const LinearGradient nightBg = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFF2E4BB8), Color(0xFF4C7BEA), Color(0xFF8CC4FF)],
+  );
 }

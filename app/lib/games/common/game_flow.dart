@@ -6,11 +6,13 @@ import 'package:go_router/go_router.dart';
 import '../../core/audio/sfx.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/palette.dart';
+import '../../core/ui/candy_background.dart';
 import '../../core/ui/candy_button.dart';
 import '../../core/ui/celebrations.dart';
 import '../../core/ui/confetti.dart';
 import '../../core/ui/dialogs.dart';
 import '../../core/ui/game_art.dart';
+import '../../core/ui/outlined_text.dart';
 import '../../core/ui/pressable.dart';
 import '../../services/api_client.dart';
 import '../../services/content_repo.dart';
@@ -386,8 +388,9 @@ class GameScaffold extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: AppColors.bg,
-        body: ColoredBox(
-          color: AppColors.bg,
+        body: CandyBackground(
+          gradient: AppColors.nightBg,
+          density: 0,
           child: Stack(
             children: [
               SafeArea(
@@ -412,7 +415,12 @@ class GameScaffold extends StatelessWidget {
                                 FittedBox(
                                   fit: BoxFit.scaleDown,
                                   alignment: Alignment.centerLeft,
-                                  child: Text(request.title, maxLines: 1, style: AppText.display(20)),
+                                  child: OutlinedText(
+                                    request.title,
+                                    size: 24,
+                                    stroke: const Color(0xFF172873),
+                                    maxLines: 1,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Row(
@@ -444,7 +452,20 @@ class GameScaffold extends StatelessWidget {
                         ],
                       ),
                     ),
-                    if (status != null) Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 0), child: status),
+                    if (status != null)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                        // Cream bubble keeps instructions readable over the sky.
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF8EA),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: status,
+                        ),
+                      ),
                     Expanded(child: body),
                     if (toolbar != null) Padding(padding: const EdgeInsets.fromLTRB(12, 0, 12, 12), child: toolbar),
                   ],

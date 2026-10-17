@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../games/common/game_type.dart';
 import '../theme/app_theme.dart';
+import 'game_art.dart';
 
 /// Illustrated, full-colour artwork for a game: the game's colour with a scene that hints
 /// at how it plays (a Connect grid, a Crowns board, Sudoku digits, a ladder, merging tiles).
@@ -28,17 +29,108 @@ class GameArtwork extends StatelessWidget {
   }
 }
 
-/// Small square game icon built from the artwork.
+/// Glossy rounded-square game icon.
 class GameBadge extends StatelessWidget {
   const GameBadge({super.key, required this.game, this.size = 56});
   final GameType game;
   final double size;
 
   @override
-  Widget build(BuildContext context) => SizedBox.square(
-    dimension: size,
-    child: GameArtwork(game: game, radius: size * 0.28, compact: true),
-  );
+  Widget build(BuildContext context) {
+    final c = game.candy;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        gradient: c.face,
+        borderRadius: BorderRadius.circular(size * 0.28),
+        border: Border.all(color: Colors.white, width: size * 0.05),
+        boxShadow: [
+          BoxShadow(color: c.dark, offset: Offset(0, size * 0.07)),
+          BoxShadow(color: Colors.black26, blurRadius: size * 0.2),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            top: size * 0.07,
+            left: size * 0.14,
+            right: size * 0.14,
+            height: size * 0.3,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(size),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.white.withValues(alpha: 0.65), Colors.white.withValues(alpha: 0)],
+                ),
+              ),
+            ),
+          ),
+          _GameGlyph(game: game, size: size * 0.56),
+        ],
+      ),
+    );
+  }
+}
+
+/// Distinctive per-game glyphs drawn from primitives.
+class _GameGlyph extends StatelessWidget {
+  const _GameGlyph({required this.game, required this.size});
+  final GameType game;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = AppText.display(size * 0.62);
+    switch (game) {
+      case GameType.connect:
+        return SizedBox.square(
+          dimension: size,
+          child: GridView.count(
+            crossAxisCount: 2,
+            mainAxisSpacing: size * 0.08,
+            crossAxisSpacing: size * 0.08,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            children: [
+              for (final ch in ['A', 'B', 'C', 'D'])
+                Container(
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(size * 0.08)),
+                  alignment: Alignment.center,
+                  child: Text(ch, style: AppText.display(size * 0.3, color: game.candy.dark)),
+                ),
+            ],
+          ),
+        );
+      case GameType.queens:
+        return GameArt(ArtKind.crown, size: size * 1.1);
+      case GameType.sudoku:
+        return Text(
+          '9',
+          style: style.copyWith(
+            shadows: [Shadow(color: game.candy.dark, offset: const Offset(0, 2))],
+          ),
+        );
+      case GameType.ladder:
+        return Icon(
+          Icons.stairs_rounded,
+          color: Colors.white,
+          size: size,
+          shadows: [Shadow(color: game.candy.dark, offset: const Offset(0, 2))],
+        );
+      case GameType.merge:
+        return Container(
+          width: size * 0.9,
+          height: size * 0.9,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(size * 0.2)),
+          child: Text('2K', style: AppText.display(size * 0.4, color: game.candy.dark)),
+        );
+    }
+  }
 }
 
 class _CoverPainter extends CustomPainter {

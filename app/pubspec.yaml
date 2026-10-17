@@ -73,9 +73,9 @@ flutter:
     - assets/content/
     - assets/sfx/
   fonts:
-    - family: Fraunces
+    - family: LilitaOne
       fonts:
-        - asset: assets/fonts/Fraunces.ttf
-    - family: Franklin
+        - asset: assets/fonts/LilitaOne-Regular.ttf
+    - family: Fredoka
       fonts:
-        - asset: assets/fonts/LibreFranklin.ttf
+        - asset: assets/fonts/Fredoka.ttf
