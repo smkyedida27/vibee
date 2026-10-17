@@ -176,7 +176,7 @@ class _ResultsBodyState extends State<_ResultsBody> with TickerProviderStateMixi
               if (d == null || d['result'] != 'SOLVED') {
                 return Text(
                     d == null
-                        ? 'Couldn't reach the leaderboard — your streak is saved on this device.'
+                        ? "Couldn't reach the leaderboard — your streak is saved on this device."
                         : 'Solved with a continue — not ranked today, but your streak counts!',
                     textAlign: TextAlign.center,
                     style: AppText.body(14, color: AppColors.inkSoft));

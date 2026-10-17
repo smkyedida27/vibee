@@ -17,6 +17,7 @@ import '../../core/ui/pressable.dart';
 import '../../games/common/game_type.dart';
 import '../../services/api_client.dart';
 import '../../services/services.dart';
+import '../../state/player.dart';
 import '../home/home_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -46,7 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await context.services.api.removeFriend('${f['userId']}');
       _reloadFriends();
     } on ApiException catch (e) {
-      if (mounted) toast(context, e.isOffline ? 'You're offline' : e.message, icon: Icons.error_rounded);
+      if (mounted) toast(context, e.isOffline ? "You're offline" : e.message, icon: Icons.error_rounded);
     }
   }
 
