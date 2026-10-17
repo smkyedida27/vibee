@@ -39,6 +39,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
         } else if (path.startsWith("/api/v1/attempts") && "POST".equals(request.getMethod())) {
             bucket = "attempts";
             limit = limits.submitPerMinute();
+        } else if (path.startsWith("/api/v1/purchases") || path.startsWith("/api/v1/me/referral/redeem")) {
+            // Each purchase verify calls the Play API (quota); redeem is an abuse target.
+            bucket = "purchases";
+            limit = limits.submitPerMinute();
         } else if (path.startsWith("/api/v1/leaderboards")) {
             bucket = "leaderboards";
             limit = limits.leaderboardPerMinute();

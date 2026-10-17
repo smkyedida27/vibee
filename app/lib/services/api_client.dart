@@ -106,8 +106,16 @@ class ApiClient {
         c.complete(true);
       }
     } on ApiException catch (e) {
-      if (e.status == 401) await clearSession();
-      c.complete(false);
+      if (e.status == 401) {
+        // The refresh token itself was rejected: the session is unrecoverable.
+        await clearSession();
+        c.complete(false);
+      } else {
+        // Offline, timeout, 5xx or rate limited: keep the session and let the caller retry later.
+        c.completeError(e);
+      }
+    } catch (e) {
+      c.completeError(ApiException(0, 'OFFLINE', 'Could not refresh the session'));
     } finally {
       _refreshing = null;
     }
@@ -143,10 +151,9 @@ class ApiClient {
       throw ApiException(0, 'OFFLINE', 'No connection');
     }
     if (res.statusCode == 401 && auth && !retried) {
-      if (await _refreshSession()) {
-        return _send(method, path, body: body, query: query, auth: auth, idempotencyKey: idempotencyKey, retried: true);
-      }
-      await clearSession();
+      // Only a definitive 401 on refresh drops the session (and starts a new guest on retry);
+      // transient refresh failures propagate so a flaky network never orphans an account.
+      await _refreshSession();
       return _send(method, path, body: body, query: query, auth: auth, idempotencyKey: idempotencyKey, retried: true);
     }
     final decoded = res.body.isEmpty ? null : _tryJson(res.body);
@@ -212,12 +219,13 @@ class ApiClient {
   Future<Map<String, dynamic>> entitlements() async =>
       await _send('GET', '/api/v1/me/entitlements') as Map<String, dynamic>;
 
-  Future<Map<String, dynamic>> spend(String sku) {
-    final key = newId();
+  /// [key] identifies one player intent; reuse it when retrying so the server charges once.
+  Future<Map<String, dynamic>> spend(String sku, {String? key, int? gems}) {
+    key ??= newId();
     return _send(
       'POST',
       '/api/v1/me/wallet/spend',
-      body: {'sku': sku, 'idempotencyKey': key},
+      body: {'sku': sku, 'idempotencyKey': key, 'gems': ?gems},
       idempotencyKey: key,
     ).then((v) => v as Map<String, dynamic>);
   }
@@ -241,6 +249,10 @@ class ApiClient {
   Future<Map<String, dynamic>> claimDailyReward() async =>
       await _send('POST', '/api/v1/me/rewards/daily-claim') as Map<String, dynamic>;
 
+  Future<Map<String, dynamic>> referral() async => await _send('GET', '/api/v1/me/referral') as Map<String, dynamic>;
+  Future<Map<String, dynamic>> redeemReferral(String code) async =>
+      await _send('POST', '/api/v1/me/referral/redeem', body: {'code': code}) as Map<String, dynamic>;
+
   Future<void> registerPushToken(String token) => _send(
     'POST',
     '/api/v1/me/push-token',
@@ -251,6 +263,8 @@ class ApiClient {
   );
 
   Future<void> deleteAccount() async {
+    // Without a session there is no server account; never create one just to delete it.
+    if (!hasSession) return;
     await _send('DELETE', '/api/v1/me');
     await clearSession();
   }

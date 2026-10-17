@@ -133,10 +133,12 @@ MERGE 3★ reach target, 2★ reach target/2, 1★ reach target/4.
 | `GET /me/profile` / `PATCH /me/preferences` | displayName, avatarId, country, locale, timezone, reminderTime, notificationsEnabled, friendCode |
 | `GET /me/stats` | per-game played/solved/best/avg |
 | `GET/POST /me/friends` | list / add by `friendCode`; `DELETE /me/friends/{userId}` |
+| `GET /me/referral` | `{inviteCode, invited, rewarded, maxRewarded, gemsPerInvite, redeemed, canRedeem}` — the invite code is the friend code |
+| `POST /me/referral/redeem` | `{code}` → `{inviter, gemsGranted, wallet}`. Once per account, only within 7 days of account creation; both players get 20 wallet gems (inviter rewarded for up to 25 invites) and become friends. Errors: `SELF_INVITE` 400, `ALREADY_REDEEMED`/`INVITE_EXPIRED` 409, 404 unknown code |
 | `GET /leaderboards/daily?date&gameType&scope=GLOBAL\|COUNTRY\|FRIENDS&page&size` | `gameType` omitted = overall (sum) |
 | `GET /leaderboards/weekly?scope&page&size` | ISO week, overall |
 | `GET /me/wallet` | `{coins, gems}` (server-authoritative gems) |
-| `POST /me/wallet/spend` | `{sku, idempotencyKey}`; skus: `HEART_REFILL`(30 gems), `HINT_PACK_5`(20), `COINS_1000`(25), `CONTINUE`(12). The wallet holds **purchased** gems only; free gems (starter, calendar, spin) live in the local snapshot and are spent first |
+| `POST /me/wallet/spend` | `{sku, idempotencyKey, gems?}`; `gems` (1..price, default the price) lets free gems cover the rest of the price; a key is bound to its sku. Skus: `HEART_REFILL`(30 gems), `HINT_PACK_5`(20), `COINS_1000`(25), `CONTINUE`(up to 24: 12 for the first continue, 24 for the second). The wallet holds **purchased** gems only; free gems (starter, calendar, spin) live in the local snapshot and are spent first |
 | `POST /me/rewards/daily-claim` | 7-day login calendar; idempotent per UTC day |
 | `GET /store/products` | IAP catalog (product ids, grants) |
 | `POST /purchases/google/verify` | `{productId, purchaseToken}` → grants; idempotent per token |

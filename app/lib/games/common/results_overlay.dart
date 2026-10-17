@@ -11,6 +11,7 @@ import '../../core/ui/game_art.dart';
 import '../../core/ui/outlined_text.dart';
 import '../../core/ui/panels.dart';
 import '../../features/shop/shop_sheets.dart';
+import '../../services/growth.dart';
 import '../../services/content_repo.dart';
 import '../../services/services.dart';
 import '../../state/player.dart';
@@ -88,7 +89,41 @@ class _ResultsBodyState extends State<_ResultsBody> with TickerProviderStateMixi
   bool _doubled = false;
   final _played = <int>{};
 
-  int get _coins => widget.reward?.coins ?? (widget.dailyCoins > 0 ? widget.dailyCoins : 10 + 5 * widget.result.stars);
+  /// Coins actually granted for this round (a replayed daily grants none).
+  int get _coins =>
+      widget.reward?.coins ??
+      (widget.request.source == PlaySource.daily ? widget.dailyCoins : 10 + 5 * widget.result.stars);
+
+  Map<String, dynamic>? _submitted;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    widget.dailySubmit?.then((d) {
+      if (mounted) setState(() => _submitted = d);
+    });
+  }
+
+  Future<void> _share(BuildContext context) async {
+    final s = context.services;
+    final r = widget.request;
+    final d = s.player.data;
+    final rank = (_submitted?['rank'] as num?)?.toInt();
+    final text = buildResultShare(
+      game: r.game,
+      daily: r.source == PlaySource.daily,
+      stars: widget.result.stars,
+      elapsed: widget.elapsed,
+      hints: widget.hintsUsed,
+      grid: widget.result.shareGrid,
+      level: r.level,
+      streak: r.source == PlaySource.daily ? d.streak : 0,
+      rank: rank,
+      inviteCode: s.growth.inviteCode,
+      date: r.source == PlaySource.daily ? d.dailyDate : null,
+    );
+    await s.growth.shareText(context, text, kind: 'result_${r.source.name}');
+  }
 
   @override
   void initState() {
@@ -170,7 +205,9 @@ class _ResultsBodyState extends State<_ResultsBody> with TickerProviderStateMixi
                 builder: (_, _) => _Stat(
                   art: ArtKind.coin,
                   label: 'Coins',
-                  value: '+${(_coins * (_doubled ? 2 : 1) * Curves.easeOut.transform(_count.value)).round()}',
+                  value: _coins == 0
+                      ? '—'
+                      : '+${(_coins * (_doubled ? 2 : 1) * Curves.easeOut.transform(_count.value)).round()}',
                 ),
               ),
             ),
@@ -185,11 +222,21 @@ class _ResultsBodyState extends State<_ResultsBody> with TickerProviderStateMixi
                 return Text('Submitting your score…', style: AppText.body(14, color: AppColors.inkSoft));
               }
               final d = snap.data;
-              if (d == null || d['result'] != 'SOLVED') {
+              final ranked = d != null && (d['result'] == 'SOLVED' || d['rank'] != null);
+              if (!ranked) {
+                final String msg;
+                if (d == null) {
+                  msg = "Couldn't reach the leaderboard — your streak is saved on this device.";
+                } else if (d['counted'] == false) {
+                  msg = 'Only your first attempt is ranked — nice practice run!';
+                } else if (d['result'] == 'FAILED') {
+                  // Only a continue past the mistake limit turns a solved board into FAILED.
+                  msg = 'Solved with a continue — not ranked today, but your streak counts!';
+                } else {
+                  msg = "This run couldn't be verified for the leaderboard, but your streak counts!";
+                }
                 return Text(
-                  d == null
-                      ? "Couldn't reach the leaderboard — your streak is saved on this device."
-                      : 'Solved with a continue — not ranked today, but your streak counts!',
+                  msg,
                   textAlign: TextAlign.center,
                   style: AppText.body(14, color: AppColors.inkSoft),
                 );
@@ -213,8 +260,16 @@ class _ResultsBodyState extends State<_ResultsBody> with TickerProviderStateMixi
             },
           ),
         ],
-        const SizedBox(height: 16),
-        if (!_doubled && widget.request.source == PlaySource.level)
+        const SizedBox(height: 14),
+        CandyButton(
+          label: widget.request.source == PlaySource.daily ? 'Share & challenge friends' : 'Share',
+          icon: Icons.ios_share_rounded,
+          candy: Candy.pink,
+          height: 50,
+          onTap: () => _share(context),
+        ),
+        const SizedBox(height: 12),
+        if (!_doubled && widget.request.source == PlaySource.level && _coins > 0)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: CandyButton(

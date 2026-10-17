@@ -11,11 +11,24 @@ import 'analytics.dart';
 import 'api_client.dart';
 import 'content_repo.dart';
 import 'firebase_setup.dart';
+import 'growth.dart';
 import 'purchase_service.dart';
+import 'reminders.dart';
 
 /// Composition root: every long-lived service, created once in main().
 class AppServices {
-  AppServices._(this.prefs, this.player, this.api, this.content, this.ads, this.purchases, this.analytics, this.sync);
+  AppServices._(
+    this.prefs,
+    this.player,
+    this.api,
+    this.content,
+    this.ads,
+    this.purchases,
+    this.analytics,
+    this.sync,
+    this.growth,
+    this.reminders,
+  );
 
   final SharedPreferences prefs;
   final PlayerStore player;
@@ -25,8 +38,15 @@ class AppServices {
   final PurchaseService purchases;
   final Analytics analytics;
   final SyncService sync;
+  final GrowthService growth;
+  final ReminderService reminders;
 
-  static Future<AppServices> create({SharedPreferences? prefs, AdsService? ads, ApiClient? api}) async {
+  static Future<AppServices> create({
+    SharedPreferences? prefs,
+    AdsService? ads,
+    ApiClient? api,
+    ReminderService? reminders,
+  }) async {
     final p = prefs ?? await SharedPreferences.getInstance();
     final player = PlayerStore(p);
     final client = api ?? ApiClient(p);
@@ -45,9 +65,15 @@ class AppServices {
       PurchaseService(client, player, analytics),
       analytics,
       SyncService(client, player),
+      GrowthService(p, client, player, analytics),
+      reminders ?? ReminderService(),
     );
     _applySettings(player);
-    player.addListener(() => _applySettings(player));
+    player.addListener(() {
+      _applySettings(player);
+      // Cheap no-op unless the reminder setting, hour, streak or today's completion changed.
+      unawaited(s.reminders.sync(player.data));
+    });
     // A fresh guest account (first launch, or an unrecoverable session) gets the local
     // progress, profile and any Play purchases re-attached.
     client.onNewAccount = () {
@@ -67,6 +93,7 @@ class AppServices {
   /// Sends name, avatar, country and locale to the server (leaderboards, Country scope).
   /// Fire-and-forget: the local profile is the source of truth for display.
   Future<void> pushProfile() async {
+    await reminders.init(); // resolves the device time zone
     final d = player.data;
     final loc = PlatformDispatcher.instance.locale;
     final cc = loc.countryCode;
@@ -77,6 +104,7 @@ class AppServices {
       await api.updatePreferences({
         'displayName': ?cleanDisplayName(d.displayName),
         'avatarId': d.avatar.clamp(0, 63),
+        'timezone': ?reminders.zoneId,
         'country': ?country,
         if (RegExp(r'^[a-z]{2,3}$').hasMatch(lang)) 'locale': country == null ? lang : '$lang-$country',
       });
@@ -96,6 +124,8 @@ class AppServices {
         if (player.data.onboarded) return pushProfile();
       }),
     );
+    unawaited(reminders.sync(player.data, force: true));
+    unawaited(growth.warmUp());
     if (player.data.settings.reminders) {
       unawaited(FirebaseSetup.refreshPush(api).catchError((Object e) => debugPrint('push: $e')));
     }

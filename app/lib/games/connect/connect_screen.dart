@@ -48,8 +48,14 @@ class _ConnectScreenState extends State<ConnectScreen> with GameFlow, TickerProv
 
   Future<void> _submit() async {
     if (_busy || game.selected.length != 4) return;
-    _busy = true;
+    // Lock the board for the animation and submit exactly the four words that were selected.
+    final guess = Set.of(game.selected);
+    setState(() => _busy = true);
     await _wave.forward(from: 0);
+    if (!mounted) return;
+    game.selected
+      ..clear()
+      ..addAll(guess);
     final outcome = game.submit();
     switch (outcome) {
       case GuessOutcome.correct:
@@ -75,6 +81,7 @@ class _ConnectScreenState extends State<ConnectScreen> with GameFlow, TickerProv
           stars: m == 0 ? 3 : (m <= 2 ? 2 : 1),
           mistakes: m,
           submission: {'guesses': game.guesses},
+          shareGrid: game.shareGrid,
           detail: m == 0 ? 'Perfect — no mistakes!' : '$m mistake${m == 1 ? '' : 's'}',
         ),
       );
@@ -117,10 +124,12 @@ class _ConnectScreenState extends State<ConnectScreen> with GameFlow, TickerProv
     return GameScaffold(
       request: request,
       elapsed: elapsed,
+      roundOver: finished,
       confetti: confetti,
       onHint: () async {
+        if (finished || _busy || game.hint() == null) return;
         if (await requestHint()) {
-          final h = game.hint();
+          final h = game.hint(reveal: true);
           if (h != null && context.mounted) {
             setState(() => _hintWord = h.$2);
             toast(context, 'One group is “${h.$1.title}” — it includes ${h.$2}', icon: Icons.lightbulb_rounded);
@@ -184,11 +193,15 @@ class _ConnectScreenState extends State<ConnectScreen> with GameFlow, TickerProv
       ),
       toolbar: Row(
         children: [
-          ToolButton(icon: Icons.shuffle_rounded, label: 'Shuffle', onTap: () => setState(game.shuffle)),
+          ToolButton(
+            icon: Icons.shuffle_rounded,
+            label: 'Shuffle',
+            onTap: _busy || finished ? null : () => setState(game.shuffle),
+          ),
           ToolButton(
             icon: Icons.deselect_rounded,
             label: 'Deselect',
-            onTap: game.selected.isEmpty ? null : () => setState(game.deselectAll),
+            onTap: game.selected.isEmpty || _busy ? null : () => setState(game.deselectAll),
           ),
           Expanded(
             flex: 2,
@@ -230,7 +243,7 @@ class _ConnectScreenState extends State<ConnectScreen> with GameFlow, TickerProv
           radius: 14,
           candy: c,
           sound: Sfx.select,
-          onTap: game.isOver
+          onTap: game.isOver || _busy
               ? null
               : () => setState(() {
                   game.toggle(w);

@@ -123,27 +123,42 @@ class _LivesBodyState extends State<_LivesBody> {
   }
 }
 
-/// Spends free (local) gems first; otherwise spends purchased gems through the
+/// One idempotency key per sku until the server gives a definitive answer, so a retry after a
+/// timeout can never charge twice; and one spend per sku at a time (double taps).
+final _pendingSpendKeys = <String, String>{};
+final _spendsInFlight = <String>{};
+
+/// Spends free (local) gems first and covers any shortfall with purchased gems through the
 /// server wallet, which is the only authority for them (docs/CONTRACT.md §6).
 Future<bool> _spendGems(BuildContext context, String sku, int cost) async {
   final s = context.services;
   final d = s.player.data;
   if (d.gems >= cost) return s.player.spendGems(cost);
-  if (d.paidGems < cost) {
+  if (d.totalGems < cost) {
     toast(context, 'Not enough gems — visit the Shop');
     return false;
   }
+  if (!_spendsInFlight.add(sku)) return false;
+  final free = d.gems;
+  final fromWallet = cost - free;
+  final key = _pendingSpendKeys[sku] ??= s.api.newId();
   try {
-    final res = await s.api.spend(sku);
+    final res = await s.api.spend(sku, key: key, gems: fromWallet);
+    _pendingSpendKeys.remove(sku);
     final w = res['wallet'] as Map<String, dynamic>? ?? res;
     if (w['gems'] != null) s.player.setPaidGems((w['gems'] as num).toInt());
+    if (free > 0) s.player.spendGems(free.clamp(0, s.player.data.gems));
     return true;
   } on ApiException catch (e) {
+    // Offline/timeout: the charge may or may not have landed; keep the key for the retry.
+    if (!e.isOffline) _pendingSpendKeys.remove(sku);
     if (context.mounted) {
       toast(context, e.isOffline ? 'Connect to the internet to use purchased gems' : e.message);
     }
     if (e.code == 'INSUFFICIENT_FUNDS') unawaited(s.sync.refreshWallet());
     return false;
+  } finally {
+    _spendsInFlight.remove(sku);
   }
 }
 

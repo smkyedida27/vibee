@@ -268,14 +268,29 @@ class _LevelNode extends StatefulWidget {
   State<_LevelNode> createState() => _LevelNodeState();
 }
 
-class _LevelNodeState extends State<_LevelNode> with SingleTickerProviderStateMixin {
+class _LevelNodeState extends State<_LevelNode> with TickerProviderStateMixin {
   AnimationController? _bob;
 
   @override
   void initState() {
     super.initState();
-    if (widget.state == _NodeState.current) {
+    _syncBob();
+  }
+
+  // Nodes are reused when a level is cleared, so the "current" bob follows the state.
+  @override
+  void didUpdateWidget(covariant _LevelNode old) {
+    super.didUpdateWidget(old);
+    if (old.state != widget.state) _syncBob();
+  }
+
+  void _syncBob() {
+    final current = widget.state == _NodeState.current;
+    if (current && _bob == null) {
       _bob = AnimationController(vsync: this, duration: const Duration(milliseconds: 1100))..repeat(reverse: true);
+    } else if (!current && _bob != null) {
+      _bob!.dispose();
+      _bob = null;
     }
   }
 

@@ -74,6 +74,7 @@ class _QueensScreenState extends State<QueensScreen> with GameFlow {
 
   // Drag across empty cells to paint ✕ marks (or erase them), like a highlighter.
   void _dragAt(Offset local, double cell) {
+    if (finished) return;
     final r = (local.dy / cell).floor(), c = (local.dx / cell).floor();
     if (r < 0 || c < 0 || r >= board.size || c >= board.size) return;
     if (!_dragged.add((r, c))) return;
@@ -91,6 +92,7 @@ class _QueensScreenState extends State<QueensScreen> with GameFlow {
     return GameScaffold(
       request: request,
       elapsed: elapsed,
+      roundOver: finished,
       confetti: confetti,
       onHint: () async {
         if (await requestHint()) {

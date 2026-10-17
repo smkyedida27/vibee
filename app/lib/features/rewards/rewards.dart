@@ -240,14 +240,20 @@ class _SpinScreenState extends State<SpinScreen> with SingleTickerProviderStateM
       _from = _angle % (2 * math.pi);
       _to = target;
     });
-    Audio.instance.play(Sfx.whoosh);
-    await _c.forward(from: 0);
+    // Grant before animating: leaving mid-spin disposes the controller and must not lose the prize.
     final r = rewards[idx];
     final p = s.player;
     if (r.coins > 0) p.addCoins(r.coins);
     if (r.gems > 0) p.addGems(r.gems);
     if (r.hints > 0) p.addHints(r.hints);
     if (r.lifeMinutes > 0) p.grantUnlimitedHearts(Duration(minutes: r.lifeMinutes));
+    Audio.instance.play(Sfx.whoosh);
+    try {
+      await _c.forward(from: 0).orCancel;
+    } on TickerCanceled {
+      return;
+    }
+    if (!mounted) return;
     Audio.instance.fx(Sfx.win, HapticKind.heavy);
     _confetti.burst(origin: const Offset(0.5, 0.4));
     s.sync.push();

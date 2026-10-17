@@ -21,7 +21,14 @@ import 'results_overlay.dart';
 
 /// Outcome reported by a game when the round ends.
 class RoundResult {
-  RoundResult({required this.won, required this.stars, required this.submission, this.mistakes = 0, this.detail});
+  RoundResult({
+    required this.won,
+    required this.stars,
+    required this.submission,
+    this.mistakes = 0,
+    this.detail,
+    this.shareGrid,
+  });
   final bool won;
   final int stars;
   final Map<String, dynamic> submission;
@@ -29,6 +36,9 @@ class RoundResult {
 
   /// Short, game-specific line for the results card (e.g. "Par 4 • You 5").
   final String? detail;
+
+  /// Optional spoiler-free emoji summary for sharing (e.g. Word Connect guess colours).
+  final String? shareGrid;
 }
 
 /// Shared lifecycle for all game screens: timing, hints, daily attempts, rewards,
@@ -43,12 +53,29 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
   bool finished = false;
   Future<String?>? _attempt;
   Timer? _clockTick;
+  AppLifecycleListener? _lifecycle;
+  bool _pausedInBackground = false;
 
   /// Elapsed play time; screens rebuild every second for the timer pill.
   Duration get elapsed => stopwatch.elapsed;
 
   void startFlow() {
     stopwatch.start();
+    // Time in the background never counts towards the puzzle clock (stats, daily score).
+    _lifecycle = AppLifecycleListener(
+      onHide: () {
+        if (stopwatch.isRunning) {
+          _pausedInBackground = true;
+          stopwatch.stop();
+        }
+      },
+      onShow: () {
+        if (_pausedInBackground) {
+          _pausedInBackground = false;
+          resumeClock();
+        }
+      },
+    );
     _clockTick = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted && !finished) setState(() {});
     });
@@ -71,6 +98,7 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
   @override
   void dispose() {
     _clockTick?.cancel();
+    _lifecycle?.dispose();
     confetti.dispose();
     super.dispose();
   }
@@ -82,6 +110,7 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
 
   /// Consumes a hint token, or offers ways to get more. Returns true if granted.
   Future<bool> requestHint() async {
+    if (finished) return false;
     final s = context.services;
     if (s.player.useHint()) {
       hintsUsed++;
@@ -142,6 +171,9 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
         hintsUsed: hintsUsed,
       );
       if (!mounted) return;
+      unawaited(s.growth.onWin(stars: r.stars));
+      if (request.source == PlaySource.daily) await _offerReminders();
+      if (!mounted) return;
       await _afterRound(action, won: true);
     } else {
       Audio.instance.fx(Sfx.lose, HapticKind.heavy);
@@ -163,6 +195,42 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
       if (request.source == PlaySource.level) s.player.failLevel(game: request.game, durationMs: ms);
       unawaited(s.sync.push());
       await _afterRound(action, won: false);
+    }
+  }
+
+  /// After the first daily win, offer a reminder once: the strongest retention lever we have.
+  Future<void> _offerReminders() async {
+    final s = context.services;
+    const key = 'growth.reminderOffered';
+    if (s.player.data.settings.reminders || (s.prefs.getBool(key) ?? false)) return;
+    await s.prefs.setBool(key, true);
+    if (!mounted) return;
+    final yes = await confirmDialog(
+      context,
+      title: 'Keep your streak!',
+      message: 'Want a gentle nudge when new puzzles are ready? One reminder a day, no spam.',
+      yes: 'Remind me',
+      no: 'Not now',
+      candy: Candy.green,
+    );
+    if (!yes || !mounted) return;
+    if (await s.reminders.requestPermission()) {
+      s.player.updateSettings((x) => x.reminders = true);
+      unawaited(
+        s.api
+            .updatePreferences({
+              'notificationsEnabled': true,
+              'reminderTime': '${s.player.data.settings.reminderHour.toString().padLeft(2, '0')}:00',
+            })
+            .catchError((Object _) {}),
+      );
+      if (mounted) {
+        toast(
+          context,
+          'Reminder set for ${s.player.data.settings.reminderHour}:00',
+          icon: Icons.notifications_active_rounded,
+        );
+      }
     }
   }
 
@@ -285,6 +353,7 @@ class GameScaffold extends StatelessWidget {
     this.onHint,
     this.confetti,
     this.showTimer = true,
+    this.roundOver = false,
   });
 
   final PlayRequest request;
@@ -295,6 +364,9 @@ class GameScaffold extends StatelessWidget {
   final Duration elapsed;
   final ConfettiController? confetti;
   final bool showTimer;
+
+  /// True once the round has ended (results pending): leaving can no longer forfeit it.
+  final bool roundOver;
 
   @override
   Widget build(BuildContext context) {
@@ -391,6 +463,7 @@ class GameScaffold extends StatelessWidget {
   }
 
   Future<void> _confirmLeave(BuildContext context) async {
+    if (roundOver) return;
     final leave = await confirmDialog(
       context,
       title: 'Leave puzzle?',

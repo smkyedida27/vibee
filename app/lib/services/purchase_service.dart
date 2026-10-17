@@ -153,22 +153,36 @@ class PurchaseService extends ChangeNotifier {
 
   Future<void> _onPurchases(List<PurchaseDetails> purchases) async {
     for (final p in purchases) {
-      switch (p.status) {
-        case PurchaseStatus.pending:
-          _set(PurchaseState.pending);
-        case PurchaseStatus.error:
-          lastError = p.error?.message;
-          _analytics.log('purchase_error', {'product': p.productID, 'error': p.error?.code ?? ''});
+      try {
+        await _handle(p);
+      } catch (e) {
+        // Never let one bad purchase stall the batch or leave the UI stuck on "verifying".
+        debugPrint('purchase ${p.productID} failed: $e');
+        if (!_silentRestore) {
+          lastError = 'Something went wrong finishing your purchase. Try Restore purchases.';
           _set(PurchaseState.failed);
-          if (p.pendingCompletePurchase) await InAppPurchase.instance.completePurchase(p);
-        case PurchaseStatus.canceled:
-          _set(PurchaseState.idle);
-          if (p.pendingCompletePurchase) await InAppPurchase.instance.completePurchase(p);
-        case PurchaseStatus.purchased:
-          await _verifyAndGrant(p);
-        case PurchaseStatus.restored:
-          await _verifyAndGrant(p, silent: _silentRestore);
+        }
       }
+    }
+  }
+
+  Future<void> _handle(PurchaseDetails p) async {
+    switch (p.status) {
+      case PurchaseStatus.pending:
+        // A slow payment re-delivered by the startup resync must not block the Shop.
+        if (!_silentRestore) _set(PurchaseState.pending);
+      case PurchaseStatus.error:
+        lastError = p.error?.message;
+        _analytics.log('purchase_error', {'product': p.productID, 'error': p.error?.code ?? ''});
+        _set(PurchaseState.failed);
+        if (p.pendingCompletePurchase) await InAppPurchase.instance.completePurchase(p);
+      case PurchaseStatus.canceled:
+        _set(PurchaseState.idle);
+        if (p.pendingCompletePurchase) await InAppPurchase.instance.completePurchase(p);
+      case PurchaseStatus.purchased:
+        await _verifyAndGrant(p);
+      case PurchaseStatus.restored:
+        await _verifyAndGrant(p, silent: _silentRestore);
     }
   }
 
@@ -197,8 +211,17 @@ class PurchaseService extends ChangeNotifier {
       _analytics.log('purchase_success', {'product': p.productID});
       _set(PurchaseState.success);
     } on ApiException catch (e) {
+      if (e.code == 'PURCHASE_ALREADY_CLAIMED') {
+        // Already granted (to this or an earlier account): finish it so Play stops re-delivering
+        // it and a consumable can be bought again.
+        if (p.pendingCompletePurchase) await InAppPurchase.instance.completePurchase(p);
+        if (defaultTargetPlatform == TargetPlatform.android &&
+            Catalog.items.any((i) => i.id == p.productID && i.consumable)) {
+          await InAppPurchase.instance.getPlatformAddition<InAppPurchaseAndroidPlatformAddition>().consumePurchase(p);
+        }
+      }
       if (silent) return;
-      // Leave the purchase un-acknowledged; Play re-delivers it on next launch and
+      // Otherwise leave the purchase un-acknowledged; Play re-delivers it on next launch and
       // refunds automatically if it is never acknowledged.
       lastError = e.isOffline ? 'You appear to be offline. We\'ll finish this purchase when you reconnect.' : e.message;
       _set(PurchaseState.failed);

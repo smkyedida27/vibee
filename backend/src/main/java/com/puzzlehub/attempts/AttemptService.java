@@ -95,7 +95,16 @@ public class AttemptService {
         int par = puzzle.gameType() == GameType.LADDER ? puzzle.content().path("par").asInt() : 0;
         int score = Scoring.score(puzzle.gameType(), eval, hintsUsed, durationMs / 1000, par);
 
-        boolean counted = eval.result() != Result.INVALID && "ACTIVE".equals(puzzle.status())
+        // Serialise submits per (user, puzzle) so concurrent submits can't race the counted check.
+        db.sql("select pg_advisory_xact_lock(hashtext(cast(:u as text) || cast(:p as text)))")
+                .param("u", userId.toString()).param("p", puzzle.id().toString()).query(Object.class).list();
+        // Only the player's first attempt can count: restarting until a lucky run is never ranked.
+        boolean firstAttempt = !db.sql("""
+                select exists(select 1 from attempts where user_id = :u and puzzle_id = :p and id <> :id
+                  and (started_at < :s or (started_at = :s and id < :id)))""")
+                .param("u", userId).param("p", puzzle.id()).param("id", attemptId)
+                .param("s", Timestamp.from(attempt.startedAt())).query(Boolean.class).single();
+        boolean counted = eval.result() != Result.INVALID && "ACTIVE".equals(puzzle.status()) && firstAttempt
                 && !db.sql("select exists(select 1 from attempts where user_id = :u and puzzle_id = :p and counted)")
                 .param("u", userId).param("p", puzzle.id()).query(Boolean.class).single();
         db.sql("""
@@ -106,7 +115,10 @@ public class AttemptService {
                 .param("id", attemptId)
                 .update();
 
-        boolean ranked = counted && (eval.result() == Result.SOLVED || puzzle.gameType() == GameType.MERGE);
+        // Leaderboards are for today's puzzle (one day of grace for players near midnight UTC);
+        // archive puzzles can be played but never ranked.
+        boolean current = !date.isBefore(LocalDate.ofInstant(now, java.time.ZoneOffset.UTC).minusDays(1));
+        boolean ranked = counted && current && (eval.result() == Result.SOLVED || puzzle.gameType() == GameType.MERGE);
         if (ranked) {
             db.sql("""
                     insert into leaderboard_entries (challenge_date, game_type, user_id, attempt_id, score, duration_ms, submitted_at)
@@ -124,7 +136,7 @@ public class AttemptService {
     private Optional<Integer> rankOf(UUID userId, UUID puzzleId) {
         return db.sql("""
                 select r.rank from (
-                  select l.user_id, row_number() over (order by l.score desc, l.duration_ms, l.submitted_at) as rank
+                  select l.user_id, row_number() over (order by l.score desc, l.duration_ms, l.submitted_at, l.user_id) as rank
                   from leaderboard_entries l
                   join daily_challenges dc on dc.challenge_date = l.challenge_date and dc.game_type = l.game_type
                   where dc.puzzle_id = :p) r

@@ -119,11 +119,17 @@ class _LadderScreenState extends State<LadderScreen> with GameFlow, SingleTicker
     return GameScaffold(
       request: request,
       elapsed: elapsed,
+      roundOver: finished,
       confetti: confetti,
       onHint: () async {
+        if (finished) return;
+        final route = dict.shortestPath(path.last, p.target, avoid: path.toSet());
+        if (route == null || route.length < 2) {
+          if (context.mounted) toast(context, 'No fresh route from here — try Undo first');
+          return;
+        }
         if (await requestHint()) {
-          final route = dict.shortestPath(path.last, p.target);
-          if (route != null && route.length > 1 && mounted) {
+          if (mounted) {
             setState(() => _typed = '');
             for (final ch in route[1].split('')) {
               _key(ch);

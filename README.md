@@ -30,6 +30,7 @@ free-to-play economy. Built to be polished on day one and to scale without a rew
 
 - **Same puzzle for everyone, every day.** A deterministic RNG and scoring rules run identically on the app and server ([contract](docs/CONTRACT.md)), so daily leaderboards are fair and cheat-resistant.
 - **Plays fully offline.** Level play needs no network; daily challenges, leaderboards and sync light up when online.
+- **Built to spread.** Spoiler-free, Wordle-style result sharing; invite codes that give both players 20 gems and make them friends; a friends leaderboard; on-device daily reminders that protect your streak; and a well-timed review prompt.
 - **Fair economy.** Coins, lives and boosters you can earn by playing; purchases and ads are optional ([design](docs/MONETIZATION.md)).
 - **Production-grade from the start.** Modular monolith, Flyway migrations, rate limiting, Testcontainers tests, Prometheus + Grafana, Terraform for AWS, and CI/CD with staged promotion to prod.
 

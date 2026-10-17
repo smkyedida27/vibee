@@ -77,7 +77,7 @@ class _DailyScreenState extends State<DailyScreen> {
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
-                                        'Offline mode — your streak still counts. Scores sync to the leaderboard when online.',
+                                        'Offline mode — your streak still counts, but offline scores aren\'t ranked. Go online to compete on the leaderboard.',
                                         style: AppText.body(13, color: Colors.white),
                                       ),
                                     ),

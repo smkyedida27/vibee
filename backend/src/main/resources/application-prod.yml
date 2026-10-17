@@ -3,9 +3,9 @@
 # APP_PLAY_SERVICE_ACCOUNT_JSON, APP_FIREBASE_PROJECT_ID, APP_PLAY_PACKAGE_NAME, APP_ENVIRONMENT.
 springdoc:
   api-docs:
-    enabled: ${OPENAPI_ENABLED:true}
+    enabled: ${OPENAPI_ENABLED:false}
   swagger-ui:
-    enabled: ${OPENAPI_ENABLED:true}
+    enabled: ${OPENAPI_ENABLED:false}
 
 puzzlehub:
   firebase:

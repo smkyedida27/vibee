@@ -25,17 +25,24 @@ class AdMobService implements AdsService {
   RewardedAd? _rewarded;
   InterstitialAd? _interstitial;
   bool _initialised = false;
+  bool _initialising = false;
   int _rewardedRetry = 0;
 
   @override
   Future<void> init() async {
-    if (_initialised) return;
-    _initialised = true;
-    await _gatherConsent();
-    if (!await ConsentInformation.instance.canRequestAds()) return;
-    await MobileAds.instance.initialize();
-    _loadRewarded();
-    _loadInterstitial();
+    if (_initialised || _initialising) return;
+    _initialising = true;
+    try {
+      await _gatherConsent();
+      // If the consent form is still open (slow reader, >8 s), try again once it is dismissed.
+      if (!await ConsentInformation.instance.canRequestAds()) return;
+      await MobileAds.instance.initialize();
+      _initialised = true;
+      _loadRewarded();
+      _loadInterstitial();
+    } finally {
+      _initialising = false;
+    }
   }
 
   Future<void> _gatherConsent() {
@@ -43,7 +50,10 @@ class AdMobService implements AdsService {
     ConsentInformation.instance.requestConsentInfoUpdate(
       ConsentRequestParameters(),
       () async {
-        await ConsentForm.loadAndShowConsentFormIfRequired((_) {});
+        await ConsentForm.loadAndShowConsentFormIfRequired((_) {
+          // Late dismissal (after the timeout below): finish initialising now that consent is known.
+          if (done.isCompleted && !_initialised) unawaited(init());
+        });
         _privacyRequired =
             await ConsentInformation.instance.getPrivacyOptionsRequirementStatus() ==
             PrivacyOptionsRequirementStatus.required;

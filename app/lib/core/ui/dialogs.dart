@@ -24,8 +24,9 @@ Future<T?> showCandyDialog<T>(
     transitionDuration: const Duration(milliseconds: 420),
     pageBuilder: (ctx, _, _) => SafeArea(
       child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 22),
+        // Scrolls instead of overflowing on short screens or with large text.
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: Material(

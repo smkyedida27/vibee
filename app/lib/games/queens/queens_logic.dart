@@ -86,7 +86,13 @@ class QueensLogic {
       for (var step = 0; step < size * size * 3; step++) {
         final rival = _otherSolution(regions, size, queens);
         if (rival == null) {
-          return QueensPuzzle(size: size, regions: regions, solution: queens);
+          // Relabel regions (as the server does) so colours carry no hint about crown rows.
+          final perm = List<int>.generate(size, (i) => i);
+          rng.shuffle(perm);
+          final relabelled = [
+            for (final row in regions) [for (final r in row) perm[r]],
+          ];
+          return QueensPuzzle(size: size, regions: relabelled, solution: queens);
         }
         if (!_breakRival(regions, size, queens, rival, rng)) break;
       }

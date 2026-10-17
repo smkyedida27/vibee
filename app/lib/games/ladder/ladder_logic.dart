@@ -61,8 +61,13 @@ class LadderDictionary {
   }
 
   /// Shortest path (inclusive) from a to b, or null.
-  List<String>? shortestPath(String a, String b) {
-    final prev = <String, String?>{a: null};
+  /// Shortest word path from [a] to [b], never passing through [avoid] (words already used).
+  List<String>? shortestPath(String a, String b, {Set<String> avoid = const {}}) {
+    final prev = <String, String?>{
+      a: null,
+      for (final w in avoid)
+        if (w != a) w: null,
+    };
     final q = <String>[a];
     var head = 0;
     while (head < q.length) {

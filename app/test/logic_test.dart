@@ -68,6 +68,8 @@ void main() {
       final wrong = b.puzzle.solution[empty] % 9 + 1;
       expect(b.enter(empty, wrong), isFalse);
       expect(b.mistakes, 1);
+      expect(b.enter(empty, wrong), isFalse, reason: 'same wrong digit again');
+      expect(b.mistakes, 1, reason: 'repeating an entry must not cost another life');
       while (b.hint() != null) {}
       expect(b.solved, isTrue);
     });
@@ -75,6 +77,13 @@ void main() {
 
   group('Word Ladder', () {
     final dict = LadderDictionary(File('assets/content/words4.txt').readAsLinesSync());
+    test('hint routes avoid words already used', () {
+      final p = dict.generate(4, 7);
+      final direct = dict.shortestPath(p.start, p.target)!;
+      final avoid = {direct[1]};
+      final detour = dict.shortestPath(p.start, p.target, avoid: avoid);
+      if (detour != null) expect(detour.contains(direct[1]), isFalse);
+    });
     for (final par in [3, 4, 5, 6]) {
       test('par $par puzzles have a shortest path of par steps', () {
         final p = dict.generate(par, par * 31);
@@ -128,6 +137,23 @@ void main() {
       for (final p in puzzles) {
         expect(p.words.toSet().length, 16, reason: p.id);
         expect(p.groups.expand((g) => g.words).toSet(), p.words.toSet(), reason: p.id);
+      }
+    });
+    test('hints reveal a new word each time and the share grid hides answers', () {
+      final g = ConnectGame(puzzles.first);
+      final seen = <String>{};
+      for (var i = 0; i < 6; i++) {
+        final h = g.hint(reveal: true)!;
+        expect(seen.add(h.$2), isTrue);
+      }
+      for (final w in puzzles.first.groups[0].words) {
+        g.toggle(w);
+      }
+      g.submit();
+      expect(g.shareGrid.split('\n'), hasLength(1));
+      expect(g.shareGrid.runes.length, 4);
+      for (final w in puzzles.first.words) {
+        expect(g.shareGrid.contains(w), isFalse);
       }
     });
     test('solves and detects one-away', () {

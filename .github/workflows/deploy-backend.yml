@@ -124,6 +124,10 @@ jobs:
   deploy-production:
     needs: promote-image
     runs-on: ubuntu-latest
+    # contents: write for the release tag created after a successful deploy.
+    permissions:
+      contents: write
+      id-token: write
     environment:
       name: production
       url: ${{ vars.PROD_API_URL }}

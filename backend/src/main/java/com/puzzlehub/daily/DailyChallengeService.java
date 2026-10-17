@@ -79,11 +79,17 @@ public class DailyChallengeService {
         }
     }
 
+    static final int ARCHIVE_DAYS = 30;
+
     /** Published puzzles for a date. Future dates are never exposed. */
     @Transactional
     public List<Puzzle> challenge(LocalDate date) {
         if (date.isAfter(today())) {
             throw ApiException.badRequest("DATE_IN_FUTURE", "Daily challenges are only available up to today (UTC)");
+        }
+        // Bounded archive: an unauthenticated caller must not be able to generate puzzles for any date.
+        if (date.isBefore(today().minusDays(ARCHIVE_DAYS))) {
+            throw ApiException.badRequest("DATE_TOO_OLD", "Only the last " + ARCHIVE_DAYS + " days are available");
         }
         if (puzzles.existingTypes(date).size() < GameType.values().length) ensure(date);
         return puzzles.dailyPuzzles(date).stream().filter(p -> "ACTIVE".equals(p.status())).toList();

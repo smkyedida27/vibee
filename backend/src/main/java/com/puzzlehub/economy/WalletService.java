@@ -17,7 +17,9 @@ public class WalletService {
     public record Wallet(long coins, long gems) {}
 
     public enum Sku {
-        HEART_REFILL(30, 0), HINT_PACK_5(20, 0), COINS_1000(25, 1000), CONTINUE(12, 0);
+        HEART_REFILL(30, 0), HINT_PACK_5(20, 0), COINS_1000(25, 1000),
+        /** Continues cost 12 then 24 gems; the price is the maximum and the client sends the actual amount. */
+        CONTINUE(24, 0);
 
         final int gemCost;
         final int coinGrant;
@@ -68,9 +70,25 @@ public class WalletService {
 
     @Transactional
     public SpendResult spend(UUID userId, Sku sku, String key) {
-        boolean applied = apply(userId, Currency.GEMS, -sku.gemCost, "SPEND_" + sku.name(), "spend:" + key);
-        if (applied && sku.coinGrant > 0) {
-            apply(userId, Currency.COINS, sku.coinGrant, "SPEND_" + sku.name(), "spend:" + key);
+        return spend(userId, sku, key, null);
+    }
+
+    /**
+     * Spends {@code gems} (default: the full price) for {@code sku}. A smaller amount means the device paid
+     * the rest with free local gems; item effects are applied on the device, so this grants nothing extra.
+     * The server-side coin mirror is only credited when the full price was paid here.
+     */
+    @Transactional
+    public SpendResult spend(UUID userId, Sku sku, String key, Integer gems) {
+        int amount = gems == null ? sku.gemCost : gems;
+        if (amount > sku.gemCost) {
+            throw ApiException.badRequest("VALIDATION_FAILED", "gems: must be between 1 and the price of " + sku.name());
+        }
+        // The SKU is part of the key so a replayed key can't be reused to claim a different item.
+        String ledgerKey = "spend:" + sku.name() + ":" + key;
+        boolean applied = apply(userId, Currency.GEMS, -amount, "SPEND_" + sku.name(), ledgerKey);
+        if (applied && sku.coinGrant > 0 && amount == sku.gemCost) {
+            apply(userId, Currency.COINS, sku.coinGrant, "SPEND_" + sku.name(), ledgerKey);
         }
         return new SpendResult(sku, get(userId));
     }

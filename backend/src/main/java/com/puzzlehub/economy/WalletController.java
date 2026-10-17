@@ -2,6 +2,7 @@ package com.puzzlehub.economy;
 
 import com.puzzlehub.identity.AuthUser;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,8 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/me")
 public class WalletController {
 
+    /** {@code gems} lets the client cover part of the price with free (local) gems; defaults to the full price. */
     public record SpendRequest(@NotNull WalletService.Sku sku,
-                               @NotNull @Pattern(regexp = "[A-Za-z0-9._:-]{8,128}") String idempotencyKey) {}
+                               @NotNull @Pattern(regexp = "[A-Za-z0-9._:-]{8,128}") String idempotencyKey,
+                               @Min(1) Integer gems) {}
 
     private final WalletService wallet;
     private final DailyRewardService rewards;
@@ -32,7 +35,7 @@ public class WalletController {
 
     @PostMapping("/wallet/spend")
     public WalletService.SpendResult spend(AuthUser user, @Valid @RequestBody SpendRequest body) {
-        return wallet.spend(user.id(), body.sku(), body.idempotencyKey());
+        return wallet.spend(user.id(), body.sku(), body.idempotencyKey(), body.gems());
     }
 
     @PostMapping("/rewards/daily-claim")

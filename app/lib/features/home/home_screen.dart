@@ -12,6 +12,7 @@ import '../../core/ui/pressable.dart';
 import '../../games/common/game_type.dart';
 import '../../services/services.dart';
 import '../../state/levels.dart';
+import '../profile/invite.dart';
 import '../rewards/rewards.dart';
 import '../shop/shop_sheets.dart';
 
@@ -91,6 +92,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 14),
+                const InviteCard(compact: true),
                 SectionTitle(
                   'Quick Play',
                   trailing: Text('Practice • no lives', style: AppText.body(13, color: Colors.white70)),

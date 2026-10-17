@@ -87,12 +87,29 @@ class ConnectGame {
     return oneAway ? GuessOutcome.oneAway : GuessOutcome.wrong;
   }
 
-  /// Hint: reveals the easiest unsolved group's title and one of its words.
-  (ConnectGroup, String)? hint() {
+  final Set<String> _hinted = {};
+
+  /// Hint: the easiest unsolved group's title and one of its words not already revealed,
+  /// so repeated hints always tell the player something new.
+  (ConnectGroup, String)? hint({bool reveal = false}) {
     final open = puzzle.groups.where((g) => !solved.contains(g)).toList()..sort((a, b) => a.level.compareTo(b.level));
-    if (open.isEmpty) return null;
-    final g = open.first;
-    return (g, g.words.first);
+    for (final g in open) {
+      final w = g.words.where((w) => !_hinted.contains(w)).firstOrNull;
+      if (w == null) continue;
+      if (reveal) _hinted.add(w);
+      return (g, w);
+    }
+    return null;
+  }
+
+  /// Spoiler-free emoji rows, one per guess, coloured by each word's true group.
+  String get shareGrid {
+    const colours = ['🟨', '🟩', '🟦', '🟪'];
+    final level = {
+      for (final g in puzzle.groups)
+        for (final w in g.words) w: g.level.clamp(0, 3),
+    };
+    return guesses.map((g) => g.map((w) => colours[level[w] ?? 0]).join()).join('\n');
   }
 
   void shuffle() => remaining.shuffle();

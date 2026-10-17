@@ -36,6 +36,12 @@ class _PuzzleHubAppState extends State<PuzzleHubApp> with WidgetsBindingObserver
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     widget.services.warmUp();
+    // Tapping a daily reminder opens the Daily tab (warm start, or cold start once ready).
+    final reminders = widget.services.reminders;
+    reminders.onOpenDaily = () => _router.go('/daily');
+    reminders.init().then((_) {
+      if (reminders.consumeLaunchedFromReminder() && widget.services.player.data.onboarded) _router.go('/daily');
+    });
   }
 
   @override

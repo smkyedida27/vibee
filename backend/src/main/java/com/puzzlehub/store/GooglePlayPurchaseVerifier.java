@@ -41,7 +41,11 @@ public class GooglePlayPurchaseVerifier implements PurchaseVerifier {
         } catch (IOException e) {
             throw new IllegalStateException("Unable to load Play service account", e);
         }
-        this.http = RestClient.builder().baseUrl(BASE).build();
+        // Bounded timeouts: a slow Play API must fail fast rather than pile up request threads.
+        var factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(java.time.Duration.ofSeconds(3));
+        factory.setReadTimeout(java.time.Duration.ofSeconds(8));
+        this.http = RestClient.builder().baseUrl(BASE).requestFactory(factory).build();
     }
 
     @Override

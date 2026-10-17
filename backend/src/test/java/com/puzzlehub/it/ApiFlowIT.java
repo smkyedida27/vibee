@@ -116,6 +116,7 @@ class ApiFlowIT {
         assertThat(d.keySet()).containsExactlyInAnyOrder("CONNECT", "QUEENS", "SUDOKU", "LADDER", "MERGE");
         d.values().forEach(p -> assertThat(p.get("checksum").asText()).hasSize(64));
         assertThat(api.get("/api/v1/daily-challenge?date=2999-01-01", null).status()).isEqualTo(400);
+        assertThat(api.get("/api/v1/daily-challenge?date=2001-01-01", null).body().get("code").asText()).isEqualTo("DATE_TOO_OLD");
         assertThat(api.get("/actuator/health", null).status()).isEqualTo(200);
         assertThat(api.get("/actuator/health/readiness", null).status()).isEqualTo(200);
         assertThat(api.get("/v3/api-docs", null).status()).isEqualTo(200);
@@ -263,9 +264,16 @@ class ApiFlowIT {
         // Non-consumables follow the Play account to a new guest (e.g. after a reinstall).
         assertThat(api.post("/api/v1/purchases/google/verify", removeAds, other.access()).status()).isEqualTo(200);
         assertThat(api.get("/api/v1/me/entitlements", other.access()).body().get("removeAds").asBoolean()).isTrue();
+        // ...and leaves the previous account, so one purchase can't unlock unlimited accounts.
+        assertThat(api.get("/api/v1/me/entitlements", s.access()).body().get("removeAds").asBoolean()).isFalse();
 
-        Map<String, String> cont = Map.of("sku", "CONTINUE", "idempotencyKey", "spend-0003");
+        Map<String, Object> cont = Map.of("sku", "CONTINUE", "idempotencyKey", "spend-0003", "gems", 12);
         assertThat(api.post("/api/v1/me/wallet/spend", cont, s.access()).body().get("wallet").get("gems").asInt()).isEqualTo(38);
+        // A replayed key can't claim a different item, and the amount can't exceed the price.
+        assertThat(api.post("/api/v1/me/wallet/spend", Map.of("sku", "HEART_REFILL", "idempotencyKey", "spend-0003"),
+                s.access()).body().get("wallet").get("gems").asInt()).isEqualTo(8);
+        assertThat(api.post("/api/v1/me/wallet/spend", Map.of("sku", "CONTINUE", "idempotencyKey", "spend-0004", "gems", 25),
+                s.access()).status()).isEqualTo(400);
         // Starter pack: gems once per token + remove-ads; a transfer moves the entitlement only.
         Session fresh = guest();
         Session reinstall = guest();
@@ -384,5 +392,44 @@ class ApiFlowIT {
         assertThat(page2.get("entries").get(1).get("userId").asText()).isEqualTo(slowLate.userId());
         assertThat(page2.get("entries").get(1).get("rank").asInt()).isEqualTo(4);
         assertThat(lb.get("me").get("rank").asInt()).isEqualTo(1);
+    }
+
+    @Test
+    void invitesGrantGemsOnceAndMakeFriends() {
+        Session inviter = guest(), invitee = guest();
+        String code = api.get("/api/v1/me/referral", inviter.access()).body().get("inviteCode").asText();
+
+        assertThat(api.post("/api/v1/me/referral/redeem", Map.of("code", code), inviter.access()).status()).isEqualTo(400);
+        Api.Res r = api.post("/api/v1/me/referral/redeem", Map.of("code", code.toLowerCase()), invitee.access());
+        assertThat(r.status()).isEqualTo(200);
+        assertThat(r.body().get("gemsGranted").asInt()).isEqualTo(20);
+        assertThat(r.body().get("wallet").get("gems").asLong()).isEqualTo(20);
+        assertThat(r.body().get("inviter").get("userId").asText()).isEqualTo(inviter.userId());
+
+        assertThat(api.post("/api/v1/me/referral/redeem", Map.of("code", code), invitee.access()).status()).isEqualTo(409);
+        assertThat(api.get("/api/v1/me/wallet", inviter.access()).body().get("gems").asLong()).isEqualTo(20);
+        assertThat(api.get("/api/v1/me/friends", inviter.access()).body()).hasSize(1);
+        JsonNode stats = api.get("/api/v1/me/referral", inviter.access()).body();
+        assertThat(stats.get("invited").asInt()).isEqualTo(1);
+        assertThat(api.get("/api/v1/me/referral", invitee.access()).body().get("canRedeem").asBoolean()).isFalse();
+
+        Session old = guest();
+        db.sql("update users set created_at = now() - interval '8 days' where id = :u")
+                .param("u", UUID.fromString(old.userId())).update();
+        assertThat(api.post("/api/v1/me/referral/redeem", Map.of("code", code), old.access()).status()).isEqualTo(409);
+        assertThat(api.post("/api/v1/me/referral/redeem", Map.of("code", "ZZZZZZZZ"), guest().access()).status()).isEqualTo(404);
+    }
+
+    @Test
+    void onlyTheFirstAttemptIsRanked() {
+        Session s = guest();
+        JsonNode merge = daily().get("MERGE");
+        String first = attempt(s, merge);
+        String second = attempt(s, merge);
+        Api.Res late = submit(s, second, Map.of("moves", "LURD".repeat(50)), 0);
+        assertThat(late.body().get("counted").asBoolean()).isFalse();
+        Api.Res real = submit(s, first, Map.of("moves", "LURD".repeat(50)), 0);
+        assertThat(real.body().get("counted").asBoolean()).isTrue();
+        assertThat(real.body().get("rank").isNull()).isFalse();
     }
 }

@@ -26,6 +26,16 @@ disruption will not be pursued legally.
 **Game integrity**
 * The client is untrusted: submissions are replayed and validated server-side; durations
   are server-measured; only the first attempt per puzzle counts for leaderboards.
+* Leaderboard integrity: only a player's **first** attempt per puzzle can count (no
+  restart-until-lucky), only today's puzzle (plus one day of grace) is ranked, and the public
+  archive is limited to the last 30 days so unauthenticated callers can't mint puzzles.
+  Puzzles are solved on the device, so answers ship with the content (as in every offline-capable
+  daily game); server replay validation plus server-side timing bound what a cheater can gain.
+* Wallet spends bind the idempotency key to the SKU; purchase verification calls Google outside
+  the database transaction with 3 s / 8 s timeouts; a remove-ads/VIP token that moves to a new
+  account is revoked from the old one.
+* Invite rewards are bounded: one redemption per account, only in its first 7 days, and an inviter
+  is rewarded for at most 25 invites.
 * Idempotency keys + unique constraints on attempts, purchases and reward claims.
 * Rate limits (per user and per IP) on auth, attempt submission, and purchase
   verification; anomalous scores (faster than physically possible) are flagged.

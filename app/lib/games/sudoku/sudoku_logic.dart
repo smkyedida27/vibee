@@ -190,6 +190,8 @@ class SudokuBoard {
   /// Returns true if the entry is correct.
   bool enter(int i, int d) {
     if (isGiven(i)) return true;
+    // Re-entering the same digit changes nothing and must not cost another mistake.
+    if (values[i] == d) return d == puzzle.solution[i];
     _snapshot();
     values[i] = d;
     notes[i].clear();

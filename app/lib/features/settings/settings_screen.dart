@@ -72,9 +72,27 @@ class SettingsScreen extends StatelessWidget {
                       icon: Icons.notifications_active_rounded,
                       label: 'Daily puzzle reminder',
                       value: st.reminders,
-                      onChanged: (v) {
+                      onChanged: (v) async {
+                        if (v && !await s.reminders.requestPermission()) {
+                          if (context.mounted) {
+                            toast(
+                              context,
+                              'Allow notifications for Puzzle Hub in your phone settings to get reminders',
+                            );
+                          }
+                          return;
+                        }
                         set((x) => x.reminders = v);
-                        if (v) FirebaseSetup.enablePush(s.api).catchError((Object _) => false);
+                        if (v) {
+                          FirebaseSetup.enablePush(s.api).catchError((Object _) => false);
+                          if (context.mounted) {
+                            toast(
+                              context,
+                              'We\'ll remind you when new puzzles are ready',
+                              icon: Icons.notifications_active_rounded,
+                            );
+                          }
+                        }
                         s.api
                             .updatePreferences({
                               'notificationsEnabled': v,

@@ -299,6 +299,8 @@ class PlayerStore extends ChangeNotifier {
       return;
     }
     data.heartClockStart ??= _now;
+    // Clock moved backwards (manual change, timezone bug): restart the timer instead of stalling.
+    if (data.heartClockStart! > _now) data.heartClockStart = _now;
     final elapsed = _now - data.heartClockStart!;
     final gained = elapsed ~/ Economy.heartRegen.inMilliseconds;
     if (gained > 0) {

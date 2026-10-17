@@ -19,6 +19,7 @@ import '../../services/api_client.dart';
 import '../../services/services.dart';
 import '../../state/player.dart';
 import '../home/home_screen.dart';
+import 'invite.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -194,6 +195,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 rim: Candy.purple,
                 child: Column(children: [for (final g in GameType.values) _GameStatRow(game: g)]),
               ),
+              const SectionTitle('Invite & earn'),
+              const InviteCard(),
               const SectionTitle('Friends'),
               FutureBuilder<Map<String, dynamic>>(
                 future: _remote,

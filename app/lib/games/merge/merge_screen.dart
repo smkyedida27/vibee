@@ -78,16 +78,25 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
     final max = game.maxTile;
     final stars = max >= t ? 3 : (max >= t ~/ 2 ? 2 : (max >= t ~/ 4 ? 1 : 0));
     final submission = {'moves': game.moves.toString()};
-    if (stars > 0 && (reachedTarget || request.source != PlaySource.daily)) {
+    if (request.source == PlaySource.daily) {
+      // The daily Merge is one scored run: every finished run is submitted and ranked by score
+      // (docs/CONTRACT.md), whether or not it reached the target.
+      finish(
+        RoundResult(
+          won: true,
+          stars: stars.clamp(1, 3),
+          submission: submission,
+          detail: reachedTarget
+              ? 'Best tile $max • Score ${game.score}'
+              : 'Out of moves • Best tile $max • Score ${game.score}',
+        ),
+      );
+    } else if (stars > 0) {
       finish(
         RoundResult(won: true, stars: stars, submission: submission, detail: 'Best tile $max • Score ${game.score}'),
       );
     } else {
-      finish(
-        RoundResult(won: false, stars: 0, submission: submission),
-        // Continues alter the board, so they're disabled for the leaderboard daily.
-        onContinue: request.source == PlaySource.daily ? null : _clearSmallest,
-      );
+      finish(RoundResult(won: false, stars: 0, submission: submission), onContinue: _clearSmallest);
     }
   }
 
@@ -174,6 +183,7 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
       child: GameScaffold(
         request: request,
         elapsed: elapsed,
+        roundOver: finished,
         confetti: confetti,
         onHint: () async {
           if (await requestHint()) setState(() => _suggestion = _bestMove());
