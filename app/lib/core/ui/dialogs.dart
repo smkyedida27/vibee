@@ -63,7 +63,11 @@ Future<T?> showCandyDialog<T>(
     ),
     transitionBuilder: (ctx, anim, _, child) {
       final reduce = MediaQuery.maybeDisableAnimationsOf(ctx) ?? false;
-      final curved = CurvedAnimation(parent: anim, curve: reduce ? Curves.linear : Curves.elasticOut, reverseCurve: Curves.easeIn);
+      final curved = CurvedAnimation(
+        parent: anim,
+        curve: reduce ? Curves.linear : Curves.elasticOut,
+        reverseCurve: Curves.easeIn,
+      );
       return FadeTransition(
         opacity: CurvedAnimation(parent: anim, curve: const Interval(0, 0.4)),
         child: ScaleTransition(scale: Tween(begin: 0.6, end: 1.0).animate(curved), child: child),
@@ -73,8 +77,14 @@ Future<T?> showCandyDialog<T>(
 }
 
 /// Simple confirm with two candy buttons.
-Future<bool> confirmDialog(BuildContext context,
-    {required String title, required String message, String yes = 'Yes', String no = 'Cancel', Candy candy = Candy.orange}) async {
+Future<bool> confirmDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  String yes = 'Yes',
+  String no = 'Cancel',
+  Candy candy = Candy.orange,
+}) async {
   final r = await showCandyDialog<bool>(
     context,
     title: title,
@@ -82,13 +92,23 @@ Future<bool> confirmDialog(BuildContext context,
     builder: (ctx) => Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(message, textAlign: TextAlign.center, style: AppText.body(17, color: AppColors.inkSoft)),
+        Text(
+          message,
+          textAlign: TextAlign.center,
+          style: AppText.body(17, color: AppColors.inkSoft),
+        ),
         const SizedBox(height: 18),
-        Row(children: [
-          Expanded(child: CandyButton(label: no, candy: Candy.grey, height: 54, onTap: () => Navigator.pop(ctx, false))),
-          const SizedBox(width: 12),
-          Expanded(child: CandyButton(label: yes, candy: Candy.green, height: 54, onTap: () => Navigator.pop(ctx, true))),
-        ]),
+        Row(
+          children: [
+            Expanded(
+              child: CandyButton(label: no, candy: Candy.grey, height: 54, onTap: () => Navigator.pop(ctx, false)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: CandyButton(label: yes, candy: Candy.green, height: 54, onTap: () => Navigator.pop(ctx, true)),
+            ),
+          ],
+        ),
       ],
     ),
   );
@@ -98,12 +118,16 @@ Future<bool> confirmDialog(BuildContext context,
 void toast(BuildContext context, String message, {IconData icon = Icons.info_rounded}) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(
-      duration: const Duration(milliseconds: 1800),
-      content: Row(children: [
-        Icon(icon, color: AppColors.gold),
-        const SizedBox(width: 10),
-        Expanded(child: Text(message)),
-      ]),
-    ));
+    ..showSnackBar(
+      SnackBar(
+        duration: const Duration(milliseconds: 1800),
+        content: Row(
+          children: [
+            Icon(icon, color: AppColors.gold),
+            const SizedBox(width: 10),
+            Expanded(child: Text(message)),
+          ],
+        ),
+      ),
+    );
 }

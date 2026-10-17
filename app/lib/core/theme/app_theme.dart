@@ -13,12 +13,12 @@ class AppText {
       TextStyle(fontFamily: AppFonts.display, fontSize: size, color: color, height: height, letterSpacing: 0.4);
 
   static TextStyle body(double size, {Color color = AppColors.ink, FontWeight weight = FontWeight.w600}) => TextStyle(
-        fontFamily: AppFonts.body,
-        fontSize: size,
-        color: color,
-        fontWeight: weight,
-        fontVariations: [FontVariation('wght', _w(weight))],
-      );
+    fontFamily: AppFonts.body,
+    fontSize: size,
+    color: color,
+    fontWeight: weight,
+    fontVariations: [FontVariation('wght', _w(weight))],
+  );
 
   static double _w(FontWeight w) => w.value.toDouble();
 }
@@ -35,9 +35,7 @@ ThemeData buildAppTheme() {
   );
   return base.copyWith(
     textTheme: base.textTheme.apply(fontFamily: AppFonts.body, bodyColor: AppColors.ink, displayColor: AppColors.ink),
-    pageTransitionsTheme: const PageTransitionsTheme(builders: {
-      TargetPlatform.android: ZoomPageTransitionsBuilder(),
-    }),
+    pageTransitionsTheme: const PageTransitionsTheme(builders: {TargetPlatform.android: ZoomPageTransitionsBuilder()}),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
       backgroundColor: AppColors.night,

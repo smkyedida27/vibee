@@ -34,48 +34,57 @@ class _CalendarState extends State<_Calendar> {
     final p = context.player;
     final day = p.data.loginDay;
     final canClaim = p.canClaimLogin;
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      Text('Log in every day for bigger gifts!', style: AppText.body(15, color: AppColors.inkSoft)),
-      const SizedBox(height: 12),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        alignment: WrapAlignment.center,
-        children: [
-          for (var i = 0; i < Economy.loginRewards.length; i++)
-            _DayTile(
-              day: i + 1,
-              reward: Economy.loginRewards[i],
-              claimed: i < day || (_claimed != null && i == day - 1),
-              today: canClaim && i == day,
-              big: i == Economy.loginRewards.length - 1,
-            ),
-        ],
-      ),
-      const SizedBox(height: 16),
-      if (_claimed != null)
-        OutlinedText('Collected!', size: 26, stroke: Candy.green.dark)
-      else
-        CandyButton(
-          label: canClaim ? 'Collect' : 'Come back tomorrow',
-          candy: Candy.green,
-          height: 60,
-          pulse: canClaim,
-          onTap: canClaim
-              ? () {
-                  final r = p.claimLogin();
-                  Audio.instance.fx(Sfx.coin, HapticKind.heavy);
-                  setState(() => _claimed = r);
-                  context.services.sync.push();
-                }
-              : null,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('Log in every day for bigger gifts!', style: AppText.body(15, color: AppColors.inkSoft)),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
+          children: [
+            for (var i = 0; i < Economy.loginRewards.length; i++)
+              _DayTile(
+                day: i + 1,
+                reward: Economy.loginRewards[i],
+                claimed: i < day || (_claimed != null && i == day - 1),
+                today: canClaim && i == day,
+                big: i == Economy.loginRewards.length - 1,
+              ),
+          ],
         ),
-    ]);
+        const SizedBox(height: 16),
+        if (_claimed != null)
+          OutlinedText('Collected!', size: 26, stroke: Candy.green.dark)
+        else
+          CandyButton(
+            label: canClaim ? 'Collect' : 'Come back tomorrow',
+            candy: Candy.green,
+            height: 60,
+            pulse: canClaim,
+            onTap: canClaim
+                ? () {
+                    final r = p.claimLogin();
+                    Audio.instance.fx(Sfx.coin, HapticKind.heavy);
+                    setState(() => _claimed = r);
+                    context.services.sync.push();
+                  }
+                : null,
+          ),
+      ],
+    );
   }
 }
 
 class _DayTile extends StatelessWidget {
-  const _DayTile({required this.day, required this.reward, required this.claimed, required this.today, required this.big});
+  const _DayTile({
+    required this.day,
+    required this.reward,
+    required this.claimed,
+    required this.today,
+    required this.big,
+  });
   final int day;
   final LoginReward reward;
   final bool claimed;
@@ -92,26 +101,57 @@ class _DayTile extends StatelessWidget {
       height: 92,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        gradient: today ? Candy.gold.face : (claimed ? Candy.green.face : const LinearGradient(colors: [Color(0xFFF1EAFF), Color(0xFFE2D6FA)])),
-        border: Border.all(color: today ? Candy.gold.dark : (claimed ? Candy.green.dark : AppColors.panelEdge), width: 2.5),
+        gradient: today
+            ? Candy.gold.face
+            : (claimed ? Candy.green.face : const LinearGradient(colors: [Color(0xFFF1EAFF), Color(0xFFE2D6FA)])),
+        border: Border.all(
+          color: today ? Candy.gold.dark : (claimed ? Candy.green.dark : AppColors.panelEdge),
+          width: 2.5,
+        ),
         boxShadow: today ? [BoxShadow(color: AppColors.gold.withValues(alpha: 0.7), blurRadius: 14)] : null,
       ),
-      child: Stack(alignment: Alignment.center, children: [
-        Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Text('DAY $day', style: AppText.body(11, color: today || claimed ? Colors.white : AppColors.inkSoft, weight: FontWeight.w800)),
-          const SizedBox(height: 2),
-          big ? const GameArt(ArtKind.chest, size: 40) : GameArt(art, size: 32),
-          Text(big ? 'MEGA' : '×$amount', style: AppText.display(15, color: today || claimed ? Colors.white : AppColors.ink)),
-        ]),
-        if (claimed) const Positioned(right: 4, top: 4, child: Icon(Icons.check_circle_rounded, color: Colors.white, size: 20)),
-      ]),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'DAY $day',
+                style: AppText.body(
+                  11,
+                  color: today || claimed ? Colors.white : AppColors.inkSoft,
+                  weight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 2),
+              big ? const GameArt(ArtKind.chest, size: 40) : GameArt(art, size: 32),
+              Text(
+                big ? 'MEGA' : '×$amount',
+                style: AppText.display(15, color: today || claimed ? Colors.white : AppColors.ink),
+              ),
+            ],
+          ),
+          if (claimed)
+            const Positioned(right: 4, top: 4, child: Icon(Icons.check_circle_rounded, color: Colors.white, size: 20)),
+        ],
+      ),
     );
   }
 }
 
 // ------------------------------------------------------------------ lucky spin
 class SpinReward {
-  const SpinReward(this.label, this.art, this.color, {this.coins = 0, this.gems = 0, this.hints = 0, this.lifeMinutes = 0, this.weight = 10});
+  const SpinReward(
+    this.label,
+    this.art,
+    this.color, {
+    this.coins = 0,
+    this.gems = 0,
+    this.hints = 0,
+    this.lifeMinutes = 0,
+    this.weight = 10,
+  });
   final String label;
   final ArtKind art;
   final Color color;
@@ -226,80 +266,109 @@ class _SpinScreenState extends State<SpinScreen> with SingleTickerProviderStateM
     return Scaffold(
       body: CandyBackground(
         gradient: AppColors.nightBg,
-        child: Stack(children: [
-          SafeArea(
-            child: Column(children: [
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(children: [
-                  CandyIconButton(icon: Icons.arrow_back_rounded, onTap: () => context.pop(), size: 46, semanticLabel: 'Back'),
-                  const Spacer(),
-                ]),
-              ),
-              const OutlinedText('Lucky Spin', size: 42),
-              Text('Spin once a day for free!', style: AppText.body(16, color: Colors.white70)),
-              Expanded(
-                child: Center(
-                  child: LayoutBuilder(builder: (context, box) {
-                    final size = math.min(box.maxWidth - 40, box.maxHeight - 20).clamp(200.0, 380.0);
-                    return SizedBox(
-                      width: size,
-                      height: size + 30,
-                      child: Stack(alignment: Alignment.topCenter, children: [
-                        Positioned(
-                          top: 20,
-                          child: Transform.rotate(
-                            angle: _angle,
-                            child: SizedBox.square(dimension: size, child: CustomPaint(painter: _WheelPainter(rewards))),
-                          ),
+        child: Stack(
+          children: [
+            SafeArea(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        CandyIconButton(
+                          icon: Icons.arrow_back_rounded,
+                          onTap: () => context.pop(),
+                          size: 46,
+                          semanticLabel: 'Back',
                         ),
-                        // Hub labels drawn unrotated would be wrong, so icons rotate with the wheel:
-                        Positioned(
-                          top: 20,
-                          child: Transform.rotate(
-                            angle: _angle,
-                            child: SizedBox.square(
-                              dimension: size,
-                              child: Stack(children: [
-                                for (var i = 0; i < rewards.length; i++) _segmentLabel(i, size),
-                              ]),
+                        const Spacer(),
+                      ],
+                    ),
+                  ),
+                  const OutlinedText('Lucky Spin', size: 42),
+                  Text('Spin once a day for free!', style: AppText.body(16, color: Colors.white70)),
+                  Expanded(
+                    child: Center(
+                      child: LayoutBuilder(
+                        builder: (context, box) {
+                          final size = math.min(box.maxWidth - 40, box.maxHeight - 20).clamp(200.0, 380.0);
+                          return SizedBox(
+                            width: size,
+                            height: size + 30,
+                            child: Stack(
+                              alignment: Alignment.topCenter,
+                              children: [
+                                Positioned(
+                                  top: 20,
+                                  child: Transform.rotate(
+                                    angle: _angle,
+                                    child: SizedBox.square(
+                                      dimension: size,
+                                      child: CustomPaint(painter: _WheelPainter(rewards)),
+                                    ),
+                                  ),
+                                ),
+                                // Hub labels drawn unrotated would be wrong, so icons rotate with the wheel:
+                                Positioned(
+                                  top: 20,
+                                  child: Transform.rotate(
+                                    angle: _angle,
+                                    child: SizedBox.square(
+                                      dimension: size,
+                                      child: Stack(
+                                        children: [for (var i = 0; i < rewards.length; i++) _segmentLabel(i, size)],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(top: 20 + size / 2 - 34, child: const _Hub()),
+                                const Positioned(top: 0, child: _Pointer()),
+                              ],
                             ),
-                          ),
-                        ),
-                        Positioned(top: 20 + size / 2 - 34, child: const _Hub()),
-                        const Positioned(top: 0, child: _Pointer()),
-                      ]),
-                    );
-                  }),
-                ),
-              ),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: r == null
-                    ? const SizedBox(height: 40)
-                    : Row(key: ValueKey(_won), mainAxisSize: MainAxisSize.min, children: [
-                        const OutlinedText('You won', size: 26),
-                        const SizedBox(width: 8),
-                        GameArt(r.art, size: 36),
-                        OutlinedText(r.lifeMinutes > 0 ? '∞ ${r.label}' : '×${r.label}', size: 26),
-                      ]),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-                child: p.canFreeSpin
-                    ? CandyButton(label: 'Spin!', candy: Candy.green, height: 68, pulse: !_spinning, onTap: _spinning ? null : () => _spin(free: true))
-                    : CandyButton(
-                        label: 'Spin again',
-                        icon: Icons.ondemand_video_rounded,
-                        candy: Candy.blue,
-                        height: 64,
-                        onTap: _spinning ? null : () => _spin(free: false),
+                          );
+                        },
                       ),
+                    ),
+                  ),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: r == null
+                        ? const SizedBox(height: 40)
+                        : Row(
+                            key: ValueKey(_won),
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const OutlinedText('You won', size: 26),
+                              const SizedBox(width: 8),
+                              GameArt(r.art, size: 36),
+                              OutlinedText(r.lifeMinutes > 0 ? '∞ ${r.label}' : '×${r.label}', size: 26),
+                            ],
+                          ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                    child: p.canFreeSpin
+                        ? CandyButton(
+                            label: 'Spin!',
+                            candy: Candy.green,
+                            height: 68,
+                            pulse: !_spinning,
+                            onTap: _spinning ? null : () => _spin(free: true),
+                          )
+                        : CandyButton(
+                            label: 'Spin again',
+                            icon: Icons.ondemand_video_rounded,
+                            candy: Candy.blue,
+                            height: 64,
+                            onTap: _spinning ? null : () => _spin(free: false),
+                          ),
+                  ),
+                ],
               ),
-            ]),
-          ),
-          Positioned.fill(child: ConfettiLayer(controller: _confetti)),
-        ]),
+            ),
+            Positioned.fill(child: ConfettiLayer(controller: _confetti)),
+          ],
+        ),
       ),
     );
   }
@@ -316,10 +385,13 @@ class _SpinScreenState extends State<SpinScreen> with SingleTickerProviderStateM
       height: 60,
       child: Transform.rotate(
         angle: i * seg,
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          GameArt(rewards[i].art, size: 28),
-          OutlinedText(rewards[i].label, size: 16, stroke: Colors.black.withValues(alpha: 0.6), shadow: false),
-        ]),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GameArt(rewards[i].art, size: 28),
+            OutlinedText(rewards[i].label, size: 16, stroke: Colors.black.withValues(alpha: 0.6), shadow: false),
+          ],
+        ),
       ),
     );
   }
@@ -350,19 +422,24 @@ class _WheelPainter extends CustomPainter {
               .createShader(rect),
       );
       canvas.drawArc(
-          rect,
-          start,
-          seg,
-          true,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 3
-            ..color = Colors.white.withValues(alpha: 0.85));
+        rect,
+        start,
+        seg,
+        true,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3
+          ..color = Colors.white.withValues(alpha: 0.85),
+      );
     }
     // Bulbs around the rim.
     for (var i = 0; i < 24; i++) {
       final a = i * 2 * math.pi / 24;
-      canvas.drawCircle(c + Offset(math.cos(a), math.sin(a)) * (r - 7), 4, Paint()..color = i.isEven ? Colors.white : const Color(0xFFFFF59A));
+      canvas.drawCircle(
+        c + Offset(math.cos(a), math.sin(a)) * (r - 7),
+        4,
+        Paint()..color = i.isEven ? Colors.white : const Color(0xFFFFF59A),
+      );
     }
   }
 
@@ -374,16 +451,19 @@ class _Hub extends StatelessWidget {
   const _Hub();
   @override
   Widget build(BuildContext context) => Container(
-        width: 68,
-        height: 68,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const RadialGradient(center: Alignment(-0.3, -0.4), colors: [Color(0xFFFFF59A), Color(0xFFFFB800), Color(0xFFC27A00)]),
-          border: Border.all(color: Colors.white, width: 4),
-          boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 10, offset: Offset(0, 4))],
-        ),
-        child: const Center(child: GameArt(ArtKind.star, size: 36)),
-      );
+    width: 68,
+    height: 68,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: const RadialGradient(
+        center: Alignment(-0.3, -0.4),
+        colors: [Color(0xFFFFF59A), Color(0xFFFFB800), Color(0xFFC27A00)],
+      ),
+      border: Border.all(color: Colors.white, width: 4),
+      boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 10, offset: Offset(0, 4))],
+    ),
+    child: const Center(child: GameArt(ArtKind.star, size: 36)),
+  );
 }
 
 class _Pointer extends StatelessWidget {
@@ -403,11 +483,12 @@ class _PointerPainter extends CustomPainter {
     canvas.drawShadow(path, Colors.black, 4, false);
     canvas.drawPath(path, Paint()..shader = Candy.red.face.createShader(Offset.zero & s));
     canvas.drawPath(
-        path,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3
-          ..color = Colors.white);
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3
+        ..color = Colors.white,
+    );
     canvas.drawCircle(Offset(s.width / 2, s.height * 0.3), 6, Paint()..color = Colors.white);
   }
 

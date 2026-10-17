@@ -79,12 +79,9 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
     final stars = max >= t ? 3 : (max >= t ~/ 2 ? 2 : (max >= t ~/ 4 ? 1 : 0));
     final submission = {'moves': game.moves.toString()};
     if (stars > 0 && (reachedTarget || request.source != PlaySource.daily)) {
-      finish(RoundResult(
-        won: true,
-        stars: stars,
-        submission: submission,
-        detail: 'Best tile $max • Score ${game.score}',
-      ));
+      finish(
+        RoundResult(won: true, stars: stars, submission: submission, detail: 'Best tile $max • Score ${game.score}'),
+      );
     } else {
       finish(
         RoundResult(won: false, stars: 0, submission: submission),
@@ -132,9 +129,12 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
             MoveDir.right => line * n + (n - 1 - k),
             MoveDir.up => k * n + line,
             MoveDir.down => (n - 1 - k) * n + line,
-          }
+          },
       ];
-      final vals = [for (final i in idx) if (g[i] != 0) g[i]];
+      final vals = [
+        for (final i in idx)
+          if (g[i] != 0) g[i],
+      ];
       final out = <int>[];
       for (var i = 0; i < vals.length; i++) {
         if (i + 1 < vals.length && vals[i] == vals[i + 1]) {
@@ -178,26 +178,36 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
         onHint: () async {
           if (await requestHint()) setState(() => _suggestion = _bestMove());
         },
-        status: Column(children: [
-          Row(children: [
-            Expanded(child: _ScoreBox(label: 'SCORE', value: game.score, gain: _lastScoreGain, gainKey: _gainKey)),
-            const SizedBox(width: 10),
-            Expanded(child: _ScoreBox(label: 'GOAL', value: target, candy: Candy.gold)),
-          ]),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Stack(children: [
-              Container(height: 16, color: Colors.white12),
-              AnimatedFractionallySizedBox(
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeOutBack,
-                widthFactor: progress,
-                child: Container(height: 16, decoration: BoxDecoration(gradient: Candy.green.face)),
+        status: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _ScoreBox(label: 'SCORE', value: game.score, gain: _lastScoreGain, gainKey: _gainKey),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _ScoreBox(label: 'GOAL', value: target, candy: Candy.gold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Stack(
+                children: [
+                  Container(height: 16, color: Colors.white12),
+                  AnimatedFractionallySizedBox(
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeOutBack,
+                    widthFactor: progress,
+                    child: Container(height: 16, decoration: BoxDecoration(gradient: Candy.green.face)),
+                  ),
+                ],
               ),
-            ]),
-          ),
-        ]),
+            ),
+          ],
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(14),
@@ -209,65 +219,74 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
                 onPanEnd: (_) {
                   final v = _dragDelta;
                   if (v.distance < 24) return;
-                  _move(v.dx.abs() > v.dy.abs()
-                      ? (v.dx > 0 ? MoveDir.right : MoveDir.left)
-                      : (v.dy > 0 ? MoveDir.down : MoveDir.up));
+                  _move(
+                    v.dx.abs() > v.dy.abs()
+                        ? (v.dx > 0 ? MoveDir.right : MoveDir.left)
+                        : (v.dy > 0 ? MoveDir.down : MoveDir.up),
+                  );
                 },
                 child: BoardFrame(
                   candy: Candy.green,
-                  child: LayoutBuilder(builder: (context, box) {
-                    final n = game.size;
-                    const gap = 8.0;
-                    final cell = (box.maxWidth - gap * (n + 1)) / n;
-                    Offset pos(int r, int c) => Offset(gap + c * (cell + gap), gap + r * (cell + gap));
-                    return Stack(children: [
-                      Container(
-                        decoration: BoxDecoration(color: const Color(0xFFE6DDF7), borderRadius: BorderRadius.circular(12)),
-                      ),
-                      for (var r = 0; r < n; r++)
-                        for (var c = 0; c < n; c++)
-                          Positioned(
-                            left: pos(r, c).dx,
-                            top: pos(r, c).dy,
-                            width: cell,
-                            height: cell,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFD3C6EE),
-                                borderRadius: BorderRadius.circular(cell * 0.18),
-                              ),
+                  child: LayoutBuilder(
+                    builder: (context, box) {
+                      final n = game.size;
+                      const gap = 8.0;
+                      final cell = (box.maxWidth - gap * (n + 1)) / n;
+                      Offset pos(int r, int c) => Offset(gap + c * (cell + gap), gap + r * (cell + gap));
+                      return Stack(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE6DDF7),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                      for (final t in game.removed)
-                        AnimatedPositioned(
-                          key: ValueKey('gone-${t.id}'),
-                          duration: const Duration(milliseconds: 110),
-                          left: pos(t.row, t.col).dx,
-                          top: pos(t.row, t.col).dy,
-                          width: cell,
-                          height: cell,
-                          child: _TileView(value: t.value, size: cell),
-                        ),
-                      for (final t in game.tiles)
-                        AnimatedPositioned(
-                          key: ValueKey(t.id),
-                          duration: const Duration(milliseconds: 110),
-                          curve: Curves.easeOut,
-                          left: pos(t.row, t.col).dx,
-                          top: pos(t.row, t.col).dy,
-                          width: cell,
-                          height: cell,
-                          child: TweenAnimationBuilder<double>(
-                            key: ValueKey('${t.id}-${t.value}'),
-                            tween: Tween(begin: t.spawnedThisMove ? 0.0 : (t.mergedThisMove ? 1.25 : 1.0), end: 1),
-                            duration: Duration(milliseconds: t.spawnedThisMove ? 220 : 260),
-                            curve: t.spawnedThisMove ? Curves.easeOutBack : Curves.elasticOut,
-                            builder: (_, s, child) => Transform.scale(scale: s, child: child),
-                            child: _TileView(value: t.value, size: cell),
-                          ),
-                        ),
-                    ]);
-                  }),
+                          for (var r = 0; r < n; r++)
+                            for (var c = 0; c < n; c++)
+                              Positioned(
+                                left: pos(r, c).dx,
+                                top: pos(r, c).dy,
+                                width: cell,
+                                height: cell,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFD3C6EE),
+                                    borderRadius: BorderRadius.circular(cell * 0.18),
+                                  ),
+                                ),
+                              ),
+                          for (final t in game.removed)
+                            AnimatedPositioned(
+                              key: ValueKey('gone-${t.id}'),
+                              duration: const Duration(milliseconds: 110),
+                              left: pos(t.row, t.col).dx,
+                              top: pos(t.row, t.col).dy,
+                              width: cell,
+                              height: cell,
+                              child: _TileView(value: t.value, size: cell),
+                            ),
+                          for (final t in game.tiles)
+                            AnimatedPositioned(
+                              key: ValueKey(t.id),
+                              duration: const Duration(milliseconds: 110),
+                              curve: Curves.easeOut,
+                              left: pos(t.row, t.col).dx,
+                              top: pos(t.row, t.col).dy,
+                              width: cell,
+                              height: cell,
+                              child: TweenAnimationBuilder<double>(
+                                key: ValueKey('${t.id}-${t.value}'),
+                                tween: Tween(begin: t.spawnedThisMove ? 0.0 : (t.mergedThisMove ? 1.25 : 1.0), end: 1),
+                                duration: Duration(milliseconds: t.spawnedThisMove ? 220 : 260),
+                                curve: t.spawnedThisMove ? Curves.easeOutBack : Curves.elasticOut,
+                                builder: (_, s, child) => Transform.scale(scale: s, child: child),
+                                child: _TileView(value: t.value, size: cell),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -279,7 +298,11 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 250),
               child: _suggestion == null
-                  ? Text('Swipe to merge matching tiles', key: const ValueKey('t'), style: AppText.body(15, color: Colors.white70))
+                  ? Text(
+                      'Swipe to merge matching tiles',
+                      key: const ValueKey('t'),
+                      style: AppText.body(15, color: Colors.white70),
+                    )
                   : Row(
                       key: ValueKey(_suggestion),
                       mainAxisSize: MainAxisSize.min,
@@ -306,7 +329,13 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
 }
 
 class _ScoreBox extends StatelessWidget {
-  const _ScoreBox({required this.label, required this.value, this.gain = 0, this.gainKey = 0, this.candy = Candy.purple});
+  const _ScoreBox({
+    required this.label,
+    required this.value,
+    this.gain = 0,
+    this.gainKey = 0,
+    this.candy = Candy.purple,
+  });
   final String label;
   final int value;
   final int gain;
@@ -315,43 +344,51 @@ class _ScoreBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(clipBehavior: Clip.none, children: [
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        decoration: BoxDecoration(
-          gradient: candy.face,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: candy.dark, width: 2),
-          boxShadow: [BoxShadow(color: candy.dark, offset: const Offset(0, 4))],
-        ),
-        child: Column(children: [
-          Text(label, style: AppText.body(11, color: Colors.white70, weight: FontWeight.w800)),
-          TweenAnimationBuilder<int>(
-            tween: IntTween(end: value),
-            duration: const Duration(milliseconds: 300),
-            builder: (_, v, _) => Text('$v', style: AppText.display(24)),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            gradient: candy.face,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: candy.dark, width: 2),
+            boxShadow: [BoxShadow(color: candy.dark, offset: const Offset(0, 4))],
           ),
-        ]),
-      ),
-      if (gain > 0)
-        Positioned(
-          right: 10,
-          top: -4,
-          child: TweenAnimationBuilder<double>(
-            key: ValueKey(gainKey),
-            tween: Tween(begin: 0, end: 1),
-            duration: const Duration(milliseconds: 700),
-            builder: (_, t, _) => Opacity(
-              opacity: 1 - t,
-              child: Transform.translate(
-                offset: Offset(0, -24 * t),
-                child: OutlinedText('+$gain', size: 18, stroke: Candy.green.dark),
+          child: Column(
+            children: [
+              Text(
+                label,
+                style: AppText.body(11, color: Colors.white70, weight: FontWeight.w800),
+              ),
+              TweenAnimationBuilder<int>(
+                tween: IntTween(end: value),
+                duration: const Duration(milliseconds: 300),
+                builder: (_, v, _) => Text('$v', style: AppText.display(24)),
+              ),
+            ],
+          ),
+        ),
+        if (gain > 0)
+          Positioned(
+            right: 10,
+            top: -4,
+            child: TweenAnimationBuilder<double>(
+              key: ValueKey(gainKey),
+              tween: Tween(begin: 0, end: 1),
+              duration: const Duration(milliseconds: 700),
+              builder: (_, t, _) => Opacity(
+                opacity: 1 - t,
+                child: Transform.translate(
+                  offset: Offset(0, -24 * t),
+                  child: OutlinedText('+$gain', size: 18, stroke: Candy.green.dark),
+                ),
               ),
             ),
           ),
-        ),
-    ]);
+      ],
+    );
   }
 }
 
@@ -390,29 +427,36 @@ class _TileView extends StatelessWidget {
           if (value >= 128) BoxShadow(color: c.base.withValues(alpha: 0.6), blurRadius: 14),
         ],
       ),
-      child: Stack(children: [
-        Positioned(
-          left: size * 0.12,
-          right: size * 0.12,
-          top: size * 0.06,
-          height: size * 0.3,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(size),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.white.withValues(alpha: 0.6), Colors.white.withValues(alpha: 0)],
+      child: Stack(
+        children: [
+          Positioned(
+            left: size * 0.12,
+            right: size * 0.12,
+            top: size * 0.06,
+            height: size * 0.3,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(size),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.white.withValues(alpha: 0.6), Colors.white.withValues(alpha: 0)],
+                ),
               ),
             ),
           ),
-        ),
-        Center(
-          child: light
-              ? Text('$value', style: AppText.display(size * (digits <= 2 ? 0.46 : 0.34), color: AppColors.royal))
-              : OutlinedText('$value', size: size * (digits <= 2 ? 0.46 : (digits == 3 ? 0.36 : 0.28)), stroke: c.dark, shadow: false),
-        ),
-      ]),
+          Center(
+            child: light
+                ? Text('$value', style: AppText.display(size * (digits <= 2 ? 0.46 : 0.34), color: AppColors.royal))
+                : OutlinedText(
+                    '$value',
+                    size: size * (digits <= 2 ? 0.46 : (digits == 3 ? 0.36 : 0.28)),
+                    stroke: c.dark,
+                    shadow: false,
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

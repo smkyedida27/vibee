@@ -11,7 +11,13 @@ class World {
 }
 
 class LevelSpec {
-  LevelSpec({required this.number, required this.game, required this.difficulty, required this.seed, required this.boss});
+  LevelSpec({
+    required this.number,
+    required this.game,
+    required this.difficulty,
+    required this.seed,
+    required this.boss,
+  });
   final int number;
   final GameType game;
   final Difficulty difficulty;
@@ -59,7 +65,14 @@ class Campaign {
     final game = n <= _intro.length ? _intro[n - 1] : _cycle[(n - _intro.length - 1) % _cycle.length];
     final boss = n % 10 == 0;
     final w = worldIndex(n);
-    var tier = switch (w) { 0 => 0, 1 => n % 4 == 0 ? 1 : 0, 2 => 1, 3 => n % 3 == 0 ? 2 : 1, 4 || 5 => 2, _ => 3 };
+    var tier = switch (w) {
+      0 => 0,
+      1 => n % 4 == 0 ? 1 : 0,
+      2 => 1,
+      3 => n % 3 == 0 ? 2 : 1,
+      4 || 5 => 2,
+      _ => 3,
+    };
     if (boss) tier = (tier + 1).clamp(0, 3);
     return LevelSpec(
       number: n,
@@ -72,30 +85,30 @@ class Campaign {
 
   // Per-game tuning by difficulty.
   static int queensSize(Difficulty d, int seed) => switch (d) {
-        Difficulty.easy => 5 + seed % 2,
-        Difficulty.medium => 7,
-        Difficulty.hard => 8,
-        Difficulty.expert => 9,
-      };
+    Difficulty.easy => 5 + seed % 2,
+    Difficulty.medium => 7,
+    Difficulty.hard => 8,
+    Difficulty.expert => 9,
+  };
 
   static int sudokuGivens(Difficulty d) => switch (d) {
-        Difficulty.easy => 42,
-        Difficulty.medium => 34,
-        Difficulty.hard => 29,
-        Difficulty.expert => 25,
-      };
+    Difficulty.easy => 42,
+    Difficulty.medium => 34,
+    Difficulty.hard => 29,
+    Difficulty.expert => 25,
+  };
 
   static int ladderPar(Difficulty d) => switch (d) {
-        Difficulty.easy => 3,
-        Difficulty.medium => 4,
-        Difficulty.hard => 5,
-        Difficulty.expert => 6,
-      };
+    Difficulty.easy => 3,
+    Difficulty.medium => 4,
+    Difficulty.hard => 5,
+    Difficulty.expert => 6,
+  };
 
   static int mergeTarget(Difficulty d) => switch (d) {
-        Difficulty.easy => 128,
-        Difficulty.medium => 256,
-        Difficulty.hard => 512,
-        Difficulty.expert => 1024,
-      };
+    Difficulty.easy => 128,
+    Difficulty.medium => 256,
+    Difficulty.hard => 512,
+    Difficulty.expert => 1024,
+  };
 }

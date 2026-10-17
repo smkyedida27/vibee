@@ -57,26 +57,28 @@ class _PuzzleHubAppState extends State<PuzzleHubApp> with WidgetsBindingObserver
   Widget build(BuildContext context) {
     return AppScope(
       services: widget.services,
-      child: Builder(builder: (context) {
-        final reduce = context.player.data.settings.reducedMotion;
-        return MaterialApp.router(
-          title: 'Puzzle Hub',
-          debugShowCheckedModeBanner: false,
-          theme: buildAppTheme(),
-          routerConfig: _router,
-          builder: (context, child) {
-            final mq = MediaQuery.of(context);
-            return MediaQuery(
-              // Respect the OS setting or the in-app toggle; clamp extreme font scales so boards stay usable.
-              data: mq.copyWith(
-                disableAnimations: mq.disableAnimations || reduce,
-                textScaler: mq.textScaler.clamp(minScaleFactor: 0.85, maxScaleFactor: 1.3),
-              ),
-              child: child!,
-            );
-          },
-        );
-      }),
+      child: Builder(
+        builder: (context) {
+          final reduce = context.player.data.settings.reducedMotion;
+          return MaterialApp.router(
+            title: 'Puzzle Hub',
+            debugShowCheckedModeBanner: false,
+            theme: buildAppTheme(),
+            routerConfig: _router,
+            builder: (context, child) {
+              final mq = MediaQuery.of(context);
+              return MediaQuery(
+                // Respect the OS setting or the in-app toggle; clamp extreme font scales so boards stay usable.
+                data: mq.copyWith(
+                  disableAnimations: mq.disableAnimations || reduce,
+                  textScaler: mq.textScaler.clamp(minScaleFactor: 0.85, maxScaleFactor: 1.3),
+                ),
+                child: child!,
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
@@ -98,11 +100,26 @@ GoRouter buildRouter(AppServices s) {
         navigatorKey: shellKey,
         builder: (context, state, child) => MainShell(location: state.matchedLocation, child: child),
         routes: [
-          GoRoute(path: '/', pageBuilder: (_, _) => const NoTransitionPage(child: HomeScreen())),
-          GoRoute(path: '/journey', pageBuilder: (_, _) => const NoTransitionPage(child: JourneyScreen())),
-          GoRoute(path: '/daily', pageBuilder: (_, _) => const NoTransitionPage(child: DailyScreen())),
-          GoRoute(path: '/leaders', pageBuilder: (_, _) => const NoTransitionPage(child: LeaderboardScreen())),
-          GoRoute(path: '/shop', pageBuilder: (_, _) => const NoTransitionPage(child: ShopScreen())),
+          GoRoute(
+            path: '/',
+            pageBuilder: (_, _) => const NoTransitionPage(child: HomeScreen()),
+          ),
+          GoRoute(
+            path: '/journey',
+            pageBuilder: (_, _) => const NoTransitionPage(child: JourneyScreen()),
+          ),
+          GoRoute(
+            path: '/daily',
+            pageBuilder: (_, _) => const NoTransitionPage(child: DailyScreen()),
+          ),
+          GoRoute(
+            path: '/leaders',
+            pageBuilder: (_, _) => const NoTransitionPage(child: LeaderboardScreen()),
+          ),
+          GoRoute(
+            path: '/shop',
+            pageBuilder: (_, _) => const NoTransitionPage(child: ShopScreen()),
+          ),
         ],
       ),
       GoRoute(path: '/profile', builder: (_, _) => const ProfileScreen()),
@@ -138,7 +155,12 @@ GoRouter buildRouter(AppServices s) {
               // Quick play scales with the player's journey progress.
               final lvl = svc.player.data.currentLevel;
               final diff = Difficulty.values[(lvl ~/ 40).clamp(0, 3)];
-              return PlayRequest(game: g, difficulty: diff, source: PlaySource.quick, seed: DateTime.now().microsecondsSinceEpoch & 0x7FFFFFFF);
+              return PlayRequest(
+                game: g,
+                difficulty: diff,
+                source: PlaySource.quick,
+                seed: DateTime.now().microsecondsSinceEpoch & 0x7FFFFFFF,
+              );
             },
           );
         },
@@ -176,16 +198,20 @@ class MainShell extends StatelessWidget {
             borderRadius: BorderRadius.circular(30),
             gradient: const LinearGradient(colors: [Color(0xFF2A0B5E), Color(0xFF451092)]),
             border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 2),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 20, offset: const Offset(0, 8))],
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 20, offset: const Offset(0, 8)),
+            ],
           ),
-          child: Row(children: [
-            for (final t in _tabs)
-              Expanded(
-                child: t.$1 == '/journey'
-                    ? _PlayTab(selected: isMap)
-                    : _Tab(icon: t.$2, label: t.$3, selected: location == t.$1, path: t.$1),
-              ),
-          ]),
+          child: Row(
+            children: [
+              for (final t in _tabs)
+                Expanded(
+                  child: t.$1 == '/journey'
+                      ? _PlayTab(selected: isMap)
+                      : _Tab(icon: t.$2, label: t.$3, selected: location == t.$1, path: t.$1),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -205,18 +231,27 @@ class _Tab extends StatelessWidget {
       onTap: () => context.go(path),
       sound: Sfx.tap,
       semanticLabel: label,
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        AnimatedScale(
-          scale: selected ? 1.18 : 1,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.elasticOut,
-          child: Icon(icon, color: selected ? AppColors.gold : Colors.white60, size: 28, shadows: selected
-              ? const [Shadow(color: Color(0xFFE08A00), offset: Offset(0, 2))]
-              : null),
-        ),
-        const SizedBox(height: 2),
-        Text(label, style: AppText.body(11, color: selected ? Colors.white : Colors.white60, weight: FontWeight.w700)),
-      ]),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AnimatedScale(
+            scale: selected ? 1.18 : 1,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.elasticOut,
+            child: Icon(
+              icon,
+              color: selected ? AppColors.gold : Colors.white60,
+              size: 28,
+              shadows: selected ? const [Shadow(color: Color(0xFFE08A00), offset: Offset(0, 2))] : null,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: AppText.body(11, color: selected ? Colors.white : Colors.white60, weight: FontWeight.w700),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -240,14 +275,22 @@ class _PlayTab extends StatelessWidget {
             height: 70,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: RadialGradient(center: const Alignment(-0.3, -0.5), colors: [Candy.green.light, Candy.green.base, Candy.green.dark]),
+              gradient: RadialGradient(
+                center: const Alignment(-0.3, -0.5),
+                colors: [Candy.green.light, Candy.green.base, Candy.green.dark],
+              ),
               border: Border.all(color: Colors.white, width: 4),
               boxShadow: [
                 BoxShadow(color: Candy.green.dark, offset: const Offset(0, 5)),
                 BoxShadow(color: Candy.green.base.withValues(alpha: selected ? 0.8 : 0.3), blurRadius: 18),
               ],
             ),
-            child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 46, shadows: [Shadow(color: Color(0xFF0E8A45), offset: Offset(0, 2))]),
+            child: const Icon(
+              Icons.play_arrow_rounded,
+              color: Colors.white,
+              size: 46,
+              shadows: [Shadow(color: Color(0xFF0E8A45), offset: Offset(0, 2))],
+            ),
           ),
         ),
       ),

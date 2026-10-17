@@ -17,12 +17,16 @@ class ConnectPuzzle {
   final List<ConnectGroup> groups;
 
   factory ConnectPuzzle.fromJson(Map<String, dynamic> j) => ConnectPuzzle(
-        id: j['id'] as String? ?? 'daily',
-        words: (j['words'] as List).cast<String>(),
-        groups: [for (final g in j['groups'] as List) ConnectGroup.fromJson(g as Map<String, dynamic>)],
-      );
+    id: j['id'] as String? ?? 'daily',
+    words: (j['words'] as List).cast<String>(),
+    groups: [for (final g in j['groups'] as List) ConnectGroup.fromJson(g as Map<String, dynamic>)],
+  );
 
-  Map<String, dynamic> toJson() => {'id': id, 'words': words, 'groups': [for (final g in groups) g.toJson()]};
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'words': words,
+    'groups': [for (final g in groups) g.toJson()],
+  };
 }
 
 enum GuessOutcome { correct, oneAway, wrong, duplicate }

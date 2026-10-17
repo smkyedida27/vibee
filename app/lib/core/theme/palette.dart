@@ -8,11 +8,8 @@ class Candy {
   final Color base;
   final Color dark;
 
-  LinearGradient get face => LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [light, base],
-      );
+  LinearGradient get face =>
+      LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [light, base]);
 
   static const pink = Candy(Color(0xFFFF8FB1), Color(0xFFFF3D7F), Color(0xFFB0124E));
   static const gold = Candy(Color(0xFFFFE680), Color(0xFFFFB800), Color(0xFFC27A00));

@@ -38,11 +38,7 @@ class OutlinedText extends StatelessWidget {
       style: style.copyWith(color: color),
     );
     if (gradient != null) {
-      fill = ShaderMask(
-        blendMode: BlendMode.srcIn,
-        shaderCallback: (r) => gradient!.createShader(r),
-        child: fill,
-      );
+      fill = ShaderMask(blendMode: BlendMode.srcIn, shaderCallback: (r) => gradient!.createShader(r), child: fill);
     }
     return Semantics(
       label: text,

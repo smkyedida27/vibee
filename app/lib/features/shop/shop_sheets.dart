@@ -51,66 +51,75 @@ class _LivesBodyState extends State<_LivesBody> {
     final p = context.player;
     final full = p.data.hearts >= Economy.maxHearts || p.unlimitedHearts;
     final next = p.nextHeartIn;
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        for (var i = 0; i < Economy.maxHearts; i++)
-          Opacity(opacity: i < p.data.hearts || p.unlimitedHearts ? 1 : 0.25, child: const GameArt(ArtKind.heart, size: 44)),
-      ]),
-      const SizedBox(height: 10),
-      Text(
-        p.unlimitedHearts
-            ? 'Unlimited lives active — play all you like!'
-            : full
-                ? 'Your lives are full. Go crush some puzzles!'
-                : 'Next life in ${next!.inMinutes}:${(next.inSeconds % 60).toString().padLeft(2, '0')}',
-        textAlign: TextAlign.center,
-        style: AppText.body(17, color: AppColors.inkSoft),
-      ),
-      if (!full) ...[
-        const SizedBox(height: 16),
-        CandyButton(
-          label: 'Refill  •  ${Economy.heartRefillGems}',
-          candy: Candy.green,
-          height: 60,
-          pulse: true,
-          trailing: const GameArt(ArtKind.gem, size: 26),
-          onTap: () async {
-            final ok = await _spendGems(context, 'HEART_REFILL', Economy.heartRefillGems);
-            if (ok) {
-              s.player.refillHearts();
-              Audio.instance.fx(Sfx.unlock, HapticKind.heavy);
-              if (context.mounted) Navigator.pop(context);
-            }
-          },
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (var i = 0; i < Economy.maxHearts; i++)
+              Opacity(
+                opacity: i < p.data.hearts || p.unlimitedHearts ? 1 : 0.25,
+                child: const GameArt(ArtKind.heart, size: 44),
+              ),
+          ],
         ),
         const SizedBox(height: 10),
-        CandyButton(
-          label: 'Watch ad  •  +1 life',
-          icon: Icons.ondemand_video_rounded,
-          candy: Candy.blue,
-          height: 54,
-          onTap: () async {
-            if (await s.ads.showRewarded('life')) {
-              s.player.addHeart();
-              if (context.mounted) setState(() {});
-            } else if (context.mounted) {
-              toast(context, 'No ad available right now');
-            }
-          },
+        Text(
+          p.unlimitedHearts
+              ? 'Unlimited lives active — play all you like!'
+              : full
+              ? 'Your lives are full. Go crush some puzzles!'
+              : 'Next life in ${next!.inMinutes}:${(next.inSeconds % 60).toString().padLeft(2, '0')}',
+          textAlign: TextAlign.center,
+          style: AppText.body(17, color: AppColors.inkSoft),
         ),
-        const SizedBox(height: 10),
-        CandyButton(
-          label: 'Get VIP — unlimited lives',
-          candy: Candy.gold,
-          height: 54,
-          trailing: const GameArt(ArtKind.crown, size: 26),
-          onTap: () {
-            Navigator.pop(context);
-            context.go('/shop');
-          },
-        ),
+        if (!full) ...[
+          const SizedBox(height: 16),
+          CandyButton(
+            label: 'Refill  •  ${Economy.heartRefillGems}',
+            candy: Candy.green,
+            height: 60,
+            pulse: true,
+            trailing: const GameArt(ArtKind.gem, size: 26),
+            onTap: () async {
+              final ok = await _spendGems(context, 'HEART_REFILL', Economy.heartRefillGems);
+              if (ok) {
+                s.player.refillHearts();
+                Audio.instance.fx(Sfx.unlock, HapticKind.heavy);
+                if (context.mounted) Navigator.pop(context);
+              }
+            },
+          ),
+          const SizedBox(height: 10),
+          CandyButton(
+            label: 'Watch ad  •  +1 life',
+            icon: Icons.ondemand_video_rounded,
+            candy: Candy.blue,
+            height: 54,
+            onTap: () async {
+              if (await s.ads.showRewarded('life')) {
+                s.player.addHeart();
+                if (context.mounted) setState(() {});
+              } else if (context.mounted) {
+                toast(context, 'No ad available right now');
+              }
+            },
+          ),
+          const SizedBox(height: 10),
+          CandyButton(
+            label: 'Get VIP — unlimited lives',
+            candy: Candy.gold,
+            height: 54,
+            trailing: const GameArt(ArtKind.crown, size: 26),
+            onTap: () {
+              Navigator.pop(context);
+              context.go('/shop');
+            },
+          ),
+        ],
       ],
-    ]);
+    );
   }
 }
 

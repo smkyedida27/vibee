@@ -33,7 +33,8 @@ class CappedAdsService implements AdsService {
   final PlayerStore _player;
 
   /// Whether [placement] can still grant a reward today.
-  bool canReward(String placement) => _player.rewardedCount(placement) < perPlacement && _player.rewardedCount(null) < perDay;
+  bool canReward(String placement) =>
+      _player.rewardedCount(placement) < perPlacement && _player.rewardedCount(null) < perDay;
 
   @override
   Future<void> init() => _inner.init();

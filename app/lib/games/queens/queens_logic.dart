@@ -13,10 +13,10 @@ class QueensPuzzle {
   final List<int> solution;
 
   factory QueensPuzzle.fromJson(Map<String, dynamic> j) => QueensPuzzle(
-        size: j['size'] as int,
-        regions: [for (final r in j['regions'] as List) (r as List).cast<int>()],
-        solution: (j['solution'] as List).cast<int>(),
-      );
+    size: j['size'] as int,
+    regions: [for (final r in j['regions'] as List) (r as List).cast<int>()],
+    solution: (j['solution'] as List).cast<int>(),
+  );
 
   Map<String, dynamic> toJson() => {'size': size, 'regions': regions, 'solution': solution};
 }
@@ -133,11 +133,14 @@ class QueensLogic {
     [0, 1],
     [1, 0],
     [0, -1],
-    [-1, 0]
+    [-1, 0],
   ];
 
   static bool _breakRival(List<List<int>> g, int n, List<int> queens, List<int> rival, Rng rng) {
-    final rows = [for (var r = 0; r < n; r++) if (rival[r] != queens[r]) r];
+    final rows = [
+      for (var r = 0; r < n; r++)
+        if (rival[r] != queens[r]) r,
+    ];
     rng.shuffle(rows);
     for (final r in rows) {
       final c = rival[r];
@@ -302,10 +305,10 @@ class QueensBoard {
   }
 
   List<(int, int)> get crowns => [
-        for (var r = 0; r < size; r++)
-          for (var c = 0; c < size; c++)
-            if (marks[r][c] == QueenMark.crown) (r, c)
-      ];
+    for (var r = 0; r < size; r++)
+      for (var c = 0; c < size; c++)
+        if (marks[r][c] == QueenMark.crown) (r, c),
+  ];
 
   /// Cells whose crown conflicts with another crown (same row/col/region or touching).
   Set<(int, int)> conflicts() {
@@ -315,10 +318,7 @@ class QueensBoard {
       for (var j = i + 1; j < cs.length; j++) {
         final a = cs[i], b = cs[j];
         final touching = (a.$1 - b.$1).abs() <= 1 && (a.$2 - b.$2).abs() <= 1;
-        if (a.$1 == b.$1 ||
-            a.$2 == b.$2 ||
-            puzzle.regions[a.$1][a.$2] == puzzle.regions[b.$1][b.$2] ||
-            touching) {
+        if (a.$1 == b.$1 || a.$2 == b.$2 || puzzle.regions[a.$1][a.$2] == puzzle.regions[b.$1][b.$2] || touching) {
           bad
             ..add(a)
             ..add(b);

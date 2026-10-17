@@ -84,7 +84,11 @@ class _LadderScreenState extends State<LadderScreen> with GameFlow, SingleTicker
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scroll.hasClients) {
-        _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+        _scroll.animateTo(
+          _scroll.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
       }
     });
     _check();
@@ -93,12 +97,14 @@ class _LadderScreenState extends State<LadderScreen> with GameFlow, SingleTicker
   void _check() {
     if (path.last == widget.puzzle.target) {
       final par = widget.puzzle.par;
-      finish(RoundResult(
-        won: true,
-        stars: steps <= par ? 3 : (steps <= par + 2 ? 2 : 1),
-        submission: {'path': path},
-        detail: steps <= par ? 'Par $par — perfect climb!' : 'Par $par • You took $steps steps',
-      ));
+      finish(
+        RoundResult(
+          won: true,
+          stars: steps <= par ? 3 : (steps <= par + 2 ? 2 : 1),
+          submission: {'path': path},
+          detail: steps <= par ? 'Par $par — perfect climb!' : 'Par $par • You took $steps steps',
+        ),
+      );
     } else if (steps >= maxSteps) {
       finish(
         RoundResult(won: false, stars: 0, submission: {'path': path}),
@@ -141,7 +147,11 @@ class _LadderScreenState extends State<LadderScreen> with GameFlow, SingleTicker
               padding: const EdgeInsets.fromLTRB(24, 14, 24, 8),
               children: [
                 for (var i = 0; i < path.length; i++) ...[
-                  _WordRow(word: path[i], prev: i == 0 ? null : path[i - 1], candy: i == 0 ? Candy.purple : Candy.white),
+                  _WordRow(
+                    word: path[i],
+                    prev: i == 0 ? null : path[i - 1],
+                    candy: i == 0 ? Candy.purple : Candy.white,
+                  ),
                   const _Rung(),
                 ],
                 AnimatedBuilder(
@@ -159,40 +169,48 @@ class _LadderScreenState extends State<LadderScreen> with GameFlow, SingleTicker
           ),
         ],
       ),
-      toolbar: Column(mainAxisSize: MainAxisSize.min, children: [
-        for (final row in const ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM⌫'])
-          Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              for (final k in row.split(''))
-                Flexible(
-                  flex: k == '⌫' ? 15 : 10,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: CandyButton(
-                      label: '',
-                      height: 50,
-                      depth: 5,
-                      radius: 10,
-                      candy: k == '⌫' ? Candy.orange : Candy.white,
-                      sound: Sfx.tap,
-                      onTap: () => _key(k),
-                      leading: k == '⌫'
-                          ? const Icon(Icons.backspace_rounded, color: Colors.white, size: 20)
-                          : Text(k, style: AppText.display(20, color: AppColors.ink)),
+      toolbar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final row in const ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM⌫'])
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (final k in row.split(''))
+                    Flexible(
+                      flex: k == '⌫' ? 15 : 10,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: CandyButton(
+                          label: '',
+                          height: 50,
+                          depth: 5,
+                          radius: 10,
+                          candy: k == '⌫' ? Candy.orange : Candy.white,
+                          sound: Sfx.tap,
+                          onTap: () => _key(k),
+                          leading: k == '⌫'
+                              ? const Icon(Icons.backspace_rounded, color: Colors.white, size: 20)
+                              : Text(k, style: AppText.display(20, color: AppColors.ink)),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-            ]),
+                ],
+              ),
+            ),
+          Row(
+            children: [
+              ToolButton(
+                icon: Icons.undo_rounded,
+                label: 'Undo step',
+                onTap: path.length > 1 ? () => setState(() => path.removeLast()) : null,
+              ),
+            ],
           ),
-        Row(children: [
-          ToolButton(
-            icon: Icons.undo_rounded,
-            label: 'Undo step',
-            onTap: path.length > 1 ? () => setState(() => path.removeLast()) : null,
-          ),
-        ]),
-      ]),
+        ],
+      ),
     );
   }
 }
@@ -204,14 +222,14 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-        decoration: BoxDecoration(
-          gradient: c.face,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: c.dark, width: 2),
-        ),
-        child: Text(text, style: AppText.display(15)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+    decoration: BoxDecoration(
+      gradient: c.face,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: c.dark, width: 2),
+    ),
+    child: Text(text, style: AppText.display(15)),
+  );
 }
 
 class _WordRow extends StatelessWidget {
@@ -243,18 +261,24 @@ class _WordRow extends StatelessWidget {
                   gradient: (prev != null && prev![i] != word[i]) ? Candy.pink.face : candy.face,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                      color: (prev != null && prev![i] != word[i]) ? Candy.pink.dark : candy.dark,
-                      width: 2.5),
+                    color: (prev != null && prev![i] != word[i]) ? Candy.pink.dark : candy.dark,
+                    width: 2.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                        color: (prev != null && prev![i] != word[i]) ? Candy.pink.dark : candy.dark,
-                        offset: const Offset(0, 4)),
+                      color: (prev != null && prev![i] != word[i]) ? Candy.pink.dark : candy.dark,
+                      offset: const Offset(0, 4),
+                    ),
                   ],
                 ),
                 child: Text(
                   word[i],
-                  style: AppText.display(30,
-                      color: candy == Candy.white && !(prev != null && prev![i] != word[i]) ? AppColors.ink : Colors.white),
+                  style: AppText.display(
+                    30,
+                    color: candy == Candy.white && !(prev != null && prev![i] != word[i])
+                        ? AppColors.ink
+                        : Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -270,21 +294,21 @@ class _Rung extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-        height: 18,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            for (final _ in [0, 1])
-              Container(
-                width: 6,
-                height: 18,
-                margin: const EdgeInsets.symmetric(horizontal: 46),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: dashed ? 0.25 : 0.55),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-          ],
-        ),
-      );
+    height: 18,
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (final _ in [0, 1])
+          Container(
+            width: 6,
+            height: 18,
+            margin: const EdgeInsets.symmetric(horizontal: 46),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: dashed ? 0.25 : 0.55),
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+      ],
+    ),
+  );
 }

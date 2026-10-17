@@ -56,10 +56,15 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
     s.analytics.puzzleStart(request.game.wire, request.source.name, request.difficulty.wire);
     final daily = request.daily;
     if (daily != null && daily.puzzleId != null) {
-      _attempt = s.api.createAttempt(daily.puzzleId!).then<String?>((a) => '${a['attemptId']}', onError: (Object e) {
-        debugPrint('attempt create failed (offline play continues): $e');
-        return null;
-      });
+      _attempt = s.api
+          .createAttempt(daily.puzzleId!)
+          .then<String?>(
+            (a) => '${a['attemptId']}',
+            onError: (Object e) {
+              debugPrint('attempt create failed (offline play continues): $e');
+              return null;
+            },
+          );
     }
   }
 
@@ -141,7 +146,12 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
     } else {
       Audio.instance.fx(Sfx.lose, HapticKind.heavy);
       final canContinue = onContinue != null && continuesUsed < 2;
-      final action = await showFail(context, request: request, canContinue: canContinue, continueCost: Economy.continueGems * (continuesUsed + 1));
+      final action = await showFail(
+        context,
+        request: request,
+        canContinue: canContinue,
+        continueCost: Economy.continueGems * (continuesUsed + 1),
+      );
       if (!mounted) return;
       if (action == ResultAction.continuePlay && onContinue != null) {
         continuesUsed++;
@@ -161,8 +171,7 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
     final id = await _attempt;
     if (id == null) return null;
     try {
-      return await api
-          .submitAttempt(id, submission: r.submission, hintsUsed: hintsUsed, clientDurationMs: ms);
+      return await api.submitAttempt(id, submission: r.submission, hintsUsed: hintsUsed, clientDurationMs: ms);
     } on ApiException catch (e) {
       debugPrint('daily submit failed: $e');
       return null;
@@ -173,7 +182,10 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
     final s = context.services;
     final router = GoRouter.of(context);
     // Interstitials only after a won level, never after a loss or on retry (docs/MONETIZATION.md).
-    if (won && request.source == PlaySource.level && s.player.shouldShowInterstitial() && action != ResultAction.retry) {
+    if (won &&
+        request.source == PlaySource.level &&
+        s.player.shouldShowInterstitial() &&
+        action != ResultAction.retry) {
       s.player.markInterstitialShown();
       await s.ads.showInterstitial();
     }
@@ -219,8 +231,11 @@ class _HintOffer extends StatelessWidget {
       children: [
         const GameArt(ArtKind.bulb, size: 84),
         const SizedBox(height: 8),
-        Text('You\'re out of hints. Grab a pack and crack it!',
-            textAlign: TextAlign.center, style: AppText.body(17, color: AppColors.inkSoft)),
+        Text(
+          'You\'re out of hints. Grab a pack and crack it!',
+          textAlign: TextAlign.center,
+          style: AppText.body(17, color: AppColors.inkSoft),
+        ),
         const SizedBox(height: 16),
         CandyButton(
           label: '3 hints  •  ${Economy.hintPackCoins}',
@@ -292,84 +307,98 @@ class GameScaffold extends StatelessWidget {
         if (!didPop) _confirmLeave(context);
       },
       child: Scaffold(
-      body: CandyBackground(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color.lerp(c.dark, AppColors.night, 0.55)!, Color.lerp(c.base, AppColors.deep, 0.55)!, AppColors.night],
-        ),
-        density: 8,
-        child: Stack(
-          children: [
-            SafeArea(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                    child: Row(
-                      children: [
-                        CandyIconButton(
-                          icon: Icons.arrow_back_rounded,
-                          candy: Candy.purple,
-                          size: 46,
-                          semanticLabel: 'Back',
-                          onTap: () => _confirmLeave(context),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
-                                child: OutlinedText(request.title, size: 24, stroke: c.dark, textAlign: TextAlign.left, maxLines: 1),
-                              ),
-                              const SizedBox(height: 2),
-                              Row(children: [
-                                _Tag(request.game.title, c),
-                                const SizedBox(width: 6),
-                                _Tag(request.difficulty.label, request.difficulty.candy),
-                              ]),
-                            ],
-                          ),
-                        ),
-                        if (showTimer) _TimerPill(elapsed),
-                        if (onHint != null) ...[
-                          const SizedBox(width: 8),
+        body: CandyBackground(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color.lerp(c.dark, AppColors.night, 0.55)!,
+              Color.lerp(c.base, AppColors.deep, 0.55)!,
+              AppColors.night,
+            ],
+          ),
+          density: 8,
+          child: Stack(
+            children: [
+              SafeArea(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                      child: Row(
+                        children: [
                           CandyIconButton(
-                            icon: Icons.lightbulb_rounded,
-                            candy: Candy.gold,
+                            icon: Icons.arrow_back_rounded,
+                            candy: Candy.purple,
                             size: 46,
-                            badge: '$hints',
-                            semanticLabel: 'Hint, $hints left',
-                            onTap: onHint,
+                            semanticLabel: 'Back',
+                            onTap: () => _confirmLeave(context),
                           ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: OutlinedText(
+                                    request.title,
+                                    size: 24,
+                                    stroke: c.dark,
+                                    textAlign: TextAlign.left,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    _Tag(request.game.title, c),
+                                    const SizedBox(width: 6),
+                                    _Tag(request.difficulty.label, request.difficulty.candy),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (showTimer) _TimerPill(elapsed),
+                          if (onHint != null) ...[
+                            const SizedBox(width: 8),
+                            CandyIconButton(
+                              icon: Icons.lightbulb_rounded,
+                              candy: Candy.gold,
+                              size: 46,
+                              badge: '$hints',
+                              semanticLabel: 'Hint, $hints left',
+                              onTap: onHint,
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
-                  ),
-                  if (status != null) Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 0), child: status),
-                  Expanded(child: body),
-                  if (toolbar != null) Padding(padding: const EdgeInsets.fromLTRB(12, 0, 12, 12), child: toolbar),
-                ],
+                    if (status != null) Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 0), child: status),
+                    Expanded(child: body),
+                    if (toolbar != null) Padding(padding: const EdgeInsets.fromLTRB(12, 0, 12, 12), child: toolbar),
+                  ],
+                ),
               ),
-            ),
-            if (confetti != null) Positioned.fill(child: ConfettiLayer(controller: confetti!)),
-          ],
+              if (confetti != null) Positioned.fill(child: ConfettiLayer(controller: confetti!)),
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 
   Future<void> _confirmLeave(BuildContext context) async {
-    final leave = await confirmDialog(context,
-        title: 'Leave puzzle?',
-        message: request.source == PlaySource.level && !context.player.unlimitedHearts
-            ? 'Quitting a level costs a life.'
-            : 'Your progress on this puzzle will be lost.',
-        yes: 'Leave');
+    final leave = await confirmDialog(
+      context,
+      title: 'Leave puzzle?',
+      message: request.source == PlaySource.level && !context.player.unlimitedHearts
+          ? 'Quitting a level costs a life.'
+          : 'Your progress on this puzzle will be lost.',
+      yes: 'Leave',
+    );
     if (leave && context.mounted) {
       if (request.source == PlaySource.level) {
         context.services.player.failLevel(game: request.game, durationMs: elapsed.inMilliseconds);
@@ -390,14 +419,17 @@ class _Tag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-        decoration: BoxDecoration(
-          color: c.base.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: c.light.withValues(alpha: 0.8)),
-        ),
-        child: Text(text, style: AppText.body(11, color: Colors.white, weight: FontWeight.w700)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+    decoration: BoxDecoration(
+      color: c.base.withValues(alpha: 0.9),
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: c.light.withValues(alpha: 0.8)),
+    ),
+    child: Text(
+      text,
+      style: AppText.body(11, color: Colors.white, weight: FontWeight.w700),
+    ),
+  );
 }
 
 class _TimerPill extends StatelessWidget {
@@ -414,18 +446,28 @@ class _TimerPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white24),
       ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        const Icon(Icons.timer_rounded, color: Colors.white70, size: 16),
-        const SizedBox(width: 4),
-        Text(t, style: AppText.display(16)),
-      ]),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.timer_rounded, color: Colors.white70, size: 16),
+          const SizedBox(width: 4),
+          Text(t, style: AppText.display(16)),
+        ],
+      ),
     );
   }
 }
 
 /// Toolbar button with icon + caption (Undo, Erase, Notes, Shuffle…).
 class ToolButton extends StatelessWidget {
-  const ToolButton({super.key, required this.icon, required this.label, this.onTap, this.active = false, this.candy = Candy.white});
+  const ToolButton({
+    super.key,
+    required this.icon,
+    required this.label,
+    this.onTap,
+    this.active = false,
+    this.candy = Candy.white,
+  });
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
@@ -450,8 +492,14 @@ class ToolButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(icon, color: c == Candy.white ? AppColors.royal : Colors.white, size: 22),
-              Text(label,
-                  style: AppText.body(11, color: c == Candy.white ? AppColors.ink : Colors.white, weight: FontWeight.w700)),
+              Text(
+                label,
+                style: AppText.body(
+                  11,
+                  color: c == Candy.white ? AppColors.ink : Colors.white,
+                  weight: FontWeight.w700,
+                ),
+              ),
             ],
           ),
         ),

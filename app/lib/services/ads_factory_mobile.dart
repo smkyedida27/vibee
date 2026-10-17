@@ -16,7 +16,10 @@ class AdMobService implements AdsService {
       ? const String.fromEnvironment('ADMOB_REWARDED_ANDROID', defaultValue: 'ca-app-pub-3940256099942544/5224354917')
       : const String.fromEnvironment('ADMOB_REWARDED_IOS', defaultValue: 'ca-app-pub-3940256099942544/1712485313');
   static final _interstitialId = Platform.isAndroid
-      ? const String.fromEnvironment('ADMOB_INTERSTITIAL_ANDROID', defaultValue: 'ca-app-pub-3940256099942544/1033173712')
+      ? const String.fromEnvironment(
+          'ADMOB_INTERSTITIAL_ANDROID',
+          defaultValue: 'ca-app-pub-3940256099942544/1033173712',
+        )
       : const String.fromEnvironment('ADMOB_INTERSTITIAL_IOS', defaultValue: 'ca-app-pub-3940256099942544/4411468910');
 
   RewardedAd? _rewarded;
@@ -41,7 +44,8 @@ class AdMobService implements AdsService {
       ConsentRequestParameters(),
       () async {
         await ConsentForm.loadAndShowConsentFormIfRequired((_) {});
-        _privacyRequired = await ConsentInformation.instance.getPrivacyOptionsRequirementStatus() ==
+        _privacyRequired =
+            await ConsentInformation.instance.getPrivacyOptionsRequirementStatus() ==
             PrivacyOptionsRequirementStatus.required;
         if (!done.isCompleted) done.complete();
       },

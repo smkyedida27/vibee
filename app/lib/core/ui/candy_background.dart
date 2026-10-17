@@ -79,9 +79,7 @@ class _CandyBackgroundState extends State<CandyBackground> with SingleTickerProv
               ),
             ),
           ),
-          RepaintBoundary(
-            child: CustomPaint(painter: _OrbPainter(_orbs, _c)),
-          ),
+          RepaintBoundary(child: CustomPaint(painter: _OrbPainter(_orbs, _c))),
           widget.child,
         ],
       ),
@@ -117,10 +115,8 @@ class _OrbPainter extends CustomPainter {
       final dy = ((o.y - anim.value * o.speed * 0.25) % 1.0) * (size.height + 2 * o.radius) - o.radius;
       final center = Offset(o.x * size.width + dx, dy);
       final paint = Paint()
-        ..shader = RadialGradient(colors: [
-          o.color.withValues(alpha: 0.38),
-          o.color.withValues(alpha: 0.0),
-        ]).createShader(Rect.fromCircle(center: center, radius: o.radius));
+        ..shader = RadialGradient(colors: [o.color.withValues(alpha: 0.38), o.color.withValues(alpha: 0.0)])
+            .createShader(Rect.fromCircle(center: center, radius: o.radius));
       canvas.drawCircle(center, o.radius, paint);
       if (o.sparkle) {
         final tw = (math.sin(t * 3 * o.speed + o.phase) + 1) / 2;

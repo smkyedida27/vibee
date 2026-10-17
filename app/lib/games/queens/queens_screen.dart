@@ -62,12 +62,14 @@ class _QueensScreenState extends State<QueensScreen> with GameFlow {
   void _checkWin() {
     if (!board.solved) return;
     final stars = hintsUsed == 0 ? 3 : (hintsUsed == 1 ? 2 : 1);
-    finish(RoundResult(
-      won: true,
-      stars: stars,
-      submission: {'queens': board.submission},
-      detail: '${board.size}×${board.size} board cleared',
-    ));
+    finish(
+      RoundResult(
+        won: true,
+        stars: stars,
+        submission: {'queens': board.submission},
+        detail: '${board.size}×${board.size} board cleared',
+      ),
+    );
   }
 
   // Drag across empty cells to paint ✕ marks (or erase them), like a highlighter.
@@ -117,53 +119,55 @@ class _QueensScreenState extends State<QueensScreen> with GameFlow {
             aspectRatio: 1,
             child: BoardFrame(
               candy: Candy.gold,
-              child: LayoutBuilder(builder: (context, box) {
-                final cell = box.maxWidth / board.size;
-                return GestureDetector(
-                  onPanStart: (d) {
-                    _dragMode = null;
-                    _dragged.clear();
-                    _dragAt(d.localPosition, cell);
-                  },
-                  onPanUpdate: (d) => _dragAt(d.localPosition, cell),
-                  onPanEnd: (_) => _dragged.clear(),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Stack(children: [
-                      for (var r = 0; r < board.size; r++)
-                        for (var c = 0; c < board.size; c++)
-                          Positioned(
-                            left: c * cell,
-                            top: r * cell,
-                            width: cell,
-                            height: cell,
-                            child: _Cell(
-                              color: regionColors[widget.puzzle.regions[r][c] % regionColors.length],
-                              mark: board.marks[r][c],
-                              conflict: conflicts.contains((r, c)),
-                              pop: _lastPlaced == (r, c),
-                              borders: _borders(r, c),
-                              onTap: () => _tap(r, c),
-                              label: 'Row ${r + 1}, column ${c + 1}',
-                            ),
-                          ),
-                    ]),
-                  ),
-                );
-              }),
+              child: LayoutBuilder(
+                builder: (context, box) {
+                  final cell = box.maxWidth / board.size;
+                  return GestureDetector(
+                    onPanStart: (d) {
+                      _dragMode = null;
+                      _dragged.clear();
+                      _dragAt(d.localPosition, cell);
+                    },
+                    onPanUpdate: (d) => _dragAt(d.localPosition, cell),
+                    onPanEnd: (_) => _dragged.clear(),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Stack(
+                        children: [
+                          for (var r = 0; r < board.size; r++)
+                            for (var c = 0; c < board.size; c++)
+                              Positioned(
+                                left: c * cell,
+                                top: r * cell,
+                                width: cell,
+                                height: cell,
+                                child: _Cell(
+                                  color: regionColors[widget.puzzle.regions[r][c] % regionColors.length],
+                                  mark: board.marks[r][c],
+                                  conflict: conflicts.contains((r, c)),
+                                  pop: _lastPlaced == (r, c),
+                                  borders: _borders(r, c),
+                                  onTap: () => _tap(r, c),
+                                  label: 'Row ${r + 1}, column ${c + 1}',
+                                ),
+                              ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ),
       ),
-      toolbar: Row(children: [
-        ToolButton(
-          icon: Icons.undo_rounded,
-          label: 'Undo',
-          onTap: board.canUndo ? () => setState(board.undo) : null,
-        ),
-        ToolButton(icon: Icons.auto_fix_high_rounded, label: 'Auto ✕', onTap: () => setState(board.autoCross)),
-        ToolButton(icon: Icons.restart_alt_rounded, label: 'Clear', onTap: () => setState(board.reset)),
-      ]),
+      toolbar: Row(
+        children: [
+          ToolButton(icon: Icons.undo_rounded, label: 'Undo', onTap: board.canUndo ? () => setState(board.undo) : null),
+          ToolButton(icon: Icons.auto_fix_high_rounded, label: 'Auto ✕', onTap: () => setState(board.autoCross)),
+          ToolButton(icon: Icons.restart_alt_rounded, label: 'Clear', onTap: () => setState(board.reset)),
+        ],
+      ),
     );
   }
 
@@ -227,10 +231,18 @@ class _Cell extends StatelessWidget {
               transitionBuilder: (child, a) => ScaleTransition(scale: a, child: child),
               child: switch (mark) {
                 QueenMark.empty => const SizedBox.shrink(key: ValueKey('e')),
-                QueenMark.cross => Icon(Icons.close_rounded,
-                    key: const ValueKey('x'), color: AppColors.ink.withValues(alpha: 0.45), size: 18),
+                QueenMark.cross => Icon(
+                  Icons.close_rounded,
+                  key: const ValueKey('x'),
+                  color: AppColors.ink.withValues(alpha: 0.45),
+                  size: 18,
+                ),
                 QueenMark.crown => const FractionallySizedBox(
-                    key: ValueKey('q'), widthFactor: 0.72, heightFactor: 0.72, child: FittedBox(child: GameArt(ArtKind.crown, size: 40))),
+                  key: ValueKey('q'),
+                  widthFactor: 0.72,
+                  heightFactor: 0.72,
+                  child: FittedBox(child: GameArt(ArtKind.crown, size: 40)),
+                ),
               },
             ),
           ),

@@ -69,13 +69,15 @@ class _ConnectScreenState extends State<ConnectScreen> with GameFlow, TickerProv
     setState(() {});
     if (game.isWon) {
       final m = game.mistakes;
-      finish(RoundResult(
-        won: true,
-        stars: m == 0 ? 3 : (m <= 2 ? 2 : 1),
-        mistakes: m,
-        submission: {'guesses': game.guesses},
-        detail: m == 0 ? 'Perfect — no mistakes!' : '$m mistake${m == 1 ? '' : 's'}',
-      ));
+      finish(
+        RoundResult(
+          won: true,
+          stars: m == 0 ? 3 : (m <= 2 ? 2 : 1),
+          mistakes: m,
+          submission: {'guesses': game.guesses},
+          detail: m == 0 ? 'Perfect — no mistakes!' : '$m mistake${m == 1 ? '' : 's'}',
+        ),
+      );
     } else if (game.isLost) {
       finish(
         RoundResult(won: false, stars: 0, submission: {'guesses': game.guesses}, mistakes: game.mistakes),
@@ -96,7 +98,9 @@ class _ConnectScreenState extends State<ConnectScreen> with GameFlow, TickerProv
     }
     fresh.mistakes = ConnectGame.maxMistakes - 1;
     // Undo the auto-reveal of unsolved groups.
-    final solvedByPlayer = fresh.solved.where((s) => game.guesses.any((g) => (g.toSet()..removeAll(s.words)).isEmpty)).toList();
+    final solvedByPlayer = fresh.solved
+        .where((s) => game.guesses.any((g) => (g.toSet()..removeAll(s.words)).isEmpty))
+        .toList();
     fresh.solved
       ..clear()
       ..addAll(solvedByPlayer);
@@ -123,81 +127,84 @@ class _ConnectScreenState extends State<ConnectScreen> with GameFlow, TickerProv
           }
         }
       },
-      status: Column(children: [
-        Text('Create four groups of four!', style: AppText.body(16, color: Colors.white)),
-        const SizedBox(height: 6),
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Text('Mistakes left', style: AppText.body(14, color: Colors.white70)),
-          const SizedBox(width: 8),
-          for (var i = 0; i < ConnectGame.maxMistakes; i++)
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.symmetric(horizontal: 3),
-              width: 14,
-              height: 14,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: i < ConnectGame.maxMistakes - game.mistakes ? Colors.white : Colors.white24,
-              ),
-            ),
-        ]),
-      ]),
-      body: LayoutBuilder(builder: (context, box) {
-        final width = math.min(box.maxWidth, 520.0) - 24;
-        final tileW = (width - 3 * 8) / 4;
-        final tileH = math.min(tileW * 0.82, (box.maxHeight - 24 - game.solved.length * 8) / 4 - 8);
-        return Center(
-          child: SizedBox(
-            width: width,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  for (final g in game.solved) _SolvedBar(group: g, candy: levelCandies[g.level.clamp(0, 3)], height: tileH),
-                  AnimatedBuilder(
-                    animation: Listenable.merge([_wave, _shake]),
-                    builder: (context, _) {
-                      final shakeX = math.sin(_shake.value * math.pi * 6) * (1 - _shake.value) * 10;
-                      return Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          for (final w in game.remaining)
-                            _wordTile(w, tileW, tileH, selected, shakeX),
-                        ],
-                      );
-                    },
+      status: Column(
+        children: [
+          Text('Create four groups of four!', style: AppText.body(16, color: Colors.white)),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Mistakes left', style: AppText.body(14, color: Colors.white70)),
+              const SizedBox(width: 8),
+              for (var i = 0; i < ConnectGame.maxMistakes; i++)
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: i < ConnectGame.maxMistakes - game.mistakes ? Colors.white : Colors.white24,
                   ),
-                ],
+                ),
+            ],
+          ),
+        ],
+      ),
+      body: LayoutBuilder(
+        builder: (context, box) {
+          final width = math.min(box.maxWidth, 520.0) - 24;
+          final tileW = (width - 3 * 8) / 4;
+          final tileH = math.min(tileW * 0.82, (box.maxHeight - 24 - game.solved.length * 8) / 4 - 8);
+          return Center(
+            child: SizedBox(
+              width: width,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    for (final g in game.solved)
+                      _SolvedBar(group: g, candy: levelCandies[g.level.clamp(0, 3)], height: tileH),
+                    AnimatedBuilder(
+                      animation: Listenable.merge([_wave, _shake]),
+                      builder: (context, _) {
+                        final shakeX = math.sin(_shake.value * math.pi * 6) * (1 - _shake.value) * 10;
+                        return Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [for (final w in game.remaining) _wordTile(w, tileW, tileH, selected, shakeX)],
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+      toolbar: Row(
+        children: [
+          ToolButton(icon: Icons.shuffle_rounded, label: 'Shuffle', onTap: () => setState(game.shuffle)),
+          ToolButton(
+            icon: Icons.deselect_rounded,
+            label: 'Deselect',
+            onTap: game.selected.isEmpty ? null : () => setState(game.deselectAll),
+          ),
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: CandyButton(
+                label: 'Submit',
+                candy: Candy.pink,
+                height: 62,
+                pulse: game.selected.length == 4,
+                onTap: game.selected.length == 4 && !_busy ? _submit : null,
               ),
             ),
           ),
-        );
-      }),
-      toolbar: Row(children: [
-        ToolButton(
-          icon: Icons.shuffle_rounded,
-          label: 'Shuffle',
-          onTap: () => setState(game.shuffle),
-        ),
-        ToolButton(
-          icon: Icons.deselect_rounded,
-          label: 'Deselect',
-          onTap: game.selected.isEmpty ? null : () => setState(game.deselectAll),
-        ),
-        Expanded(
-          flex: 2,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: CandyButton(
-              label: 'Submit',
-              candy: Candy.pink,
-              height: 62,
-              pulse: game.selected.length == 4,
-              onTap: game.selected.length == 4 && !_busy ? _submit : null,
-            ),
-          ),
-        ),
-      ]),
+        ],
+      ),
     );
   }
 
@@ -226,16 +233,13 @@ class _ConnectScreenState extends State<ConnectScreen> with GameFlow, TickerProv
           onTap: game.isOver
               ? null
               : () => setState(() {
-                    game.toggle(w);
-                  }),
+                  game.toggle(w);
+                }),
           leading: SizedBox(
             width: tileW - 10,
             child: FittedBox(
               fit: BoxFit.scaleDown,
-              child: Text(
-                w,
-                style: AppText.display(17, color: isSel ? Colors.white : AppColors.ink),
-              ),
+              child: Text(w, style: AppText.display(17, color: isSel ? Colors.white : AppColors.ink)),
             ),
           ),
         ),
@@ -271,7 +275,10 @@ class _SolvedBar extends StatelessWidget {
           children: [
             OutlinedText(group.title.toUpperCase(), size: 18, stroke: candy.dark, maxLines: 1),
             const SizedBox(height: 2),
-            Text(group.words.join(', '), style: AppText.body(13, color: Colors.white, weight: FontWeight.w700)),
+            Text(
+              group.words.join(', '),
+              style: AppText.body(13, color: Colors.white, weight: FontWeight.w700),
+            ),
           ],
         ),
       ),

@@ -59,13 +59,17 @@ class _SudokuScreenState extends State<SudokuScreen> with GameFlow {
   void _checkSolved(int i) {
     if (board.solved) {
       final stars = board.mistakes == 0 && hintsUsed == 0 ? 3 : (board.mistakes <= 1 && hintsUsed <= 1 ? 2 : 1);
-      finish(RoundResult(
-        won: true,
-        stars: stars,
-        mistakes: board.mistakes,
-        submission: {'grid': board.values.join(), 'mistakes': board.mistakes},
-        detail: board.mistakes == 0 ? 'Flawless — no mistakes!' : '${board.mistakes} mistake${board.mistakes == 1 ? '' : 's'}',
-      ));
+      finish(
+        RoundResult(
+          won: true,
+          stars: stars,
+          mistakes: board.mistakes,
+          submission: {'grid': board.values.join(), 'mistakes': board.mistakes},
+          detail: board.mistakes == 0
+              ? 'Flawless — no mistakes!'
+              : '${board.mistakes} mistake${board.mistakes == 1 ? '' : 's'}',
+        ),
+      );
     } else if (board.mistakes >= maxMistakes) {
       finish(
         RoundResult(won: false, stars: 0, submission: const {}, mistakes: board.mistakes),
@@ -82,7 +86,10 @@ class _SudokuScreenState extends State<SudokuScreen> with GameFlow {
     final r = i ~/ 9, c = i % 9, b = SudokuLogic.box(i);
     return full([for (var k = 0; k < 9; k++) r * 9 + k]) ||
         full([for (var k = 0; k < 9; k++) k * 9 + c]) ||
-        full([for (var k = 0; k < 81; k++) if (SudokuLogic.box(k) == b) k]);
+        full([
+          for (var k = 0; k < 81; k++)
+            if (SudokuLogic.box(k) == b) k,
+        ]);
   }
 
   @override
@@ -125,20 +132,26 @@ class _SudokuScreenState extends State<SudokuScreen> with GameFlow {
               candy: Candy.blue,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: LayoutBuilder(builder: (context, box) {
-                  final cell = box.maxWidth / 9;
-                  return Stack(children: [
-                    for (var i = 0; i < 81; i++)
-                      Positioned(
-                        left: (i % 9) * cell,
-                        top: (i ~/ 9) * cell,
-                        width: cell,
-                        height: cell,
-                        child: _cell(i, cell),
-                      ),
-                    IgnorePointer(child: CustomPaint(size: box.biggest, painter: _GridPainter())),
-                  ]);
-                }),
+                child: LayoutBuilder(
+                  builder: (context, box) {
+                    final cell = box.maxWidth / 9;
+                    return Stack(
+                      children: [
+                        for (var i = 0; i < 81; i++)
+                          Positioned(
+                            left: (i % 9) * cell,
+                            top: (i ~/ 9) * cell,
+                            width: cell,
+                            height: cell,
+                            child: _cell(i, cell),
+                          ),
+                        IgnorePointer(
+                          child: CustomPaint(size: box.biggest, painter: _GridPainter()),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -147,35 +160,38 @@ class _SudokuScreenState extends State<SudokuScreen> with GameFlow {
       toolbar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(children: [
-            ToolButton(icon: Icons.undo_rounded, label: 'Undo', onTap: board.canUndo ? () => setState(board.undo) : null),
-            ToolButton(
-              icon: Icons.backspace_rounded,
-              label: 'Erase',
-              onTap: _sel == null ? null : () => setState(() => board.erase(_sel!)),
-            ),
-            ToolButton(
-              icon: Icons.edit_note_rounded,
-              label: _notes ? 'Notes ON' : 'Notes',
-              active: _notes,
-              onTap: () => setState(() => _notes = !_notes),
-            ),
-          ]),
+          Row(
+            children: [
+              ToolButton(
+                icon: Icons.undo_rounded,
+                label: 'Undo',
+                onTap: board.canUndo ? () => setState(board.undo) : null,
+              ),
+              ToolButton(
+                icon: Icons.backspace_rounded,
+                label: 'Erase',
+                onTap: _sel == null ? null : () => setState(() => board.erase(_sel!)),
+              ),
+              ToolButton(
+                icon: Icons.edit_note_rounded,
+                label: _notes ? 'Notes ON' : 'Notes',
+                active: _notes,
+                onTap: () => setState(() => _notes = !_notes),
+              ),
+            ],
+          ),
           const SizedBox(height: 10),
-          Row(children: [
-            for (var d = 1; d <= 9; d++)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                  child: _DigitKey(
-                    digit: d,
-                    remaining: board.remainingOf(d),
-                    notes: _notes,
-                    onTap: () => _input(d),
+          Row(
+            children: [
+              for (var d = 1; d <= 9; d++)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: _DigitKey(digit: d, remaining: board.remainingOf(d), notes: _notes, onTap: () => _input(d)),
                   ),
                 ),
-              ),
-          ]),
+            ],
+          ),
         ],
       ),
     );
@@ -219,32 +235,35 @@ class _SudokuScreenState extends State<SudokuScreen> with GameFlow {
                   builder: (_, s, child) => Transform.scale(scale: s, child: child),
                   child: Text(
                     '$v',
-                    style: AppText.display(size * 0.58,
-                        color: wrong ? AppColors.danger : (given ? AppColors.ink : const Color(0xFF2E6BFF))),
+                    style: AppText.display(
+                      size * 0.58,
+                      color: wrong ? AppColors.danger : (given ? AppColors.ink : const Color(0xFF2E6BFF)),
+                    ),
                   ),
                 )
               : board.notes[i].isEmpty
-                  ? null
-                  : Padding(
-                      padding: const EdgeInsets.all(1.5),
-                      child: GridView.count(
-                        crossAxisCount: 3,
-                        physics: const NeverScrollableScrollPhysics(),
-                        padding: EdgeInsets.zero,
-                        children: [
-                          for (var d = 1; d <= 9; d++)
-                            Center(
-                              child: Text(board.notes[i].contains(d) ? '$d' : '',
-                                  style: AppText.body(size * 0.2, color: AppColors.inkSoft, weight: FontWeight.w700)),
-                            ),
-                        ],
-                      ),
-                    ),
+              ? null
+              : Padding(
+                  padding: const EdgeInsets.all(1.5),
+                  child: GridView.count(
+                    crossAxisCount: 3,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.zero,
+                    children: [
+                      for (var d = 1; d <= 9; d++)
+                        Center(
+                          child: Text(
+                            board.notes[i].contains(d) ? '$d' : '',
+                            style: AppText.body(size * 0.2, color: AppColors.inkSoft, weight: FontWeight.w700),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
         ),
       ),
     );
   }
-
 }
 
 class _DigitKey extends StatelessWidget {
@@ -267,10 +286,16 @@ class _DigitKey extends StatelessWidget {
         candy: notes ? Candy.gold : Candy.white,
         sound: Sfx.tap,
         onTap: done ? null : onTap,
-        leading: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text('$digit', style: AppText.display(26, color: notes ? Colors.white : AppColors.royal)),
-          Text('$remaining', style: AppText.body(9, color: notes ? Colors.white : AppColors.inkSoft, weight: FontWeight.w700)),
-        ]),
+        leading: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('$digit', style: AppText.display(26, color: notes ? Colors.white : AppColors.royal)),
+            Text(
+              '$remaining',
+              style: AppText.body(9, color: notes ? Colors.white : AppColors.inkSoft, weight: FontWeight.w700),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -58,14 +58,14 @@ class Settings {
   bool highContrast = false;
 
   Map<String, dynamic> toJson() => {
-        'sound': sound,
-        'haptics': haptics,
-        'music': music,
-        'reducedMotion': reducedMotion,
-        'reminders': reminders,
-        'reminderHour': reminderHour,
-        'highContrast': highContrast,
-      };
+    'sound': sound,
+    'haptics': haptics,
+    'music': music,
+    'reducedMotion': reducedMotion,
+    'reminders': reminders,
+    'reminderHour': reminderHour,
+    'highContrast': highContrast,
+  };
 
   static Settings fromJson(Map<String, dynamic> j) => Settings()
     ..sound = j['sound'] ?? true
@@ -136,38 +136,38 @@ class PlayerData {
   int get totalGems => gems + paidGems;
 
   Map<String, dynamic> toJson() => {
-        'onboarded': onboarded,
-        'displayName': displayName,
-        'avatar': avatar,
-        'country': country,
-        'coins': coins,
-        'gems': gems,
-        'paidGems': paidGems,
-        'hints': hints,
-        'hearts': hearts,
-        'heartClockStart': heartClockStart,
-        'unlimitedHeartsUntil': unlimitedHeartsUntil,
-        'levelStars': levelStars.map((k, v) => MapEntry('$k', v)),
-        'stats': stats.map((k, v) => MapEntry(k, v.toJson())),
-        'dailyDate': dailyDate,
-        'dailyDone': dailyDone.toList(),
-        'streak': streak,
-        'bestStreak': bestStreak,
-        'lastStreakDate': lastStreakDate,
-        'loginDay': loginDay,
-        'lastLoginClaim': lastLoginClaim,
-        'lastFreeSpin': lastFreeSpin,
-        'lastVipHintsDate': lastVipHintsDate,
-        'removeAds': removeAds,
-        'vipUntil': vipUntil,
-        'levelsSinceInterstitial': levelsSinceInterstitial,
-        'lastInterstitialAt': lastInterstitialAt,
-        'firstSeenAt': firstSeenAt,
-        'rewardedDate': rewardedDate,
-        'rewardedCounts': rewardedCounts,
-        'settings': settings.toJson(),
-        'snapshotVersion': snapshotVersion,
-      };
+    'onboarded': onboarded,
+    'displayName': displayName,
+    'avatar': avatar,
+    'country': country,
+    'coins': coins,
+    'gems': gems,
+    'paidGems': paidGems,
+    'hints': hints,
+    'hearts': hearts,
+    'heartClockStart': heartClockStart,
+    'unlimitedHeartsUntil': unlimitedHeartsUntil,
+    'levelStars': levelStars.map((k, v) => MapEntry('$k', v)),
+    'stats': stats.map((k, v) => MapEntry(k, v.toJson())),
+    'dailyDate': dailyDate,
+    'dailyDone': dailyDone.toList(),
+    'streak': streak,
+    'bestStreak': bestStreak,
+    'lastStreakDate': lastStreakDate,
+    'loginDay': loginDay,
+    'lastLoginClaim': lastLoginClaim,
+    'lastFreeSpin': lastFreeSpin,
+    'lastVipHintsDate': lastVipHintsDate,
+    'removeAds': removeAds,
+    'vipUntil': vipUntil,
+    'levelsSinceInterstitial': levelsSinceInterstitial,
+    'lastInterstitialAt': lastInterstitialAt,
+    'firstSeenAt': firstSeenAt,
+    'rewardedDate': rewardedDate,
+    'rewardedCounts': rewardedCounts,
+    'settings': settings.toJson(),
+    'snapshotVersion': snapshotVersion,
+  };
 
   static PlayerData fromJson(Map<String, dynamic> j) {
     final d = PlayerData()
@@ -183,8 +183,9 @@ class PlayerData {
       ..heartClockStart = j['heartClockStart']
       ..unlimitedHeartsUntil = j['unlimitedHeartsUntil']
       ..levelStars = ((j['levelStars'] ?? {}) as Map).map((k, v) => MapEntry(int.parse('$k'), v as int))
-      ..stats = ((j['stats'] ?? {}) as Map)
-          .map((k, v) => MapEntry('$k', GameStats.fromJson((v as Map).cast<String, dynamic>())))
+      ..stats = ((j['stats'] ?? {}) as Map).map(
+        (k, v) => MapEntry('$k', GameStats.fromJson((v as Map).cast<String, dynamic>())),
+      )
       ..dailyDate = j['dailyDate']
       ..dailyDone = ((j['dailyDone'] ?? []) as List).cast<String>().toSet()
       ..streak = j['streak'] ?? 0
@@ -290,8 +291,7 @@ class PlayerStore extends ChangeNotifier {
   }
 
   // ---------------------------------------------------------------- hearts
-  bool get unlimitedHearts =>
-      data.isVip || (data.unlimitedHeartsUntil != null && data.unlimitedHeartsUntil! > _now);
+  bool get unlimitedHearts => data.isVip || (data.unlimitedHeartsUntil != null && data.unlimitedHeartsUntil! > _now);
 
   void _tickHearts() {
     if (data.hearts >= Economy.maxHearts) {
@@ -303,8 +303,9 @@ class PlayerStore extends ChangeNotifier {
     final gained = elapsed ~/ Economy.heartRegen.inMilliseconds;
     if (gained > 0) {
       data.hearts = (data.hearts + gained).clamp(0, Economy.maxHearts);
-      data.heartClockStart =
-          data.hearts >= Economy.maxHearts ? null : data.heartClockStart! + gained * Economy.heartRegen.inMilliseconds;
+      data.heartClockStart = data.hearts >= Economy.maxHearts
+          ? null
+          : data.heartClockStart! + gained * Economy.heartRegen.inMilliseconds;
     }
   }
 
@@ -508,7 +509,9 @@ class PlayerStore extends ChangeNotifier {
   /// Rewarded views today for [placement], or in total when null.
   int rewardedCount(String? placement) {
     if (data.rewardedDate != utcDate(_clock())) return 0;
-    return placement == null ? data.rewardedCounts.values.fold(0, (a, b) => a + b) : data.rewardedCounts[placement] ?? 0;
+    return placement == null
+        ? data.rewardedCounts.values.fold(0, (a, b) => a + b)
+        : data.rewardedCounts[placement] ?? 0;
   }
 
   void recordRewarded(String placement) {

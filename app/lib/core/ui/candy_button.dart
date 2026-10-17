@@ -50,7 +50,10 @@ class _CandyButtonState extends State<CandyButton> with TickerProviderStateMixin
     duration: const Duration(milliseconds: 70),
     reverseDuration: const Duration(milliseconds: 220),
   );
-  late final AnimationController _breath = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
+  late final AnimationController _breath = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+  );
 
   bool get _enabled => widget.onTap != null;
 
@@ -173,30 +176,38 @@ class _CandyButtonState extends State<CandyButton> with TickerProviderStateMixin
                             ),
                             Center(
                               child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: widget.label.isEmpty ? 0 : widget.height * 0.3),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: widget.label.isEmpty ? 0 : widget.height * 0.3,
+                                ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    if (widget.leading != null) ...[widget.leading!, if (widget.label.isNotEmpty) const SizedBox(width: 8)],
+                                    if (widget.leading != null) ...[
+                                      widget.leading!,
+                                      if (widget.label.isNotEmpty) const SizedBox(width: 8),
+                                    ],
                                     if (widget.icon != null) ...[
-                                      Icon(widget.icon, color: Colors.white, size: fs * 1.15, shadows: [
-                                        Shadow(color: c.dark, offset: const Offset(0, 2), blurRadius: 0),
-                                      ]),
+                                      Icon(
+                                        widget.icon,
+                                        color: Colors.white,
+                                        size: fs * 1.15,
+                                        shadows: [Shadow(color: c.dark, offset: const Offset(0, 2), blurRadius: 0)],
+                                      ),
                                       const SizedBox(width: 8),
                                     ],
                                     if (widget.label.isNotEmpty)
-                                    Flexible(
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: OutlinedText(
-                                          widget.label,
-                                          size: fs,
-                                          stroke: c.dark,
-                                          shadow: false,
-                                          maxLines: 1,
+                                      Flexible(
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: OutlinedText(
+                                            widget.label,
+                                            size: fs,
+                                            stroke: c.dark,
+                                            shadow: false,
+                                            maxLines: 1,
+                                          ),
                                         ),
                                       ),
-                                    ),
                                     if (widget.trailing != null) ...[const SizedBox(width: 8), widget.trailing!],
                                   ],
                                 ),
@@ -253,9 +264,12 @@ class CandyIconButton extends StatelessWidget {
             depth: size * 0.12,
             radius: size * 0.34,
             sound: Sfx.tap,
-            leading: Icon(icon, color: Colors.white, size: size * 0.48, shadows: [
-              Shadow(color: candy.dark, offset: const Offset(0, 2)),
-            ]),
+            leading: Icon(
+              icon,
+              color: Colors.white,
+              size: size * 0.48,
+              shadows: [Shadow(color: candy.dark, offset: const Offset(0, 2))],
+            ),
           ),
           if (badge != null)
             Positioned(
@@ -268,9 +282,10 @@ class CandyIconButton extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.white, width: 2),
                 ),
-                child: Text(badge!,
-                    style: const TextStyle(
-                        fontFamily: 'LilitaOne', color: Colors.white, fontSize: 12, height: 1.1)),
+                child: Text(
+                  badge!,
+                  style: const TextStyle(fontFamily: 'LilitaOne', color: Colors.white, fontSize: 12, height: 1.1),
+                ),
               ),
             ),
         ],

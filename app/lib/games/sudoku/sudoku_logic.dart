@@ -7,10 +7,8 @@ class SudokuPuzzle {
   final List<int> givens;
   final List<int> solution;
 
-  factory SudokuPuzzle.fromJson(Map<String, dynamic> j) => SudokuPuzzle(
-        givens: _digits(j['givens'] as String),
-        solution: _digits(j['solution'] as String),
-      );
+  factory SudokuPuzzle.fromJson(Map<String, dynamic> j) =>
+      SudokuPuzzle(givens: _digits(j['givens'] as String), solution: _digits(j['solution'] as String));
 
   Map<String, dynamic> toJson() => {'givens': givens.join(), 'solution': solution.join()};
 

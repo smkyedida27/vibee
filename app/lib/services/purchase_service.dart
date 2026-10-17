@@ -36,34 +36,38 @@ class Catalog {
   static const items = <StoreItem>[
     StoreItem(id: 'gems_small', title: 'Handful of Gems', subtitle: '80 gems', gems: 80, fallbackPrice: '\$0.99'),
     StoreItem(
-        id: 'gems_medium',
-        title: 'Pouch of Gems',
-        subtitle: '500 gems',
-        gems: 500,
-        badge: 'POPULAR',
-        fallbackPrice: '\$4.99'),
+      id: 'gems_medium',
+      title: 'Pouch of Gems',
+      subtitle: '500 gems',
+      gems: 500,
+      badge: 'POPULAR',
+      fallbackPrice: '\$4.99',
+    ),
     StoreItem(id: 'gems_large', title: 'Chest of Gems', subtitle: '1,200 gems', gems: 1200, fallbackPrice: '\$9.99'),
     StoreItem(
-        id: 'gems_mega',
-        title: 'Vault of Gems',
-        subtitle: '3,000 gems',
-        gems: 3000,
-        badge: 'BEST VALUE',
-        fallbackPrice: '\$19.99'),
+      id: 'gems_mega',
+      title: 'Vault of Gems',
+      subtitle: '3,000 gems',
+      gems: 3000,
+      badge: 'BEST VALUE',
+      fallbackPrice: '\$19.99',
+    ),
     StoreItem(
-        id: 'remove_ads',
-        title: 'Remove Ads',
-        subtitle: 'No more interstitial ads, forever',
-        consumable: false,
-        fallbackPrice: '\$3.99'),
+      id: 'remove_ads',
+      title: 'Remove Ads',
+      subtitle: 'No more interstitial ads, forever',
+      consumable: false,
+      fallbackPrice: '\$3.99',
+    ),
     StoreItem(
-        id: 'vip_monthly',
-        title: 'Puzzle Pass VIP',
-        subtitle: 'No ads • Unlimited lives • 2× coins • 3 free hints daily',
-        consumable: false,
-        subscription: true,
-        badge: 'VIP',
-        fallbackPrice: '\$4.99/mo'),
+      id: 'vip_monthly',
+      title: 'Puzzle Pass VIP',
+      subtitle: 'No ads • Unlimited lives • 2× coins • 3 free hints daily',
+      consumable: false,
+      subscription: true,
+      badge: 'VIP',
+      fallbackPrice: '\$4.99/mo',
+    ),
   ];
 
   static StoreItem byId(String id) => items.firstWhere((i) => i.id == id);
@@ -87,17 +91,21 @@ class PurchaseService extends ChangeNotifier {
   PurchaseState state = PurchaseState.idle;
   String? lastError;
 
-  bool get _supported => !kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS);
+  bool get _supported =>
+      !kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS);
 
   Future<void> init() async {
     if (!_supported) return;
     final iap = InAppPurchase.instance;
     available = await iap.isAvailable();
     if (!available) return;
-    _sub = iap.purchaseStream.listen(_onPurchases, onError: (Object e) {
-      lastError = '$e';
-      _set(PurchaseState.failed);
-    });
+    _sub = iap.purchaseStream.listen(
+      _onPurchases,
+      onError: (Object e) {
+        lastError = '$e';
+        _set(PurchaseState.failed);
+      },
+    );
     final resp = await iap.queryProductDetails(Catalog.items.map((i) => i.id).toSet());
     for (final p in resp.productDetails) {
       products[p.id] = p;
@@ -180,7 +188,8 @@ class PurchaseService extends ChangeNotifier {
         );
       }
       if (p.pendingCompletePurchase) await InAppPurchase.instance.completePurchase(p);
-      if (defaultTargetPlatform == TargetPlatform.android && Catalog.items.any((i) => i.id == p.productID && i.consumable)) {
+      if (defaultTargetPlatform == TargetPlatform.android &&
+          Catalog.items.any((i) => i.id == p.productID && i.consumable)) {
         final android = InAppPurchase.instance.getPlatformAddition<InAppPurchaseAndroidPlatformAddition>();
         await android.consumePurchase(p);
       }
@@ -214,4 +223,3 @@ class PurchaseService extends ChangeNotifier {
     super.dispose();
   }
 }
-

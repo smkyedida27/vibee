@@ -14,7 +14,8 @@ class LadderPuzzle {
 
 /// Word graph over content/words4.txt (shared with the backend).
 class LadderDictionary {
-  LadderDictionary(Iterable<String> words) : words = words.map((w) => w.trim().toUpperCase()).where((w) => w.length == 4).toSet() {
+  LadderDictionary(Iterable<String> words)
+    : words = words.map((w) => w.trim().toUpperCase()).where((w) => w.length == 4).toSet() {
     sorted = this.words.toList()..sort();
   }
 

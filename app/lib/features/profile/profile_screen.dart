@@ -40,8 +40,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _reloadFriends() => setState(() => _friends = context.services.api.friends());
 
   Future<void> _removeFriend(Map<String, dynamic> f) async {
-    final ok = await confirmDialog(context,
-        title: 'Remove friend?', message: 'Remove ${f['displayName']} from your friends?', yes: 'Remove', candy: Candy.red);
+    final ok = await confirmDialog(
+      context,
+      title: 'Remove friend?',
+      message: 'Remove ${f['displayName']} from your friends?',
+      yes: 'Remove',
+      candy: Candy.red,
+    );
     if (!ok || !mounted) return;
     try {
       await context.services.api.removeFriend('${f['userId']}');
@@ -58,22 +63,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context,
       title: 'Your name',
       ribbon: Candy.blue,
-      builder: (ctx) => Column(mainAxisSize: MainAxisSize.min, children: [
-        TextField(
-          controller: ctrl,
-          autofocus: true,
-          maxLength: 20,
-          textAlign: TextAlign.center,
-          style: AppText.display(24, color: AppColors.ink),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: const Color(0xFFF3EAFF),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: ctrl,
+            autofocus: true,
+            maxLength: 20,
+            textAlign: TextAlign.center,
+            style: AppText.display(24, color: AppColors.ink),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color(0xFFF3EAFF),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        CandyButton(label: 'Save', candy: Candy.green, height: 56, onTap: () => Navigator.pop(ctx, ctrl.text)),
-      ]),
+          const SizedBox(height: 8),
+          CandyButton(label: 'Save', candy: Candy.green, height: 56, onTap: () => Navigator.pop(ctx, ctrl.text)),
+        ],
+      ),
     );
     if (name == null) return;
     if (cleanDisplayName(name) == null) {
@@ -94,12 +102,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
             children: [
-              Row(children: [
-                CandyIconButton(icon: Icons.arrow_back_rounded, size: 46, onTap: () => context.pop(), semanticLabel: 'Back'),
-                const Spacer(),
-                CandyIconButton(
-                    icon: Icons.settings_rounded, size: 46, candy: Candy.blue, onTap: () => context.push('/settings'), semanticLabel: 'Settings'),
-              ]),
+              Row(
+                children: [
+                  CandyIconButton(
+                    icon: Icons.arrow_back_rounded,
+                    size: 46,
+                    onTap: () => context.pop(),
+                    semanticLabel: 'Back',
+                  ),
+                  const Spacer(),
+                  CandyIconButton(
+                    icon: Icons.settings_rounded,
+                    size: 46,
+                    candy: Candy.blue,
+                    onTap: () => context.push('/settings'),
+                    semanticLabel: 'Settings',
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               Center(child: Avatar(index: d.avatar, size: 110, ring: true)),
               const SizedBox(height: 8),
@@ -107,11 +127,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Pressable(
                   onTap: _editName,
                   semanticLabel: 'Edit name',
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    OutlinedText(d.displayName, size: 32),
-                    const SizedBox(width: 6),
-                    const Icon(Icons.edit_rounded, color: Colors.white70),
-                  ]),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      OutlinedText(d.displayName, size: 32),
+                      const SizedBox(width: 6),
+                      const Icon(Icons.edit_rounded, color: Colors.white70),
+                    ],
+                  ),
                 ),
               ),
               if (d.isVip)
@@ -146,19 +169,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 14),
-              Row(children: [
-                Expanded(child: _BigStat(icon: Icons.local_fire_department_rounded, color: const Color(0xFFFF7A1A), value: '${d.streak}', label: 'Day streak')),
-                const SizedBox(width: 10),
-                Expanded(child: _BigStat(art: ArtKind.star, value: '${d.totalStars}', label: 'Stars')),
-                const SizedBox(width: 10),
-                Expanded(child: _BigStat(art: ArtKind.crown, value: '${d.highestCleared}', label: 'Levels')),
-              ]),
+              Row(
+                children: [
+                  Expanded(
+                    child: _BigStat(
+                      icon: Icons.local_fire_department_rounded,
+                      color: const Color(0xFFFF7A1A),
+                      value: '${d.streak}',
+                      label: 'Day streak',
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _BigStat(art: ArtKind.star, value: '${d.totalStars}', label: 'Stars'),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _BigStat(art: ArtKind.crown, value: '${d.highestCleared}', label: 'Levels'),
+                  ),
+                ],
+              ),
               const SectionTitle('Game stats'),
               CandyPanel(
                 rim: Candy.purple,
-                child: Column(children: [
-                  for (final g in GameType.values) _GameStatRow(game: g),
-                ]),
+                child: Column(children: [for (final g in GameType.values) _GameStatRow(game: g)]),
               ),
               const SectionTitle('Friends'),
               FutureBuilder<Map<String, dynamic>>(
@@ -166,63 +200,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 builder: (context, snap) {
                   final code = snap.data?['friendCode'] as String?;
                   return GlassPanel(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('Your friend code', style: AppText.body(13, color: Colors.white70)),
-                      Row(children: [
-                        Expanded(
-                          child: Text(code ?? (snap.hasError ? 'Go online to get your code' : '…'),
-                              style: AppText.display(code == null ? 16 : 26, color: Colors.white)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Your friend code', style: AppText.body(13, color: Colors.white70)),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                code ?? (snap.hasError ? 'Go online to get your code' : '…'),
+                                style: AppText.display(code == null ? 16 : 26, color: Colors.white),
+                              ),
+                            ),
+                            if (code != null)
+                              CandyIconButton(
+                                icon: Icons.copy_rounded,
+                                size: 42,
+                                candy: Candy.teal,
+                                semanticLabel: 'Copy friend code',
+                                onTap: () {
+                                  Clipboard.setData(ClipboardData(text: code));
+                                  toast(context, 'Friend code copied');
+                                },
+                              ),
+                          ],
                         ),
-                        if (code != null)
-                          CandyIconButton(
-                            icon: Icons.copy_rounded,
-                            size: 42,
-                            candy: Candy.teal,
-                            semanticLabel: 'Copy friend code',
-                            onTap: () {
-                              Clipboard.setData(ClipboardData(text: code));
-                              toast(context, 'Friend code copied');
-                            },
-                          ),
-                      ]),
-                      FutureBuilder<List<dynamic>>(
-                        future: _friends,
-                        builder: (context, fs) {
-                          final list = fs.data ?? const [];
-                          if (list.isEmpty) return const SizedBox.shrink();
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: Column(children: [
-                              for (final f in list.cast<Map<String, dynamic>>())
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 4),
-                                  child: Row(children: [
-                                    Avatar(index: (f['avatarId'] as num?)?.toInt() ?? 0, size: 38),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text('${f['displayName']}',
-                                          overflow: TextOverflow.ellipsis, style: AppText.display(18, color: Colors.white)),
+                        FutureBuilder<List<dynamic>>(
+                          future: _friends,
+                          builder: (context, fs) {
+                            final list = fs.data ?? const [];
+                            if (list.isEmpty) return const SizedBox.shrink();
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: Column(
+                                children: [
+                                  for (final f in list.cast<Map<String, dynamic>>())
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 4),
+                                      child: Row(
+                                        children: [
+                                          Avatar(index: (f['avatarId'] as num?)?.toInt() ?? 0, size: 38),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Text(
+                                              '${f['displayName']}',
+                                              overflow: TextOverflow.ellipsis,
+                                              style: AppText.display(18, color: Colors.white),
+                                            ),
+                                          ),
+                                          IconButton(
+                                            tooltip: 'Remove friend',
+                                            icon: const Icon(Icons.person_remove_rounded, color: Colors.white70),
+                                            onPressed: () => _removeFriend(f),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    IconButton(
-                                      tooltip: 'Remove friend',
-                                      icon: const Icon(Icons.person_remove_rounded, color: Colors.white70),
-                                      onPressed: () => _removeFriend(f),
-                                    ),
-                                  ]),
-                                ),
-                            ]),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      CandyButton(
-                        label: 'Add a friend',
-                        icon: Icons.person_add_alt_1_rounded,
-                        candy: Candy.blue,
-                        height: 52,
-                        onTap: () => _addFriend(context),
-                      ),
-                    ]),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        CandyButton(
+                          label: 'Add a friend',
+                          icon: Icons.person_add_alt_1_rounded,
+                          candy: Candy.blue,
+                          height: 52,
+                          onTap: () => _addFriend(context),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
@@ -239,22 +287,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context,
       title: 'Add friend',
       ribbon: Candy.blue,
-      builder: (ctx) => Column(mainAxisSize: MainAxisSize.min, children: [
-        TextField(
-          controller: ctrl,
-          textCapitalization: TextCapitalization.characters,
-          textAlign: TextAlign.center,
-          style: AppText.display(24, color: AppColors.ink),
-          decoration: InputDecoration(
-            hintText: 'FRIEND CODE',
-            filled: true,
-            fillColor: const Color(0xFFF3EAFF),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: ctrl,
+            textCapitalization: TextCapitalization.characters,
+            textAlign: TextAlign.center,
+            style: AppText.display(24, color: AppColors.ink),
+            decoration: InputDecoration(
+              hintText: 'FRIEND CODE',
+              filled: true,
+              fillColor: const Color(0xFFF3EAFF),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        CandyButton(label: 'Add', candy: Candy.green, height: 56, onTap: () => Navigator.pop(ctx, ctrl.text.trim())),
-      ]),
+          const SizedBox(height: 12),
+          CandyButton(label: 'Add', candy: Candy.green, height: 56, onTap: () => Navigator.pop(ctx, ctrl.text.trim())),
+        ],
+      ),
     );
     if (code == null || code.isEmpty || !context.mounted) return;
     try {
@@ -277,14 +328,16 @@ class _BigStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => CandyPanel(
-        rim: Candy.white,
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Column(children: [
-          if (art != null) GameArt(art!, size: 32) else Icon(icon, color: color, size: 32),
-          Text(value, style: AppText.display(24, color: AppColors.ink)),
-          Text(label, style: AppText.body(11, color: AppColors.inkSoft)),
-        ]),
-      );
+    rim: Candy.white,
+    padding: const EdgeInsets.symmetric(vertical: 10),
+    child: Column(
+      children: [
+        if (art != null) GameArt(art!, size: 32) else Icon(icon, color: color, size: 32),
+        Text(value, style: AppText.display(24, color: AppColors.ink)),
+        Text(label, style: AppText.body(11, color: AppColors.inkSoft)),
+      ],
+    ),
+  );
 }
 
 class _GameStatRow extends StatelessWidget {
@@ -299,34 +352,49 @@ class _GameStatRow extends StatelessWidget {
     final rate = played == 0 ? 0.0 : won / played;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(children: [
-        GameBadge(game: game, size: 36),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Expanded(child: Text(game.title, style: AppText.body(14, weight: FontWeight.w700))),
-              Text('$won/$played', style: AppText.body(13, color: AppColors.inkSoft, weight: FontWeight.w700)),
-            ]),
-            const SizedBox(height: 4),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: LinearProgressIndicator(
-                value: rate,
-                minHeight: 8,
-                color: game.candy.base,
-                backgroundColor: const Color(0xFFEDE4FF),
-              ),
+      child: Row(
+        children: [
+          GameBadge(game: game, size: 36),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(game.title, style: AppText.body(14, weight: FontWeight.w700)),
+                    ),
+                    Text(
+                      '$won/$played',
+                      style: AppText.body(13, color: AppColors.inkSoft, weight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: rate,
+                    minHeight: 8,
+                    color: game.candy.base,
+                    backgroundColor: const Color(0xFFEDE4FF),
+                  ),
+                ),
+              ],
             ),
-          ]),
-        ),
-        const SizedBox(width: 10),
-        SizedBox(
-          width: 52,
-          child: Text(best == null ? '—' : '${best ~/ 60000}:${((best ~/ 1000) % 60).toString().padLeft(2, '0')}',
-              textAlign: TextAlign.right, style: AppText.display(15, color: AppColors.royal)),
-        ),
-      ]),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 52,
+            child: Text(
+              best == null ? '—' : '${best ~/ 60000}:${((best ~/ 1000) % 60).toString().padLeft(2, '0')}',
+              textAlign: TextAlign.right,
+              style: AppText.display(15, color: AppColors.royal),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

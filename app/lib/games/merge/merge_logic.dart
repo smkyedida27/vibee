@@ -3,7 +3,12 @@ import '../../core/util/rng.dart';
 enum MoveDir { left, right, up, down }
 
 extension MoveDirX on MoveDir {
-  String get code => switch (this) { MoveDir.left => 'L', MoveDir.right => 'R', MoveDir.up => 'U', MoveDir.down => 'D' };
+  String get code => switch (this) {
+    MoveDir.left => 'L',
+    MoveDir.right => 'R',
+    MoveDir.up => 'U',
+    MoveDir.down => 'D',
+  };
 }
 
 class MergePuzzle {
@@ -97,7 +102,7 @@ class MergeGame {
             MoveDir.right => (line, size - 1 - k),
             MoveDir.up => (k, line),
             MoveDir.down => (size - 1 - k, line),
-          }
+          },
       ];
       final lineTiles = [for (final (r, c) in cells) at(r, c)].whereType<Tile>().toList();
       var slot = 0;
@@ -148,7 +153,12 @@ class MergeGame {
   static MergeGame replay(MergePuzzle p, String moveString) {
     final g = MergeGame(p);
     for (final ch in moveString.split('')) {
-      final dir = switch (ch) { 'L' => MoveDir.left, 'R' => MoveDir.right, 'U' => MoveDir.up, _ => MoveDir.down };
+      final dir = switch (ch) {
+        'L' => MoveDir.left,
+        'R' => MoveDir.right,
+        'U' => MoveDir.up,
+        _ => MoveDir.down,
+      };
       g.move(dir);
       if (!g.canMove) break;
     }

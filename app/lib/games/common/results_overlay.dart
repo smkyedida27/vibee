@@ -78,9 +78,13 @@ class _ResultsBody extends StatefulWidget {
 }
 
 class _ResultsBodyState extends State<_ResultsBody> with TickerProviderStateMixin {
-  late final AnimationController _stars = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
+  late final AnimationController _stars = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1500),
+  );
   late final AnimationController _count = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
-  late final AnimationController _shine = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat();
+  late final AnimationController _shine = AnimationController(vsync: this, duration: const Duration(seconds: 6))
+    ..repeat();
   bool _doubled = false;
   final _played = <int>{};
 
@@ -144,13 +148,21 @@ class _ResultsBodyState extends State<_ResultsBody> with TickerProviderStateMixi
         ),
         const SizedBox(height: 6),
         if (widget.result.detail != null)
-          Text(widget.result.detail!, textAlign: TextAlign.center, style: AppText.body(15, color: AppColors.inkSoft)),
+          Text(
+            widget.result.detail!,
+            textAlign: TextAlign.center,
+            style: AppText.body(15, color: AppColors.inkSoft),
+          ),
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: _Stat(icon: Icons.timer_rounded, label: 'Time', value: _fmt(widget.elapsed))),
+            Expanded(
+              child: _Stat(icon: Icons.timer_rounded, label: 'Time', value: _fmt(widget.elapsed)),
+            ),
             const SizedBox(width: 8),
-            Expanded(child: _Stat(icon: Icons.lightbulb_rounded, label: 'Hints', value: '${widget.hintsUsed}')),
+            Expanded(
+              child: _Stat(icon: Icons.lightbulb_rounded, label: 'Hints', value: '${widget.hintsUsed}'),
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: AnimatedBuilder(
@@ -175,11 +187,12 @@ class _ResultsBodyState extends State<_ResultsBody> with TickerProviderStateMixi
               final d = snap.data;
               if (d == null || d['result'] != 'SOLVED') {
                 return Text(
-                    d == null
-                        ? "Couldn't reach the leaderboard — your streak is saved on this device."
-                        : 'Solved with a continue — not ranked today, but your streak counts!',
-                    textAlign: TextAlign.center,
-                    style: AppText.body(14, color: AppColors.inkSoft));
+                  d == null
+                      ? "Couldn't reach the leaderboard — your streak is saved on this device."
+                      : 'Solved with a continue — not ranked today, but your streak counts!',
+                  textAlign: TextAlign.center,
+                  style: AppText.body(14, color: AppColors.inkSoft),
+                );
               }
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -236,24 +249,24 @@ class _ResultsBodyState extends State<_ResultsBody> with TickerProviderStateMixi
             Expanded(
               child: switch (r.source) {
                 PlaySource.level => CandyButton(
-                    label: 'Next Level',
-                    candy: Candy.green,
-                    height: 62,
-                    pulse: true,
-                    onTap: () => Navigator.pop(context, ResultAction.next),
-                  ),
+                  label: 'Next Level',
+                  candy: Candy.green,
+                  height: 62,
+                  pulse: true,
+                  onTap: () => Navigator.pop(context, ResultAction.next),
+                ),
                 PlaySource.daily => CandyButton(
-                    label: 'Leaderboard',
-                    candy: Candy.green,
-                    height: 62,
-                    onTap: () => Navigator.pop(context, ResultAction.leaderboard),
-                  ),
+                  label: 'Leaderboard',
+                  candy: Candy.green,
+                  height: 62,
+                  onTap: () => Navigator.pop(context, ResultAction.leaderboard),
+                ),
                 PlaySource.quick => CandyButton(
-                    label: 'Continue',
-                    candy: Candy.green,
-                    height: 62,
-                    onTap: () => Navigator.pop(context, ResultAction.home),
-                  ),
+                  label: 'Continue',
+                  candy: Candy.green,
+                  height: 62,
+                  onTap: () => Navigator.pop(context, ResultAction.home),
+                ),
               },
             ),
             const SizedBox(width: 10),
@@ -282,7 +295,11 @@ class _ResultsBodyState extends State<_ResultsBody> with TickerProviderStateMixi
         alignment: Alignment.center,
         children: [
           GameArt(ArtKind.starEmpty, size: size),
-          if (earned) Transform.scale(scale: scale, child: GameArt(ArtKind.star, size: size)),
+          if (earned)
+            Transform.scale(
+              scale: scale,
+              child: GameArt(ArtKind.star, size: size),
+            ),
         ],
       ),
     );
@@ -305,12 +322,16 @@ class _Stat extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.panelEdge, width: 2),
       ),
-      child: Column(children: [
-        if (art != null) GameArt(art!, size: 24) else Icon(icon, color: AppColors.royal, size: 22),
-        const SizedBox(height: 2),
-        FittedBox(child: Text(value, style: AppText.display(20, color: AppColors.ink))),
-        Text(label, style: AppText.body(11, color: AppColors.inkSoft)),
-      ]),
+      child: Column(
+        children: [
+          if (art != null) GameArt(art!, size: 24) else Icon(icon, color: AppColors.royal, size: 22),
+          const SizedBox(height: 2),
+          FittedBox(
+            child: Text(value, style: AppText.display(20, color: AppColors.ink)),
+          ),
+          Text(label, style: AppText.body(11, color: AppColors.inkSoft)),
+        ],
+      ),
     );
   }
 }
@@ -340,8 +361,12 @@ class _RaysPainter extends CustomPainter {
   bool shouldRepaint(covariant _RaysPainter old) => false;
 }
 
-Future<ResultAction?> showFail(BuildContext context,
-    {required PlayRequest request, required bool canContinue, required int continueCost}) {
+Future<ResultAction?> showFail(
+  BuildContext context, {
+  required PlayRequest request,
+  required bool canContinue,
+  required int continueCost,
+}) {
   return showCandyDialog<ResultAction>(
     context,
     title: request.game == GameType.merge ? 'Out of moves!' : 'So close!',
@@ -390,17 +415,27 @@ Future<ResultAction?> showFail(BuildContext context,
             ),
             const SizedBox(height: 10),
           ],
-          Row(children: [
-            Expanded(
-              child: CandyButton(
-                  label: 'Retry', candy: Candy.orange, height: 54, onTap: () => Navigator.pop(ctx, ResultAction.retry)),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: CandyButton(
-                  label: 'Give up', candy: Candy.grey, height: 54, onTap: () => Navigator.pop(ctx, ResultAction.home)),
-            ),
-          ]),
+          Row(
+            children: [
+              Expanded(
+                child: CandyButton(
+                  label: 'Retry',
+                  candy: Candy.orange,
+                  height: 54,
+                  onTap: () => Navigator.pop(ctx, ResultAction.retry),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: CandyButton(
+                  label: 'Give up',
+                  candy: Candy.grey,
+                  height: 54,
+                  onTap: () => Navigator.pop(ctx, ResultAction.home),
+                ),
+              ),
+            ],
+          ),
         ],
       );
     },
@@ -431,10 +466,13 @@ class _BrokenHeartState extends State<_BrokenHeart> with SingleTickerProviderSta
         final shake = math.sin(_c.value * math.pi * 8) * (1 - _c.value) * 10;
         return Transform.translate(
           offset: Offset(shake, 0),
-          child: const Stack(alignment: Alignment.center, children: [
-            GameArt(ArtKind.heart, size: 90),
-            OutlinedText('-1', size: 30, stroke: Color(0xFF9E0A33)),
-          ]),
+          child: const Stack(
+            alignment: Alignment.center,
+            children: [
+              GameArt(ArtKind.heart, size: 90),
+              OutlinedText('-1', size: 30, stroke: Color(0xFF9E0A33)),
+            ],
+          ),
         );
       },
     );

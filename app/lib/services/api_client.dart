@@ -28,8 +28,8 @@ class ApiException implements Exception {
 /// * Sends `X-Request-Id` and `Idempotency-Key` where the contract requires.
 class ApiClient {
   ApiClient(this._prefs, {http.Client? client, String? baseUrl})
-      : _http = client ?? http.Client(),
-        baseUrl = baseUrl ?? const String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8080');
+    : _http = client ?? http.Client(),
+      baseUrl = baseUrl ?? const String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8080');
 
   final SharedPreferences _prefs;
   final http.Client _http;
@@ -152,7 +152,12 @@ class ApiClient {
     final decoded = res.body.isEmpty ? null : _tryJson(res.body);
     if (res.statusCode >= 200 && res.statusCode < 300) return decoded;
     final m = decoded is Map<String, dynamic> ? decoded : null;
-    throw ApiException(res.statusCode, m?['code'] as String?, (m?['detail'] ?? m?['title'] ?? 'Request failed') as String, m);
+    throw ApiException(
+      res.statusCode,
+      m?['code'] as String?,
+      (m?['detail'] ?? m?['title'] ?? 'Request failed') as String,
+      m,
+    );
   }
 
   dynamic _tryJson(String s) {
@@ -169,17 +174,24 @@ class ApiClient {
 
   Future<Map<String, dynamic>> createAttempt(String puzzleId) {
     final key = newId();
-    return _send('POST', '/api/v1/attempts', body: {'puzzleId': puzzleId, 'idempotencyKey': key}, idempotencyKey: key)
-        .then((v) => v as Map<String, dynamic>);
+    return _send(
+      'POST',
+      '/api/v1/attempts',
+      body: {'puzzleId': puzzleId, 'idempotencyKey': key},
+      idempotencyKey: key,
+    ).then((v) => v as Map<String, dynamic>);
   }
 
-  Future<Map<String, dynamic>> submitAttempt(String attemptId,
-          {required Map<String, dynamic> submission, required int hintsUsed, required int clientDurationMs}) async =>
-      await _send('POST', '/api/v1/attempts/$attemptId/submit', body: {
-        'submission': submission,
-        'hintsUsed': hintsUsed,
-        'clientDurationMs': clientDurationMs,
-      }) as Map<String, dynamic>;
+  Future<Map<String, dynamic>> submitAttempt(
+    String attemptId, {
+    required Map<String, dynamic> submission,
+    required int hintsUsed,
+    required int clientDurationMs,
+  }) async => await _send(
+    'POST',
+    '/api/v1/attempts/$attemptId/submit',
+    body: {'submission': submission, 'hintsUsed': hintsUsed, 'clientDurationMs': clientDurationMs},
+  ) as Map<String, dynamic>;
 
   Future<Map<String, dynamic>> leaderboard({
     required String period, // daily | weekly
@@ -187,13 +199,11 @@ class ApiClient {
     String? gameType,
     int page = 0,
     int size = 50,
-  }) async =>
-      await _send('GET', '/api/v1/leaderboards/$period', query: {
-        'scope': scope,
-        'gameType': ?gameType,
-        'page': '$page',
-        'size': '$size',
-      }) as Map<String, dynamic>;
+  }) async => await _send(
+    'GET',
+    '/api/v1/leaderboards/$period',
+    query: {'scope': scope, 'gameType': ?gameType, 'page': '$page', 'size': '$size'},
+  ) as Map<String, dynamic>;
 
   Future<Map<String, dynamic>> streak() async => await _send('GET', '/api/v1/me/streak') as Map<String, dynamic>;
   Future<Map<String, dynamic>> profile() async => await _send('GET', '/api/v1/me/profile') as Map<String, dynamic>;
@@ -204,15 +214,23 @@ class ApiClient {
 
   Future<Map<String, dynamic>> spend(String sku) {
     final key = newId();
-    return _send('POST', '/api/v1/me/wallet/spend', body: {'sku': sku, 'idempotencyKey': key}, idempotencyKey: key)
-        .then((v) => v as Map<String, dynamic>);
+    return _send(
+      'POST',
+      '/api/v1/me/wallet/spend',
+      body: {'sku': sku, 'idempotencyKey': key},
+      idempotencyKey: key,
+    ).then((v) => v as Map<String, dynamic>);
   }
 
-  Future<Map<String, dynamic>> verifyGooglePurchase(String productId, String purchaseToken) async =>
-      await _send('POST', '/api/v1/purchases/google/verify',
-          body: {'productId': productId, 'purchaseToken': purchaseToken}, idempotencyKey: purchaseToken) as Map<String, dynamic>;
+  Future<Map<String, dynamic>> verifyGooglePurchase(String productId, String purchaseToken) async => await _send(
+    'POST',
+    '/api/v1/purchases/google/verify',
+    body: {'productId': productId, 'purchaseToken': purchaseToken},
+    idempotencyKey: purchaseToken,
+  ) as Map<String, dynamic>;
 
-  Future<Map<String, dynamic>?> getProgress() async => await _send('GET', '/api/v1/me/progress') as Map<String, dynamic>?;
+  Future<Map<String, dynamic>?> getProgress() async =>
+      await _send('GET', '/api/v1/me/progress') as Map<String, dynamic>?;
 
   Future<Map<String, dynamic>> putProgress(int version, Map<String, dynamic> data) async =>
       await _send('PUT', '/api/v1/me/progress', body: {'version': version, 'data': data}) as Map<String, dynamic>;
@@ -223,11 +241,14 @@ class ApiClient {
   Future<Map<String, dynamic>> claimDailyReward() async =>
       await _send('POST', '/api/v1/me/rewards/daily-claim') as Map<String, dynamic>;
 
-  Future<void> registerPushToken(String token) =>
-      _send('POST', '/api/v1/me/push-token', body: {
-        'token': token,
-        'platform': kIsWeb ? 'WEB' : (defaultTargetPlatform == TargetPlatform.iOS ? 'IOS' : 'ANDROID'),
-      });
+  Future<void> registerPushToken(String token) => _send(
+    'POST',
+    '/api/v1/me/push-token',
+    body: {
+      'token': token,
+      'platform': kIsWeb ? 'WEB' : (defaultTargetPlatform == TargetPlatform.iOS ? 'IOS' : 'ANDROID'),
+    },
+  );
 
   Future<void> deleteAccount() async {
     await _send('DELETE', '/api/v1/me');

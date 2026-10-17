@@ -22,15 +22,17 @@ class ConfettiController extends ChangeNotifier {
     for (var i = 0; i < count; i++) {
       final a = _rand.nextDouble() * math.pi * 2;
       final v = (300 + _rand.nextDouble() * 900) * power;
-      _parts.add(_Particle(
-        pos: origin,
-        vel: Offset(math.cos(a) * v, math.sin(a) * v - 500 * power),
-        color: _colors[_rand.nextInt(_colors.length)],
-        size: 6 + _rand.nextDouble() * 8,
-        spin: (_rand.nextDouble() - 0.5) * 14,
-        shape: _rand.nextInt(3),
-        life: 2.2 + _rand.nextDouble() * 1.4,
-      ));
+      _parts.add(
+        _Particle(
+          pos: origin,
+          vel: Offset(math.cos(a) * v, math.sin(a) * v - 500 * power),
+          color: _colors[_rand.nextInt(_colors.length)],
+          size: 6 + _rand.nextDouble() * 8,
+          spin: (_rand.nextDouble() - 0.5) * 14,
+          shape: _rand.nextInt(3),
+          life: 2.2 + _rand.nextDouble() * 1.4,
+        ),
+      );
     }
     notifyListeners();
   }
@@ -38,15 +40,17 @@ class ConfettiController extends ChangeNotifier {
   /// Steady rain from the top edge (used on big wins).
   void rain({int count = 80}) {
     for (var i = 0; i < count; i++) {
-      _parts.add(_Particle(
-        pos: Offset(_rand.nextDouble(), -0.05 - _rand.nextDouble() * 0.4),
-        vel: Offset((_rand.nextDouble() - 0.5) * 120, 80 + _rand.nextDouble() * 200),
-        color: _colors[_rand.nextInt(_colors.length)],
-        size: 6 + _rand.nextDouble() * 7,
-        spin: (_rand.nextDouble() - 0.5) * 10,
-        shape: _rand.nextInt(3),
-        life: 4 + _rand.nextDouble() * 2,
-      ));
+      _parts.add(
+        _Particle(
+          pos: Offset(_rand.nextDouble(), -0.05 - _rand.nextDouble() * 0.4),
+          vel: Offset((_rand.nextDouble() - 0.5) * 120, 80 + _rand.nextDouble() * 200),
+          color: _colors[_rand.nextInt(_colors.length)],
+          size: 6 + _rand.nextDouble() * 7,
+          spin: (_rand.nextDouble() - 0.5) * 10,
+          shape: _rand.nextInt(3),
+          life: 4 + _rand.nextDouble() * 2,
+        ),
+      );
     }
     notifyListeners();
   }
@@ -74,8 +78,8 @@ class _Particle {
     required this.spin,
     required this.shape,
     required this.life,
-  })  : rx = pos.dx,
-        ry = pos.dy;
+  }) : rx = pos.dx,
+       ry = pos.dy;
 
   // Relative spawn position, resolved to pixels on first frame.
   final double rx, ry;
@@ -140,10 +144,12 @@ class _ConfettiLayerState extends State<ConfettiLayer> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      child: LayoutBuilder(builder: (context, c) {
-        _size = c.biggest;
-        return CustomPaint(size: c.biggest, painter: _ConfettiPainter(widget.controller._parts));
-      }),
+      child: LayoutBuilder(
+        builder: (context, c) {
+          _size = c.biggest;
+          return CustomPaint(size: c.biggest, painter: _ConfettiPainter(widget.controller._parts));
+        },
+      ),
     );
   }
 }
@@ -167,9 +173,12 @@ class _ConfettiPainter extends CustomPainter {
       switch (p.shape) {
         case 0:
           canvas.drawRRect(
-              RRect.fromRectAndRadius(Rect.fromCenter(center: Offset.zero, width: p.size, height: p.size * 0.5),
-                  const Radius.circular(2)),
-              paint);
+            RRect.fromRectAndRadius(
+              Rect.fromCenter(center: Offset.zero, width: p.size, height: p.size * 0.5),
+              const Radius.circular(2),
+            ),
+            paint,
+          );
         case 1:
           canvas.drawCircle(Offset.zero, p.size * 0.38, paint);
         default:

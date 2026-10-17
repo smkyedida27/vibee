@@ -121,23 +121,25 @@ class _RibbonPainter extends CustomPainter {
     final dark = Paint()..color = c.dark;
     // Tails.
     canvas.drawPath(
-        Path()
-          ..moveTo(0, h * 0.25)
-          ..lineTo(tail * 1.3, h * 0.25)
-          ..lineTo(tail * 1.3, h + 8)
-          ..lineTo(0, h + 8)
-          ..lineTo(tail * 0.5, h * 0.62)
-          ..close(),
-        dark);
+      Path()
+        ..moveTo(0, h * 0.25)
+        ..lineTo(tail * 1.3, h * 0.25)
+        ..lineTo(tail * 1.3, h + 8)
+        ..lineTo(0, h + 8)
+        ..lineTo(tail * 0.5, h * 0.62)
+        ..close(),
+      dark,
+    );
     canvas.drawPath(
-        Path()
-          ..moveTo(w, h * 0.25)
-          ..lineTo(w - tail * 1.3, h * 0.25)
-          ..lineTo(w - tail * 1.3, h + 8)
-          ..lineTo(w, h + 8)
-          ..lineTo(w - tail * 0.5, h * 0.62)
-          ..close(),
-        dark);
+      Path()
+        ..moveTo(w, h * 0.25)
+        ..lineTo(w - tail * 1.3, h * 0.25)
+        ..lineTo(w - tail * 1.3, h + 8)
+        ..lineTo(w, h + 8)
+        ..lineTo(w - tail * 0.5, h * 0.62)
+        ..close(),
+      dark,
+    );
     // Body with slight arch.
     final body = Path()
       ..moveTo(tail * 0.8, 6)
@@ -156,11 +158,12 @@ class _RibbonPainter extends CustomPainter {
         ).createShader(Offset.zero & size),
     );
     canvas.drawPath(
-        body,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3
-          ..color = c.dark);
+      body,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3
+        ..color = c.dark,
+    );
     // Gloss strip.
     canvas.drawPath(
       Path()
@@ -209,10 +212,16 @@ class Pill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        if (icon != null) ...[Icon(icon, size: 14, color: Colors.white), const SizedBox(width: 4)],
-        Text(text, style: AppText.body(12, color: Colors.white, weight: FontWeight.w700)),
-      ]),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[Icon(icon, size: 14, color: Colors.white), const SizedBox(width: 4)],
+          Text(
+            text,
+            style: AppText.body(12, color: Colors.white, weight: FontWeight.w700),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -37,14 +37,20 @@ class PlayRequest {
 
   factory PlayRequest.level(int n) {
     final spec = Campaign.level(n);
-    return PlayRequest(game: spec.game, difficulty: spec.difficulty, source: PlaySource.level, seed: spec.seed, level: n);
+    return PlayRequest(
+      game: spec.game,
+      difficulty: spec.difficulty,
+      source: PlaySource.level,
+      seed: spec.seed,
+      level: n,
+    );
   }
 
   String get title => switch (source) {
-        PlaySource.level => 'Level $level',
-        PlaySource.daily => 'Daily ${game.title}',
-        PlaySource.quick => game.title,
-      };
+    PlaySource.level => 'Level $level',
+    PlaySource.daily => 'Daily ${game.title}',
+    PlaySource.quick => game.title,
+  };
 }
 
 /// A daily puzzle as served by `GET /daily-challenge` (or generated offline).
@@ -92,7 +98,9 @@ class ContentRepo {
     if (_loaded) return;
     final connect = jsonDecode(await rootBundle.loadString('assets/content/connect.json')) as Map<String, dynamic>;
     connectPuzzles = [for (final p in connect['puzzles'] as List) ConnectPuzzle.fromJson(p as Map<String, dynamic>)];
-    dictionary = LadderDictionary(const LineSplitter().convert(await rootBundle.loadString('assets/content/words4.txt')));
+    dictionary = LadderDictionary(
+      const LineSplitter().convert(await rootBundle.loadString('assets/content/words4.txt')),
+    );
     _loaded = true;
   }
 
@@ -130,12 +138,12 @@ class ContentRepo {
   }
 
   Object parse(GameType g, Map<String, dynamic> content) => switch (g) {
-        GameType.connect => ConnectPuzzle.fromJson(content),
-        GameType.queens => QueensPuzzle.fromJson(content),
-        GameType.sudoku => SudokuPuzzle.fromJson(content),
-        GameType.ladder => LadderPuzzle.fromJson(content),
-        GameType.merge => MergePuzzle.fromJson(content),
-      };
+    GameType.connect => ConnectPuzzle.fromJson(content),
+    GameType.queens => QueensPuzzle.fromJson(content),
+    GameType.sudoku => SudokuPuzzle.fromJson(content),
+    GameType.ladder => LadderPuzzle.fromJson(content),
+    GameType.merge => MergePuzzle.fromJson(content),
+  };
 
   // ----------------------------------------------------------------- daily
   /// Today's set: network first, then today's cache, then a local offline set.
@@ -189,7 +197,14 @@ class ContentRepo {
         MergePuzzle p => p.toJson(),
         _ => <String, dynamic>{},
       };
-      map[g] = DailyPuzzle(puzzleId: null, game: g, difficulty: Difficulty.medium, content: content, date: date, offline: true);
+      map[g] = DailyPuzzle(
+        puzzleId: null,
+        game: g,
+        difficulty: Difficulty.medium,
+        content: content,
+        date: date,
+        offline: true,
+      );
     }
     return DailySet(date, map, offline: true);
   }

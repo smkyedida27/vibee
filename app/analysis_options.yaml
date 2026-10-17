@@ -34,3 +34,7 @@ linter:
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
+
+# The codebase is written at 120 columns; CI enforces `dart format` with this width.
+formatter:
+  page_width: 120

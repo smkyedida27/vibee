@@ -90,10 +90,12 @@ class AppServices {
     unawaited(Audio.instance.init());
     unawaited(ads.init().catchError((Object e) => debugPrint('ads init: $e')));
     unawaited(purchases.init().catchError((Object e) => debugPrint('iap init: $e')));
-    unawaited(sync.pull().then((_) {
-      FirebaseSetup.setUser(api.userId);
-      if (player.data.onboarded) return pushProfile();
-    }));
+    unawaited(
+      sync.pull().then((_) {
+        FirebaseSetup.setUser(api.userId);
+        if (player.data.onboarded) return pushProfile();
+      }),
+    );
     if (player.data.settings.reminders) {
       unawaited(FirebaseSetup.refreshPush(api).catchError((Object e) => debugPrint('push: $e')));
     }

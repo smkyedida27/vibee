@@ -57,24 +57,29 @@ class _GameLauncherState extends State<GameLauncher> {
       builder: (context, snap) {
         if (snap.hasError) {
           return _LoadingScaffold(
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              const OutlinedText('Oops!', size: 40),
-              const SizedBox(height: 8),
-              Text(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const OutlinedText('Oops!', size: 40),
+                const SizedBox(height: 8),
+                Text(
                   snap.error is StateError
                       ? (snap.error! as StateError).message
                       : 'We couldn\'t load this puzzle. Check your connection and try again.',
-                  textAlign: TextAlign.center, style: AppText.body(16, color: Colors.white)),
-              const SizedBox(height: 20),
-              CandyButton(
-                label: 'Try again',
-                candy: Candy.orange,
-                width: 220,
-                onTap: () => setState(() => _load = _run()),
-              ),
-              const SizedBox(height: 12),
-              CandyButton(label: 'Back', candy: Candy.grey, width: 220, onTap: () => context.pop()),
-            ]),
+                  textAlign: TextAlign.center,
+                  style: AppText.body(16, color: Colors.white),
+                ),
+                const SizedBox(height: 20),
+                CandyButton(
+                  label: 'Try again',
+                  candy: Candy.orange,
+                  width: 220,
+                  onTap: () => setState(() => _load = _run()),
+                ),
+                const SizedBox(height: 12),
+                CandyButton(label: 'Back', candy: Candy.grey, width: 220, onTap: () => context.pop()),
+              ],
+            ),
           );
         }
         if (!snap.hasData) return const _LoadingScaffold(child: _Loader());
@@ -97,8 +102,14 @@ class _LoadingScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        body: CandyBackground(child: SafeArea(child: Center(child: Padding(padding: const EdgeInsets.all(24), child: child)))),
-      );
+    body: CandyBackground(
+      child: SafeArea(
+        child: Center(
+          child: Padding(padding: const EdgeInsets.all(24), child: child),
+        ),
+      ),
+    ),
+  );
 }
 
 class _Loader extends StatefulWidget {
@@ -108,7 +119,8 @@ class _Loader extends StatefulWidget {
 }
 
 class _LoaderState extends State<_Loader> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat();
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
+    ..repeat();
 
   @override
   void dispose() {
@@ -119,31 +131,34 @@ class _LoaderState extends State<_Loader> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     const candies = [Candy.pink, Candy.gold, Candy.blue, Candy.green];
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      AnimatedBuilder(
-        animation: _c,
-        builder: (_, _) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (var i = 0; i < 4; i++)
-              Transform.translate(
-                offset: Offset(0, -18 * math.sin(((_c.value + i * 0.18) % 1.0) * math.pi)),
-                child: Container(
-                  margin: const EdgeInsets.all(6),
-                  width: 26,
-                  height: 26,
-                  decoration: BoxDecoration(
-                    gradient: candies[i].face,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: candies[i].dark, width: 2),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AnimatedBuilder(
+          animation: _c,
+          builder: (_, _) => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = 0; i < 4; i++)
+                Transform.translate(
+                  offset: Offset(0, -18 * math.sin(((_c.value + i * 0.18) % 1.0) * math.pi)),
+                  child: Container(
+                    margin: const EdgeInsets.all(6),
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      gradient: candies[i].face,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: candies[i].dark, width: 2),
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
-      ),
-      const SizedBox(height: 16),
-      const OutlinedText('Baking your puzzle…', size: 22),
-    ]);
+        const SizedBox(height: 16),
+        const OutlinedText('Baking your puzzle…', size: 22),
+      ],
+    );
   }
 }
