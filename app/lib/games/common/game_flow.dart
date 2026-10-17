@@ -6,12 +6,12 @@ import 'package:go_router/go_router.dart';
 import '../../core/audio/sfx.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/palette.dart';
-import '../../core/ui/candy_background.dart';
 import '../../core/ui/candy_button.dart';
+import '../../core/ui/celebrations.dart';
 import '../../core/ui/confetti.dart';
 import '../../core/ui/dialogs.dart';
 import '../../core/ui/game_art.dart';
-import '../../core/ui/outlined_text.dart';
+import '../../core/ui/pressable.dart';
 import '../../services/api_client.dart';
 import '../../services/content_repo.dart';
 import '../../services/services.dart';
@@ -142,6 +142,8 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
     s.analytics.puzzleComplete(request.game.wire, request.source.name, won: r.won, ms: ms, hints: hintsUsed);
 
     if (r.won) {
+      final levelBefore = s.player.data.playerLevel;
+      final xpBefore = s.player.data.xp;
       Audio.instance.fx(Sfx.win, HapticKind.heavy);
       confetti.burst();
       Future.delayed(const Duration(milliseconds: 350), () => confetti.rain());
@@ -156,6 +158,7 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
           dailySubmit = _submitDaily(r, ms);
         case PlaySource.quick:
           s.player.addCoins(10 + 5 * r.stars);
+          s.player.addXp(15 + 5 * r.stars);
       }
       unawaited(s.sync.push());
       await Future<void>.delayed(const Duration(milliseconds: 650));
@@ -169,7 +172,10 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
         dailyCoins: dailyCoins,
         dailySubmit: dailySubmit,
         hintsUsed: hintsUsed,
+        xpGained: s.player.data.xp - xpBefore,
       );
+      if (!mounted) return;
+      if (s.player.data.playerLevel > levelBefore) await showLevelUp(context, s.player.data.playerLevel);
       if (!mounted) return;
       unawaited(s.growth.onWin(stars: r.stars));
       if (request.source == PlaySource.daily) await _offerReminders();
@@ -379,17 +385,9 @@ class GameScaffold extends StatelessWidget {
         if (!didPop) _confirmLeave(context);
       },
       child: Scaffold(
-        body: CandyBackground(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color.lerp(c.dark, AppColors.night, 0.55)!,
-              Color.lerp(c.base, AppColors.deep, 0.55)!,
-              AppColors.night,
-            ],
-          ),
-          density: 8,
+        backgroundColor: AppColors.bg,
+        body: ColoredBox(
+          color: AppColors.bg,
           child: Stack(
             children: [
               SafeArea(
@@ -401,7 +399,7 @@ class GameScaffold extends StatelessWidget {
                         children: [
                           CandyIconButton(
                             icon: Icons.arrow_back_rounded,
-                            candy: Candy.purple,
+                            candy: Candy.ink,
                             size: 46,
                             semanticLabel: 'Back',
                             onTap: () => _confirmLeave(context),
@@ -414,18 +412,16 @@ class GameScaffold extends StatelessWidget {
                                 FittedBox(
                                   fit: BoxFit.scaleDown,
                                   alignment: Alignment.centerLeft,
-                                  child: OutlinedText(
-                                    request.title,
-                                    size: 24,
-                                    stroke: c.dark,
-                                    textAlign: TextAlign.left,
-                                    maxLines: 1,
-                                  ),
+                                  child: Text(request.title, maxLines: 1, style: AppText.display(20)),
                                 ),
-                                const SizedBox(height: 2),
+                                const SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    _Tag(request.game.title, c),
+                                    _Tag(switch (request.source) {
+                                      PlaySource.daily => 'Daily',
+                                      PlaySource.level => 'Journey',
+                                      PlaySource.quick => 'Practice',
+                                    }, c),
                                     const SizedBox(width: 6),
                                     _Tag(request.difficulty.label, request.difficulty.candy),
                                   ],
@@ -492,15 +488,11 @@ class _Tag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-    decoration: BoxDecoration(
-      color: c.base.withValues(alpha: 0.9),
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: c.light.withValues(alpha: 0.8)),
-    ),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    decoration: BoxDecoration(color: c.light, borderRadius: BorderRadius.circular(8)),
     child: Text(
       text,
-      style: AppText.body(11, color: Colors.white, weight: FontWeight.w700),
+      style: AppText.body(11, color: c.dark, weight: FontWeight.w700),
     ),
   );
 }
@@ -513,18 +505,18 @@ class _TimerPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = '${d.inMinutes.toString().padLeft(2, '0')}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: const Color(0xAA12052A),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white24),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.timer_rounded, color: Colors.white70, size: 16),
-          const SizedBox(width: 4),
-          Text(t, style: AppText.display(16)),
+          const Icon(Icons.schedule_rounded, color: AppColors.inkSoft, size: 16),
+          const SizedBox(width: 5),
+          Text(t, style: AppText.display(15).copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
         ],
       ),
     );
@@ -549,31 +541,47 @@ class ToolButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = active ? Candy.gold : candy;
+    final c = active
+        ? candy == Candy.white
+              ? Candy.purple
+              : candy
+        : Candy.white;
+    final fill = active ? c.light : AppColors.surface;
+    final fg = onTap == null ? AppColors.inkFaint : (active ? c.dark : AppColors.ink);
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: CandyButton(
-          label: '',
-          height: 62,
-          depth: 6,
-          radius: 18,
-          candy: c,
-          sound: Sfx.tap,
-          onTap: onTap,
-          leading: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: c == Candy.white ? AppColors.royal : Colors.white, size: 22),
-              Text(
-                label,
-                style: AppText.body(
-                  11,
-                  color: c == Candy.white ? AppColors.ink : Colors.white,
-                  weight: FontWeight.w700,
-                ),
+        child: Semantics(
+          button: true,
+          enabled: onTap != null,
+          selected: active,
+          label: label,
+          excludeSemantics: true,
+          child: Pressable(
+            onTap: onTap,
+            scale: 0.96,
+            sound: Sfx.tap,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              height: 58,
+              decoration: BoxDecoration(
+                color: fill,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: active ? c.base.withValues(alpha: 0.45) : AppColors.border),
               ),
-            ],
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: fg, size: 21),
+                  const SizedBox(height: 2),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    style: AppText.body(11, color: fg, weight: FontWeight.w700),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

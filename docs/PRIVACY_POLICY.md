@@ -1,4 +1,4 @@
-# Privacy Policy — Puzzle Hub (template)
+# Privacy Policy — Quintile (template)
 
 > Template. Replace `[bracketed]` values, have it reviewed by counsel, and host it at a
 > public URL before submitting to Google Play. Keep it consistent with the Play Data
@@ -6,7 +6,7 @@
 
 _Last updated: [date]_
 
-[Company legal name] ("we", "us") operates the Puzzle Hub mobile app (the "App"). This
+[Company legal name] ("we", "us") operates the Quintile mobile app (the "App"). This
 policy explains what we collect, why, and the choices you have.
 
 ## 1. What we collect

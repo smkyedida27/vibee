@@ -216,6 +216,7 @@ class SyncService {
       merged['dailyDone'] = {...local.dailyDone, ...remote.dailyDone}.toList();
     }
     merged['onboarded'] = local.onboarded || remote.onboarded;
+    merged['xp'] = remote.xp > local.xp ? remote.xp : local.xp;
     _player.replaceFromSnapshot(merged);
   }
 }

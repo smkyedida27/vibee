@@ -8,16 +8,14 @@ import '../../core/theme/app_theme.dart';
 import '../../core/theme/palette.dart';
 import '../../core/ui/candy_button.dart';
 import '../../core/ui/dialogs.dart';
-import '../../core/ui/game_art.dart';
 import '../../core/ui/hud.dart';
-import '../../core/ui/outlined_text.dart';
 import '../../core/ui/pressable.dart';
 import '../../games/common/game_type.dart';
 import '../../services/services.dart';
 import '../../state/levels.dart';
 import '../shop/shop_sheets.dart';
 
-/// The saga map: a winding candy road through themed worlds, bottom to top.
+/// The saga map: a calm winding path through themed worlds, bottom to top.
 class JourneyScreen extends StatefulWidget {
   const JourneyScreen({super.key});
 
@@ -94,7 +92,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.black.withValues(alpha: 0.35), Colors.transparent],
+                    colors: [AppColors.bg, AppColors.bg.withValues(alpha: 0)],
+                    stops: const [0.7, 1],
                   ),
                 ),
                 child: TopHud(
@@ -108,12 +107,12 @@ class _JourneyScreenState extends State<JourneyScreen> {
           ),
         ),
         Positioned(
-          right: 14,
+          right: 16,
           bottom: 16,
           child: CandyIconButton(
             icon: Icons.my_location_rounded,
-            candy: Candy.pink,
-            size: 54,
+            candy: Candy.ink,
+            size: 52,
             semanticLabel: 'Jump to current level',
             onTap: () {
               final w = Campaign.worldIndex(current);
@@ -182,38 +181,52 @@ class _WorldSegment extends StatelessWidget {
                 ),
               ),
             ),
-            // World title banner at the top of the segment.
+            // World title card at the top of the segment.
             Positioned(
-              top: 34,
+              top: 30,
               left: 0,
               right: 0,
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.28),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          'WORLD ${worldIndex + 1}',
-                          style: AppText.body(12, color: Colors.white70, weight: FontWeight.w800),
-                        ),
-                        OutlinedText(world.name, size: 26, stroke: const Color(0xFF3B0E7A)),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const GameArt(ArtKind.star, size: 16),
-                            const SizedBox(width: 4),
-                            Text('$worldStars / ${Campaign.levelsPerWorld * 3}', style: AppText.display(14)),
-                          ],
-                        ),
-                      ],
-                    ),
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppColors.border),
+                    boxShadow: AppColors.cardShadow,
                   ),
-                ],
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(color: world.accent, shape: BoxShape.circle),
+                          ),
+                          const SizedBox(width: 6),
+                          Text('WORLD ${worldIndex + 1}', style: AppText.label(11)),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(world.name, style: AppText.display(20)),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.star_rounded, color: AppColors.gold, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$worldStars / ${Campaign.levelsPerWorld * 3}',
+                            style: AppText.body(13, color: AppColors.inkSoft, weight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
             for (var l = first; l < first + Campaign.levelsPerWorld; l++) _positioned(node(l), l),
@@ -225,7 +238,7 @@ class _WorldSegment extends StatelessWidget {
 
   Widget _positioned(Offset p, int level) {
     final spec = Campaign.level(level);
-    final size = spec.boss ? 74.0 : 60.0;
+    final size = spec.boss ? 64.0 : 54.0;
     return Positioned(
       left: p.dx - size / 2 - 20,
       top: p.dy - size / 2 - 30,
@@ -287,7 +300,7 @@ class _LevelNodeState extends State<_LevelNode> with TickerProviderStateMixin {
   void _syncBob() {
     final current = widget.state == _NodeState.current;
     if (current && _bob == null) {
-      _bob = AnimationController(vsync: this, duration: const Duration(milliseconds: 1100))..repeat(reverse: true);
+      _bob = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400))..repeat(reverse: true);
     } else if (!current && _bob != null) {
       _bob!.dispose();
       _bob = null;
@@ -303,76 +316,41 @@ class _LevelNodeState extends State<_LevelNode> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final locked = widget.state == _NodeState.locked;
-    final c = locked ? Candy.grey : (widget.spec.boss ? Candy.red : widget.spec.game.candy);
+    final isCurrent = widget.state == _NodeState.current;
+    final accent = widget.spec.boss ? Candy.red : widget.spec.game.candy;
+    final fill = locked ? AppColors.surface : (isCurrent ? AppColors.primary : accent.base);
+    final fg = locked ? AppColors.inkFaint : Colors.white;
     final s = widget.size;
     final node = Pressable(
       onTap: locked ? null : widget.onTap,
       sound: Sfx.pop,
       semanticLabel: 'Level ${widget.level}, ${widget.spec.game.title}, ${locked ? 'locked' : '${widget.stars} stars'}',
-      child: SizedBox(
+      child: Container(
         width: s,
-        height: s + 6,
-        child: Stack(
-          children: [
-            Positioned(
-              top: 6,
-              left: 0,
-              right: 0,
-              height: s,
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: c.dark,
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 8, offset: const Offset(0, 5)),
-                  ],
+        height: s,
+        padding: EdgeInsets.all(isCurrent ? 4 : 0),
+        decoration: isCurrent
+            ? BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.surface,
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.25), width: 3),
+                boxShadow: AppColors.cardShadow,
+              )
+            : null,
+        child: Container(
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: fill,
+            border: locked ? Border.all(color: AppColors.border, width: 1.5) : null,
+            boxShadow: isCurrent ? null : AppColors.cardShadow,
+          ),
+          child: locked
+              ? Icon(Icons.lock_rounded, color: fg, size: s * 0.36)
+              : Text(
+                  '${widget.level}',
+                  style: AppText.display(s * (widget.level >= 100 ? 0.3 : 0.36), color: fg, height: 1),
                 ),
-              ),
-            ),
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: s,
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    center: const Alignment(-0.3, -0.5),
-                    radius: 1.0,
-                    colors: [c.light, c.base, c.dark],
-                  ),
-                  border: Border.all(color: Colors.white, width: 3),
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Positioned(
-                      top: s * 0.1,
-                      left: s * 0.22,
-                      child: Container(
-                        width: s * 0.3,
-                        height: s * 0.16,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.55),
-                          borderRadius: BorderRadius.circular(s),
-                        ),
-                      ),
-                    ),
-                    if (locked)
-                      Icon(Icons.lock_rounded, color: Colors.white.withValues(alpha: 0.9), size: s * 0.42)
-                    else
-                      OutlinedText(
-                        '${widget.level}',
-                        size: s * (widget.level >= 100 ? 0.34 : 0.42),
-                        stroke: c.dark,
-                        shadow: false,
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -389,16 +367,20 @@ class _LevelNodeState extends State<_LevelNode> with TickerProviderStateMixin {
                   children: [
                     for (var i = 0; i < 3; i++)
                       Padding(
-                        padding: EdgeInsets.only(bottom: i == 1 ? 6 : 0),
-                        child: GameArt(i < widget.stars ? ArtKind.star : ArtKind.starEmpty, size: 20),
+                        padding: EdgeInsets.only(bottom: i == 1 ? 4 : 0),
+                        child: Icon(
+                          Icons.star_rounded,
+                          size: 18,
+                          color: i < widget.stars ? AppColors.gold : AppColors.border,
+                        ),
                       ),
                   ],
                 )
               : (widget.spec.boss && !locked
                     ? Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(color: AppColors.danger, borderRadius: BorderRadius.circular(10)),
-                        child: Text('HARD', style: AppText.display(12)),
+                        decoration: BoxDecoration(color: AppColors.danger, borderRadius: BorderRadius.circular(999)),
+                        child: Text('HARD', style: AppText.label(10, color: Colors.white)),
                       )
                     : null),
         ),
@@ -406,18 +388,21 @@ class _LevelNodeState extends State<_LevelNode> with TickerProviderStateMixin {
           AnimatedBuilder(
             animation: _bob!,
             builder: (_, child) =>
-                Transform.scale(scale: 1 + 0.07 * Curves.easeInOut.transform(_bob!.value), child: child),
+                Transform.scale(scale: 1 + 0.03 * Curves.easeInOut.transform(_bob!.value), child: child),
             child: Stack(
               clipBehavior: Clip.none,
               alignment: Alignment.topCenter,
               children: [
                 node,
                 Positioned(
-                  top: -50,
+                  top: -46,
                   child: AnimatedBuilder(
                     animation: _bob!,
-                    builder: (_, child) => Transform.translate(offset: Offset(0, -6 * _bob!.value), child: child),
-                    child: Avatar(index: widget.avatar, size: 40, ring: true),
+                    builder: (_, child) => Transform.translate(
+                      offset: Offset(0, -3 * Curves.easeInOut.transform(_bob!.value)),
+                      child: child,
+                    ),
+                    child: Avatar(index: widget.avatar, size: 36, ring: true),
                   ),
                 ),
               ],
@@ -446,52 +431,9 @@ class _WorldPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [world.bottom, world.top, world.bottom],
-          stops: const [0, 0.5, 1],
-        ).createShader(rect),
-    );
-    final r = math.Random(seed * 7919 + 13);
+    canvas.drawRect(Offset.zero & size, Paint()..color = AppColors.bg);
 
-    // Rolling hills bands.
-    for (var band = 0; band < 6; band++) {
-      final y = size.height * (band + 0.6) / 6;
-      final hill = Path()..moveTo(0, y);
-      for (var x = 0.0; x <= size.width; x += 20) {
-        hill.lineTo(x, y + math.sin(x / 70 + band * 1.7 + seed) * 22);
-      }
-      hill
-        ..lineTo(size.width, y + 160)
-        ..lineTo(0, y + 160)
-        ..close();
-      canvas.drawPath(hill, Paint()..color = Colors.white.withValues(alpha: 0.07));
-    }
-
-    // Scattered decorations: lollipops, gumdrops, sparkles, clouds.
-    for (var i = 0; i < 26; i++) {
-      final p = Offset(r.nextDouble() * size.width, r.nextDouble() * size.height);
-      // Keep decorations off the road.
-      final tooClose = nodes.any((n) => (n - p).distance < 70);
-      if (tooClose) continue;
-      switch (r.nextInt(4)) {
-        case 0:
-          _lollipop(canvas, p, 16 + r.nextDouble() * 14, r.nextBool() ? world.accent : Colors.white);
-        case 1:
-          _gumdrop(canvas, p, 14 + r.nextDouble() * 12, HSVColor.fromAHSV(1, r.nextDouble() * 360, 0.55, 1).toColor());
-        case 2:
-          _cloud(canvas, p, 30 + r.nextDouble() * 30);
-        default:
-          _sparkle(canvas, p, 4 + r.nextDouble() * 6);
-      }
-    }
-
-    // The road: dark under-stroke, cream body, candy-stripe dashes.
+    // The path: one soft, continuous line; the cleared stretch is tinted with the brand colour.
     final road = Path()..moveTo(nodes.first.dx, nodes.first.dy);
     for (var i = 1; i < nodes.length; i++) {
       final a = nodes[i - 1], b = nodes[i];
@@ -499,81 +441,23 @@ class _WorldPainter extends CustomPainter {
       road.quadraticBezierTo(a.dx, mid.dy, mid.dx, mid.dy);
       road.quadraticBezierTo(b.dx, mid.dy, b.dx, b.dy);
     }
-    canvas.drawPath(
-      road,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 30
-        ..strokeCap = StrokeCap.round
-        ..color = Colors.black.withValues(alpha: 0.18),
-    );
-    canvas.drawPath(
-      road,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 24
-        ..strokeCap = StrokeCap.round
-        ..color = world.path,
-    );
-    final dash = Paint()
+    final line = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8
       ..strokeCap = StrokeCap.round
-      ..color = world.accent.withValues(alpha: 0.75);
-    for (final metric in road.computeMetrics()) {
-      for (var d = 0.0; d < metric.length; d += 26) {
-        canvas.drawPath(metric.extractPath(d, d + 10), dash);
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawPath(road, line..color = AppColors.border);
+
+    // nodes[0] is level first-1; index i is level first-1+i. Tint up to the current level.
+    final cleared = (current - (first - 1)).clamp(0, nodes.length - 1);
+    if (cleared > 0) {
+      final metrics = road.computeMetrics().toList();
+      if (metrics.isNotEmpty) {
+        final m = metrics.first;
+        final frac = cleared / (nodes.length - 1);
+        canvas.drawPath(m.extractPath(0, m.length * frac), line..color = AppColors.primary.withValues(alpha: 0.22));
       }
     }
-  }
-
-  void _lollipop(Canvas c, Offset p, double r, Color color) {
-    c.drawLine(
-      p,
-      p + Offset(0, r * 2.4),
-      Paint()
-        ..color = Colors.white
-        ..strokeWidth = r * 0.25
-        ..strokeCap = StrokeCap.round,
-    );
-    c.drawCircle(p, r, Paint()..color = color);
-    final swirl = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = r * 0.22
-      ..color = Colors.white.withValues(alpha: 0.8);
-    c.drawArc(Rect.fromCircle(center: p, radius: r * 0.65), 0, math.pi * 1.5, false, swirl);
-    c.drawArc(Rect.fromCircle(center: p, radius: r * 0.3), math.pi, math.pi * 1.5, false, swirl);
-  }
-
-  void _gumdrop(Canvas c, Offset p, double r, Color color) {
-    final path = Path()
-      ..moveTo(p.dx - r, p.dy + r * 0.6)
-      ..quadraticBezierTo(p.dx - r, p.dy - r * 1.1, p.dx, p.dy - r * 1.1)
-      ..quadraticBezierTo(p.dx + r, p.dy - r * 1.1, p.dx + r, p.dy + r * 0.6)
-      ..close();
-    c.drawPath(path.shift(const Offset(0, 4)), Paint()..color = Colors.black.withValues(alpha: 0.15));
-    c.drawPath(path, Paint()..color = color);
-    c.drawOval(
-      Rect.fromLTWH(p.dx - r * 0.5, p.dy - r * 0.8, r * 0.4, r * 0.3),
-      Paint()..color = Colors.white.withValues(alpha: 0.7),
-    );
-  }
-
-  void _cloud(Canvas c, Offset p, double w) {
-    final paint = Paint()..color = Colors.white.withValues(alpha: 0.35);
-    c.drawCircle(p, w * 0.35, paint);
-    c.drawCircle(p + Offset(w * 0.35, w * 0.06), w * 0.28, paint);
-    c.drawCircle(p + Offset(-w * 0.35, w * 0.08), w * 0.25, paint);
-  }
-
-  void _sparkle(Canvas c, Offset p, double s) {
-    final path = Path()
-      ..moveTo(p.dx, p.dy - s)
-      ..quadraticBezierTo(p.dx, p.dy, p.dx + s, p.dy)
-      ..quadraticBezierTo(p.dx, p.dy, p.dx, p.dy + s)
-      ..quadraticBezierTo(p.dx, p.dy, p.dx - s, p.dy)
-      ..quadraticBezierTo(p.dx, p.dy, p.dx, p.dy - s);
-    c.drawPath(path, Paint()..color = Colors.white.withValues(alpha: 0.75));
   }
 
   @override
@@ -604,57 +488,63 @@ class _LevelPreview extends StatelessWidget {
           children: [
             for (var i = 0; i < 3; i++)
               Padding(
-                padding: EdgeInsets.only(bottom: i == 1 ? 12 : 0, left: 2, right: 2),
-                child: GameArt(i < stars ? ArtKind.star : ArtKind.starEmpty, size: i == 1 ? 54 : 42),
+                padding: EdgeInsets.only(bottom: i == 1 ? 10 : 0, left: 2, right: 2),
+                child: Icon(
+                  Icons.star_rounded,
+                  size: i == 1 ? 52 : 40,
+                  color: i < stars ? AppColors.gold : AppColors.border,
+                ),
               ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(color: const Color(0xFFF6F0FF), borderRadius: BorderRadius.circular(18)),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.bg,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
+          ),
           child: Row(
             children: [
               Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(
-                  gradient: g.candy.face,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: g.candy.dark, width: 2),
-                  boxShadow: [BoxShadow(color: g.candy.dark, offset: const Offset(0, 4))],
-                ),
-                child: Icon(g.icon, color: Colors.white, size: 32),
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(color: g.candy.base, borderRadius: BorderRadius.circular(14)),
+                child: Icon(g.icon, color: g.candy.on, size: 28),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(g.title, style: AppText.display(22, color: AppColors.ink)),
+                    Text(g.title, style: AppText.display(18)),
                     Text(g.tagline, style: AppText.body(13, color: AppColors.inkSoft)),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             color: spec.difficulty.candy.base,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
                             spec.difficulty.label,
-                            style: AppText.body(11, color: Colors.white, weight: FontWeight.w800),
+                            style: AppText.body(11, color: spec.difficulty.candy.on, weight: FontWeight.w700),
                           ),
                         ),
                         if (spec.boss) ...[
                           const SizedBox(width: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(color: AppColors.danger, borderRadius: BorderRadius.circular(8)),
+                            decoration: BoxDecoration(
+                              color: AppColors.danger,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
                             child: Text(
                               'HARD LEVEL',
-                              style: AppText.body(11, color: Colors.white, weight: FontWeight.w800),
+                              style: AppText.body(11, color: Colors.white, weight: FontWeight.w700),
                             ),
                           ),
                         ],
@@ -666,7 +556,7 @@ class _LevelPreview extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Text(
           goals,
           textAlign: TextAlign.center,
@@ -676,13 +566,14 @@ class _LevelPreview extends StatelessWidget {
         CandyButton(
           label: 'Play',
           candy: Candy.green,
-          height: 66,
+          height: 56,
           pulse: true,
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const GameArt(ArtKind.heart, size: 26),
-              Text('-1', style: AppText.display(18)),
+              const Icon(Icons.favorite_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 2),
+              Text('-1', style: AppText.display(15, color: Colors.white)),
             ],
           ),
           onTap: () => Navigator.pop(context, true),

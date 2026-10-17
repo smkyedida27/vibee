@@ -9,7 +9,7 @@ import '../theme/palette.dart';
 import 'game_art.dart';
 import 'pressable.dart';
 
-/// Dark capsule with an icon hanging off the left edge and an optional "+" button.
+/// White capsule with the currency icon, the amount and an optional "+".
 class CurrencyPill extends StatelessWidget {
   const CurrencyPill({super.key, required this.art, required this.text, this.onPlus, this.minWidth = 78, this.sub});
   final ArtKind art;
@@ -29,43 +29,42 @@ class CurrencyPill extends StatelessWidget {
         children: [
           Container(
             constraints: BoxConstraints(minWidth: minWidth),
-            height: 34,
-            margin: const EdgeInsets.only(left: 14),
-            padding: EdgeInsets.only(left: 22, right: onPlus != null ? 30 : 12),
+            height: 36,
+            padding: EdgeInsets.only(left: 6, right: onPlus != null ? 6 : 12),
             decoration: BoxDecoration(
-              color: const Color(0xCC1A0838),
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
+              border: Border.all(color: AppColors.border),
             ),
-            alignment: Alignment.center,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(text, style: AppText.display(16)),
-                if (sub != null)
-                  Text(
-                    sub!,
-                    style: AppText.body(9, color: Colors.white70, weight: FontWeight.w700),
+                GameArt(art, size: 22),
+                const SizedBox(width: 6),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(text, style: AppText.display(15, height: 1.1)),
+                    if (sub != null)
+                      Text(
+                        sub!,
+                        style: AppText.body(9, color: AppColors.inkSoft, weight: FontWeight.w700),
+                      ),
+                  ],
+                ),
+                if (onPlus != null) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    width: 22,
+                    height: 22,
+                    decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFF1EEFF)),
+                    child: const Icon(Icons.add_rounded, color: AppColors.primary, size: 16),
                   ),
+                ],
               ],
             ),
           ),
-          Positioned(left: 0, top: -3, child: GameArt(art, size: 38)),
-          if (onPlus != null)
-            Positioned(
-              right: 3,
-              top: 5,
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: Candy.green.face,
-                  border: Border.all(color: Candy.green.dark, width: 1.5),
-                ),
-                child: const Icon(Icons.add_rounded, color: Colors.white, size: 18),
-              ),
-            ),
         ],
       ),
     );
@@ -187,10 +186,8 @@ class Avatar extends StatelessWidget {
       decoration: ring
           ? BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(colors: [Color(0xFFFFF59A), Color(0xFFFF9800)]),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 6, offset: const Offset(0, 3)),
-              ],
+              color: AppColors.surface,
+              border: Border.all(color: AppColors.border),
             )
           : null,
       child: ClipOval(child: CustomPaint(painter: _AvatarPainter(c, index))),

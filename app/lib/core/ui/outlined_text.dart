@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../theme/palette.dart';
 
-/// Game-style text: bold fill, thick dark stroke and a drop shadow.
+/// Headline text. Formerly a stroked "game" title; now clean heavy type.
+/// [stroke], [strokeWidth] and [shadow] are accepted for compatibility and ignored.
 class OutlinedText extends StatelessWidget {
   const OutlinedText(
     this.text, {
     super.key,
     this.size = 28,
-    this.color = Colors.white,
-    this.stroke = const Color(0xFF3B0E7A),
+    this.color = AppColors.ink,
+    this.stroke = Colors.transparent,
     this.strokeWidth,
-    this.shadow = true,
+    this.shadow = false,
     this.textAlign = TextAlign.center,
     this.gradient,
     this.maxLines = 2,
@@ -29,53 +31,16 @@ class OutlinedText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sw = strokeWidth ?? (size / 6.5).clamp(2.0, 9.0);
-    final style = AppText.display(size);
-    Widget fill = Text(
+    Widget t = Text(
       text,
       textAlign: textAlign,
       maxLines: maxLines,
-      style: style.copyWith(color: color),
+      overflow: TextOverflow.ellipsis,
+      style: AppText.display(size, color: color),
     );
     if (gradient != null) {
-      fill = ShaderMask(blendMode: BlendMode.srcIn, shaderCallback: (r) => gradient!.createShader(r), child: fill);
+      t = ShaderMask(blendMode: BlendMode.srcIn, shaderCallback: (r) => gradient!.createShader(r), child: t);
     }
-    return Semantics(
-      label: text,
-      excludeSemantics: true,
-      child: Stack(
-        children: [
-          if (shadow)
-            Transform.translate(
-              offset: Offset(0, size * 0.09),
-              child: Text(
-                text,
-                textAlign: textAlign,
-                maxLines: maxLines,
-                style: style.copyWith(
-                  foreground: Paint()
-                    ..style = PaintingStyle.stroke
-                    ..strokeWidth = sw
-                    ..strokeJoin = StrokeJoin.round
-                    ..color = Colors.black.withValues(alpha: 0.35),
-                ),
-              ),
-            ),
-          Text(
-            text,
-            textAlign: textAlign,
-            maxLines: maxLines,
-            style: style.copyWith(
-              foreground: Paint()
-                ..style = PaintingStyle.stroke
-                ..strokeWidth = sw
-                ..strokeJoin = StrokeJoin.round
-                ..color = stroke,
-            ),
-          ),
-          fill,
-        ],
-      ),
-    );
+    return t;
   }
 }

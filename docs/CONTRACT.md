@@ -1,4 +1,4 @@
-# Puzzle Hub — Client/Server Contract (v1)
+# Quintile — Client/Server Contract (v1)
 
 This is the single source of truth shared by the Flutter app (`app/`) and the Spring Boot
 backend (`backend/`). Any change here must be reflected in both and in tests.

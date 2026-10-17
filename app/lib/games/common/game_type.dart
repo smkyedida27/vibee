@@ -29,11 +29,11 @@ extension GameTypeX on GameType {
   };
 
   Candy get candy => switch (this) {
-    GameType.connect => Candy.pink,
-    GameType.queens => Candy.gold,
+    GameType.connect => Candy.gold,
+    GameType.queens => Candy.orange,
     GameType.sudoku => Candy.blue,
-    GameType.ladder => Candy.purple,
-    GameType.merge => Candy.green,
+    GameType.ladder => Candy.green,
+    GameType.merge => Candy.purple,
   };
 
   IconData get icon => switch (this) {

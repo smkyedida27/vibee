@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import '../../core/audio/sfx.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/palette.dart';
-import '../../core/ui/candy_button.dart';
+import '../../core/ui/celebrations.dart';
+import '../../core/ui/pressable.dart';
 import '../../core/ui/dialogs.dart';
 import '../../services/content_repo.dart';
 import '../../services/services.dart';
@@ -82,6 +83,9 @@ class _LadderScreenState extends State<LadderScreen> with GameFlow, SingleTicker
       path.add(w);
       _typed = '';
     });
+    if (w != widget.puzzle.target && path.length >= 3) {
+      PraiseOverlay.show(context, path.length >= 4 ? 'Climbing!' : 'Nice step!', color: Candy.purple.base);
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scroll.hasClients) {
         _scroll.animateTo(
@@ -189,17 +193,23 @@ class _LadderScreenState extends State<LadderScreen> with GameFlow, SingleTicker
                       flex: k == '⌫' ? 15 : 10,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 2),
-                        child: CandyButton(
-                          label: '',
-                          height: 50,
-                          depth: 5,
-                          radius: 10,
-                          candy: k == '⌫' ? Candy.orange : Candy.white,
+                        child: Pressable(
+                          scale: 0.92,
                           sound: Sfx.tap,
+                          semanticLabel: k == '⌫' ? 'Delete' : k,
                           onTap: () => _key(k),
-                          leading: k == '⌫'
-                              ? const Icon(Icons.backspace_rounded, color: Colors.white, size: 20)
-                              : Text(k, style: AppText.display(20, color: AppColors.ink)),
+                          child: Container(
+                            height: 48,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: k == '⌫' ? const Color(0xFFEFEDE6) : AppColors.surface,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: k == '⌫'
+                                ? const Icon(Icons.backspace_outlined, color: AppColors.ink, size: 20)
+                                : Text(k, style: AppText.display(18, color: AppColors.ink)),
+                          ),
                         ),
                       ),
                     ),
@@ -229,12 +239,8 @@ class _Chip extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-    decoration: BoxDecoration(
-      gradient: c.face,
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: c.dark, width: 2),
-    ),
-    child: Text(text, style: AppText.display(15)),
+    decoration: BoxDecoration(color: c.light, borderRadius: BorderRadius.circular(10)),
+    child: Text(text, style: AppText.label(12, color: c.dark)),
   );
 }
 
@@ -255,41 +261,50 @@ class _WordRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: TweenAnimationBuilder<double>(
               key: ValueKey('$word$i$typing'),
-              tween: Tween(begin: typing && word[i] != ' ' ? 0.5 : 1, end: 1),
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.elasticOut,
+              tween: Tween(begin: typing && word[i] != ' ' ? 0.8 : 1, end: 1),
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutBack,
               builder: (_, s, child) => Transform.scale(scale: s, child: child),
-              child: Container(
-                width: 56,
-                height: 56,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  gradient: (prev != null && prev![i] != word[i]) ? Candy.pink.face : candy.face,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: (prev != null && prev![i] != word[i]) ? Candy.pink.dark : candy.dark,
-                    width: 2.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: (prev != null && prev![i] != word[i]) ? Candy.pink.dark : candy.dark,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  word[i],
-                  style: AppText.display(
-                    30,
-                    color: candy == Candy.white && !(prev != null && prev![i] != word[i])
-                        ? AppColors.ink
-                        : Colors.white,
-                  ),
-                ),
-              ),
+              child: _tile(i),
             ),
           ),
       ],
+    );
+  }
+
+  Widget _tile(int i) {
+    final changed = prev != null && prev![i] != word[i];
+    final Color fill, edge, fg;
+    var edgeWidth = 1.5;
+    if (typing) {
+      fill = AppColors.surface;
+      edge = AppColors.primary;
+      fg = AppColors.ink;
+      edgeWidth = 2;
+    } else if (changed) {
+      fill = Candy.green.light;
+      edge = Candy.green.base;
+      fg = Candy.green.dark;
+    } else if (candy == Candy.white) {
+      fill = AppColors.surface;
+      edge = AppColors.border;
+      fg = AppColors.ink;
+    } else {
+      // Start and target words: soft accent tint.
+      fill = candy.light;
+      edge = candy.base.withValues(alpha: 0.5);
+      fg = candy.dark;
+    }
+    return Container(
+      width: 54,
+      height: 54,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: fill,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: edge, width: edgeWidth),
+      ),
+      child: Text(word[i], style: AppText.display(26, color: fg)),
     );
   }
 }
@@ -300,18 +315,18 @@ class _Rung extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: 18,
+    height: 16,
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         for (final _ in [0, 1])
           Container(
-            width: 6,
-            height: 18,
+            width: 3,
+            height: 16,
             margin: const EdgeInsets.symmetric(horizontal: 46),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: dashed ? 0.25 : 0.55),
-              borderRadius: BorderRadius.circular(3),
+              color: dashed ? AppColors.divider : AppColors.border,
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
       ],

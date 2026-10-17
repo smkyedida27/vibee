@@ -5,7 +5,7 @@ current Google guidance at submission time — policies change.
 
 ## Build & versioning
 - [ ] Version `X.Y.Z` tag created from `main`; `versionCode` (CI run number) higher than the live release
-- [ ] Package id `com.puzzlehub.app` unchanged; release signed via `release-android` workflow (Play App Signing enabled)
+- [ ] Package id `com.quintile.app` unchanged; release signed via `release-android` workflow (Play App Signing enabled)
 - [ ] Target SDK meets the current Play requirement (https://developer.android.com/google/play/requirements/target-sdk)
 - [ ] R8/obfuscation mapping and native debug symbols uploaded (workflow does this)
 - [ ] `API_BASE_URL` points to production; no debug flags, test ad unit ids replaced by production ids via config

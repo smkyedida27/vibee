@@ -5,7 +5,7 @@
     <!-- Re-schedules the local daily reminder after a reboot or app update. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application
-        android:label="Puzzle Hub"
+        android:label="Quintile"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <meta-data

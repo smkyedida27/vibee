@@ -1,55 +1,77 @@
 import 'package:flutter/material.dart';
 
-/// Brand palette. Saturated "candy" colours with a darker shade used for the 3D lip
-/// of buttons/tiles and a light shade for glossy highlights.
+/// Accent colours. Flat and confident: [base] is the fill, [dark] the pressed/edge
+/// shade, [light] a soft tint for backgrounds behind the accent.
+///
+/// (The name is historical; the look is flat, not glossy.)
 class Candy {
   const Candy(this.light, this.base, this.dark);
   final Color light;
   final Color base;
   final Color dark;
 
-  LinearGradient get face =>
-      LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [light, base]);
+  /// Solid fill kept as a gradient so existing decorations keep working.
+  LinearGradient get face => LinearGradient(colors: [base, base]);
 
-  static const pink = Candy(Color(0xFFFF8FB1), Color(0xFFFF3D7F), Color(0xFFB0124E));
-  static const gold = Candy(Color(0xFFFFE680), Color(0xFFFFB800), Color(0xFFC27A00));
-  static const blue = Candy(Color(0xFF7FDBFF), Color(0xFF2E8BFF), Color(0xFF1546B8));
-  static const purple = Candy(Color(0xFFD3A6FF), Color(0xFF9B4DFF), Color(0xFF5B1DB8));
-  static const green = Candy(Color(0xFF9CFFB0), Color(0xFF22D36B), Color(0xFF0E8A45));
-  static const orange = Candy(Color(0xFFFFC18A), Color(0xFFFF7A1A), Color(0xFFC04A00));
-  static const teal = Candy(Color(0xFF8CFFF0), Color(0xFF14C8C0), Color(0xFF087F80));
-  static const red = Candy(Color(0xFFFF9A9A), Color(0xFFFF3B4E), Color(0xFFB0102A));
-  static const grey = Candy(Color(0xFFE6E2F2), Color(0xFFB7B0CF), Color(0xFF7A7196));
-  static const white = Candy(Color(0xFFFFFFFF), Color(0xFFF4F0FF), Color(0xFFC9BEEB));
+  /// Text/icon colour that reads on [base].
+  Color get on => (this == white || this == grey || this == gold) ? AppColors.ink : const Color(0xFFFFFDF8);
+
+  static const pink = Candy(Color(0xFFFBE7EC), Color(0xFFD9577E), Color(0xFFB03F62));
+  static const gold = Candy(Color(0xFFFBF0D6), Color(0xFFE9B23D), Color(0xFFC08E22)); // mustard
+  static const blue = Candy(Color(0xFFE4EAFA), Color(0xFF2D5BD3), Color(0xFF1F44A6)); // cobalt
+  static const purple = Candy(Color(0xFFF0E8F5), Color(0xFF8E5BA8), Color(0xFF6E4285)); // plum
+  static const green = Candy(Color(0xFFE5EFE6), Color(0xFF5E9468), Color(0xFF467350)); // sage
+  static const orange = Candy(Color(0xFFFBE6DF), Color(0xFFE4572E), Color(0xFFB8401C)); // tomato
+  static const teal = Candy(Color(0xFFDFEFEE), Color(0xFF2E8C88), Color(0xFF206866));
+  static const red = Candy(Color(0xFFFBE3E1), Color(0xFFD6423A), Color(0xFFAA2E27));
+  static const grey = Candy(Color(0xFFEFEBE2), Color(0xFFE3DED2), Color(0xFFC9C2B3));
+  static const white = Candy(Color(0xFFFFFFFF), Color(0xFFFFFDF8), Color(0xFFE3DDCF));
+
+  /// Ink: the primary action colour (black pills, like a newspaper's puzzle section).
+  static const ink = Candy(Color(0xFFE8E3D8), Color(0xFF111111), Color(0xFF000000));
 }
 
 class AppColors {
-  static const ink = Color(0xFF2A0F57);
-  static const inkSoft = Color(0xFF5B4B86);
-  static const night = Color(0xFF1A0838);
-  static const deep = Color(0xFF2D0B6B);
-  static const royal = Color(0xFF5A1FC4);
-  static const sky = Color(0xFF3D7BFF);
-  static const panel = Color(0xFFFFF9F0);
-  static const panelEdge = Color(0xFFE9D8FF);
-  static const gold = Color(0xFFFFC928);
-  static const goldDeep = Color(0xFFE08A00);
-  static const heart = Color(0xFFFF3B6B);
-  static const gem = Color(0xFF34E0FF);
-  static const success = Color(0xFF2BD66F);
-  static const danger = Color(0xFFFF4757);
+  // Surfaces.
+  static const bg = Color(0xFFF4F1EA); // newsprint paper
+  static const surface = Color(0xFFFFFDF8);
+  static const border = Color(0xFFE3DDCF);
+  static const divider = Color(0xFFE8E3D8);
 
-  /// Main world background — deep violet into electric blue.
-  static const LinearGradient worldBg = LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [Color(0xFF3A0CA3), Color(0xFF7209B7), Color(0xFFB5179E)],
-    stops: [0, 0.55, 1],
-  );
+  // Text.
+  static const ink = Color(0xFF111111);
+  static const inkSoft = Color(0xFF5E5A52);
+  static const inkFaint = Color(0xFF9C968A);
 
-  static const LinearGradient nightBg = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF14052E), Color(0xFF2D0B6B), Color(0xFF4A148C)],
-  );
+  // Brand.
+  static const primary = Color(0xFF111111);
+  static const royal = primary;
+  static const sky = Color(0xFF2D5BD3);
+  static const accent = Color(0xFFE9B23D); // mustard
+
+  /// Dark surfaces (snackbars, dark chips).
+  static const night = Color(0xFF111111);
+  static const deep = Color(0xFF2A2824);
+
+  // Legacy surface names, now mapped onto the editorial palette.
+  static const panel = surface;
+  static const panelEdge = border;
+
+  // Semantic.
+  static const gold = Color(0xFFE9B23D);
+  static const goldDeep = Color(0xFFC08E22);
+  static const heart = Color(0xFFD6423A);
+  static const gem = Color(0xFF2D5BD3);
+  static const success = Color(0xFF467350);
+  static const danger = Color(0xFFD6423A);
+
+  /// Soft, warm elevation for cards.
+  static const List<BoxShadow> cardShadow = [
+    BoxShadow(color: Color(0x14403A2E), blurRadius: 18, offset: Offset(0, 6)),
+    BoxShadow(color: Color(0x0D403A2E), blurRadius: 2, offset: Offset(0, 1)),
+  ];
+
+  /// App background (kept as gradients for API compatibility; both are flat paper).
+  static const LinearGradient worldBg = LinearGradient(colors: [bg, bg]);
+  static const LinearGradient nightBg = LinearGradient(colors: [bg, bg]);
 }

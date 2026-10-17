@@ -33,7 +33,7 @@ SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
 | `APP_JWT_SECRET` | HS256 signing secret (≥ 32 bytes) |
 | `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` | Optional RS256 key pair (base64 PKCS#8 / X.509); takes precedence over the HMAC secret |
 | `APP_FIREBASE_PROJECT_ID` | Firebase project whose ID tokens are accepted |
-| `APP_PLAY_PACKAGE_NAME` | Android package (default `com.puzzlehub.app`) |
+| `APP_PLAY_PACKAGE_NAME` | Android package (default `com.quintile.app`) |
 | `APP_PLAY_SERVICE_ACCOUNT_JSON` | Service-account JSON **content** with Android Publisher access (or `PLAY_SERVICE_ACCOUNT_JSON_PATH`) |
 | `APP_ENVIRONMENT` | Reported in `/actuator/info` |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated origins (web/admin only; the mobile app does not need CORS) |

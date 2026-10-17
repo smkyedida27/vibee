@@ -6,7 +6,6 @@ import '../../core/theme/palette.dart';
 import '../../core/ui/candy_button.dart';
 import '../../core/ui/game_art.dart';
 import '../../core/ui/hud.dart';
-import '../../core/ui/outlined_text.dart';
 import '../../core/ui/panels.dart';
 import '../../games/common/game_type.dart';
 import '../../services/content_repo.dart';
@@ -47,21 +46,21 @@ class _DailyScreenState extends State<DailyScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
                 children: [
-                  const Center(child: RibbonBanner("Today's Challenge", candy: Candy.purple, fontSize: 26, width: 340)),
-                  const SizedBox(height: 6),
-                  Center(
-                    child: Text(_prettyDate(), style: AppText.body(15, color: Colors.white70)),
-                  ),
-                  const SizedBox(height: 14),
+                  Text(_prettyDate().toUpperCase(), style: AppText.label(11)),
+                  const SizedBox(height: 4),
+                  Text("Today's Challenge", style: AppText.display(30)),
+                  const SizedBox(height: 16),
                   _StreakCard(streak: p.data.streak, best: p.data.bestStreak),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 24),
+                  Text('PUZZLES', style: AppText.label(11)),
+                  const SizedBox(height: 12),
                   FutureBuilder<DailySet>(
                     future: _set,
                     builder: (context, snap) {
                       if (!snap.hasData) {
                         return const Padding(
                           padding: EdgeInsets.all(40),
-                          child: Center(child: CircularProgressIndicator(color: Colors.white)),
+                          child: Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3)),
                         );
                       }
                       final set = snap.data!;
@@ -69,16 +68,16 @@ class _DailyScreenState extends State<DailyScreen> {
                         children: [
                           if (set.offline)
                             Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.only(bottom: 12),
                               child: GlassPanel(
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.cloud_off_rounded, color: Colors.white),
+                                    const Icon(Icons.cloud_off_rounded, color: AppColors.inkSoft),
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
                                         'Offline mode — your streak still counts, but offline scores aren\'t ranked. Go online to compete on the leaderboard.',
-                                        style: AppText.body(13, color: Colors.white),
+                                        style: AppText.body(13, color: AppColors.inkSoft),
                                       ),
                                     ),
                                   ],
@@ -92,34 +91,42 @@ class _DailyScreenState extends State<DailyScreen> {
                       );
                     },
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 12),
                   CandyPanel(
                     rim: Candy.gold,
+                    accent: true,
                     child: Row(
                       children: [
-                        const GameArt(ArtKind.chest, size: 56),
-                        const SizedBox(width: 12),
+                        Container(
+                          width: 52,
+                          height: 52,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(color: Candy.gold.light, borderRadius: BorderRadius.circular(14)),
+                          child: const GameArt(ArtKind.chest, size: 36),
+                        ),
+                        const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Complete all 5', style: AppText.display(20, color: AppColors.ink)),
+                              Text('Complete all 5', style: AppText.display(17)),
+                              const SizedBox(height: 2),
                               Text('Earn a +300 coin bonus chest', style: AppText.body(13, color: AppColors.inkSoft)),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 10),
                               ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(999),
                                 child: LinearProgressIndicator(
                                   value: done / 5,
-                                  minHeight: 12,
-                                  backgroundColor: const Color(0xFFEDE4FF),
+                                  minHeight: 8,
+                                  backgroundColor: AppColors.divider,
                                   color: AppColors.success,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        Text('$done/5', style: AppText.display(22, color: AppColors.royal)),
+                        const SizedBox(width: 16),
+                        Text('$done/5', style: AppText.display(22, color: AppColors.primary)),
                       ],
                     ),
                   ),
@@ -135,7 +142,7 @@ class _DailyScreenState extends State<DailyScreen> {
   String _prettyDate() {
     final d = DateTime.now().toUtc();
     const m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${m[d.month - 1]} ${d.day}, ${d.year} • resets at 00:00 UTC';
+    return '${m[d.month - 1]} ${d.day}, ${d.year} · Resets 00:00 UTC';
   }
 }
 
@@ -147,41 +154,42 @@ class _StreakCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: const LinearGradient(colors: [Color(0xFFFF8A3D), Color(0xFFFF3D7F)]),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.6), width: 2.5),
-        boxShadow: const [BoxShadow(color: Color(0xFFB0124E), offset: Offset(0, 6))],
+        borderRadius: BorderRadius.circular(20),
+        color: AppColors.primary,
+        boxShadow: AppColors.cardShadow,
       ),
       child: Row(
         children: [
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.8, end: 1),
-            duration: const Duration(milliseconds: 900),
-            curve: Curves.elasticOut,
-            builder: (_, s, child) => Transform.scale(scale: s, child: child),
-            child: const Icon(
-              Icons.local_fire_department_rounded,
-              color: Color(0xFFFFE066),
-              size: 60,
-              shadows: [Shadow(color: Color(0xFFB0124E), offset: Offset(0, 3))],
+          Container(
+            width: 56,
+            height: 56,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.85, end: 1),
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeOutBack,
+              builder: (_, s, child) => Transform.scale(scale: s, child: child),
+              child: const Icon(Icons.local_fire_department_rounded, color: Color(0xFFFFC94D), size: 34),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                OutlinedText(
-                  '$streak day streak',
-                  size: 26,
-                  textAlign: TextAlign.left,
-                  stroke: const Color(0xFF9E0A45),
-                ),
+                Text('STREAK', style: AppText.label(11, color: Colors.white.withValues(alpha: 0.72))),
+                const SizedBox(height: 2),
+                Text('$streak day${streak == 1 ? '' : 's'}', style: AppText.display(26, color: Colors.white)),
+                const SizedBox(height: 2),
                 Text(
-                  streak == 0 ? 'Solve any daily puzzle to start one!' : 'Best: $best days • keep it alive!',
-                  style: AppText.body(14, color: Colors.white),
+                  streak == 0 ? 'Solve any daily puzzle to start one' : 'Best: $best days · keep it alive',
+                  style: AppText.body(13, color: Colors.white.withValues(alpha: 0.8)),
                 ),
               ],
             ),
@@ -201,23 +209,24 @@ class _DailyRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12),
       child: GlassPanel(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            GameBadge(game: game, size: 56),
-            const SizedBox(width: 12),
+            GameBadge(game: game, size: 48),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(game.title, style: AppText.display(19)),
+                  Text(game.title, style: AppText.display(16)),
+                  const SizedBox(height: 2),
                   Text(
-                    '${puzzle.difficulty.label} • ${game.tagline}',
+                    '${puzzle.difficulty.label} · ${game.tagline}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppText.body(12, color: Colors.white70),
+                    style: AppText.body(13, color: AppColors.inkSoft),
                   ),
                 ],
               ),
@@ -225,21 +234,23 @@ class _DailyRow extends StatelessWidget {
             const SizedBox(width: 8),
             done
                 ? Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(color: AppColors.success, borderRadius: BorderRadius.circular(16)),
+                    height: 40,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(color: Candy.green.light, borderRadius: BorderRadius.circular(999)),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.check_rounded, color: Colors.white, size: 20),
-                        Text('Done', style: AppText.display(15)),
+                        const Icon(Icons.check_rounded, color: AppColors.success, size: 18),
+                        const SizedBox(width: 4),
+                        Text('Done', style: AppText.display(14, color: AppColors.success)),
                       ],
                     ),
                   )
                 : CandyButton(
                     label: 'Play',
                     candy: game.candy,
-                    height: 48,
-                    width: 92,
+                    height: 44,
+                    width: 88,
                     onTap: () => context.push('/play/daily/${game.name}'),
                   ),
           ],

@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import '../../core/audio/sfx.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/palette.dart';
-import '../../core/ui/game_art.dart';
 import '../../services/content_repo.dart';
 import '../common/game_flow.dart';
-import '../common/results_overlay.dart';
 import 'queens_logic.dart';
 
 class QueensScreen extends StatefulWidget {
@@ -28,15 +26,15 @@ class _QueensScreenState extends State<QueensScreen> with GameFlow {
   PlayRequest get request => widget.request;
 
   static const regionColors = [
-    Color(0xFFFFB3C7), // pink
-    Color(0xFFFFE08A), // lemon
-    Color(0xFFA8E6FF), // sky
-    Color(0xFFC9B6FF), // lilac
-    Color(0xFFA9F0C0), // mint
-    Color(0xFFFFC69E), // peach
-    Color(0xFFB6F2EE), // aqua
-    Color(0xFFE7E3EF), // cloud
-    Color(0xFFF7B2F0), // bubblegum
+    Color(0xFFC9B8EC), // lavender
+    Color(0xFFFFD3A6), // apricot
+    Color(0xFFB5D1FF), // periwinkle
+    Color(0xFFC4E5B4), // sage
+    Color(0xFFE4E2DC), // stone
+    Color(0xFFFFB4A3), // coral
+    Color(0xFFEDF3A6), // citron
+    Color(0xFFD3CBB8), // sand
+    Color(0xFFEBB8D2), // rose
   ];
 
   @override
@@ -108,8 +106,8 @@ class _QueensScreenState extends State<QueensScreen> with GameFlow {
               padding: const EdgeInsets.symmetric(horizontal: 2),
               child: AnimatedOpacity(
                 duration: const Duration(milliseconds: 200),
-                opacity: i < placed ? 1 : 0.28,
-                child: const GameArt(ArtKind.crown, size: 24),
+                opacity: i < placed ? 1 : 0.22,
+                child: const SizedBox.square(dimension: 20, child: CustomPaint(painter: _CrownPainter())),
               ),
             ),
         ],
@@ -119,8 +117,12 @@ class _QueensScreenState extends State<QueensScreen> with GameFlow {
           padding: const EdgeInsets.all(14),
           child: AspectRatio(
             aspectRatio: 1,
-            child: BoardFrame(
-              candy: Candy.gold,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: AppColors.ink, width: 2),
+              ),
               child: LayoutBuilder(
                 builder: (context, box) {
                   final cell = box.maxWidth / board.size;
@@ -133,7 +135,7 @@ class _QueensScreenState extends State<QueensScreen> with GameFlow {
                     onPanUpdate: (d) => _dragAt(d.localPosition, cell),
                     onPanEnd: (_) => _dragged.clear(),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(4),
                       child: Stack(
                         children: [
                           for (var r = 0; r < board.size; r++)
@@ -178,11 +180,12 @@ class _QueensScreenState extends State<QueensScreen> with GameFlow {
     final g = widget.puzzle.regions;
     final reg = g[r][c];
     final n = board.size;
+    // The outer edge is drawn by the board frame.
     return (
-      r == 0 || g[r - 1][c] != reg,
-      c == n - 1 || g[r][c + 1] != reg,
-      r == n - 1 || g[r + 1][c] != reg,
-      c == 0 || g[r][c - 1] != reg,
+      r > 0 && g[r - 1][c] != reg,
+      c < n - 1 && g[r][c + 1] != reg,
+      r < n - 1 && g[r + 1][c] != reg,
+      c > 0 && g[r][c - 1] != reg,
     );
   }
 }
@@ -208,8 +211,8 @@ class _Cell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const thick = BorderSide(color: AppColors.ink, width: 2.2);
-    final thin = BorderSide(color: AppColors.ink.withValues(alpha: 0.12), width: 0.6);
+    const thick = BorderSide(color: AppColors.ink, width: 1.6);
+    final thin = BorderSide(color: AppColors.ink.withValues(alpha: 0.16), width: 0.5);
     return Semantics(
       button: true,
       label: '$label, ${mark.name}',
@@ -218,7 +221,7 @@ class _Cell extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           decoration: BoxDecoration(
-            color: conflict ? Color.lerp(color, AppColors.danger, 0.45) : color,
+            color: conflict ? Color.lerp(color, AppColors.danger, 0.4) : color,
             border: Border(
               top: borders.$1 ? thick : thin,
               right: borders.$2 ? thick : thin,
@@ -228,22 +231,22 @@ class _Cell extends StatelessWidget {
           ),
           child: Center(
             child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 260),
-              switchInCurve: Curves.elasticOut,
+              duration: const Duration(milliseconds: 180),
+              switchInCurve: Curves.easeOutBack,
               transitionBuilder: (child, a) => ScaleTransition(scale: a, child: child),
               child: switch (mark) {
                 QueenMark.empty => const SizedBox.shrink(key: ValueKey('e')),
                 QueenMark.cross => Icon(
                   Icons.close_rounded,
                   key: const ValueKey('x'),
-                  color: AppColors.ink.withValues(alpha: 0.45),
-                  size: 18,
+                  color: AppColors.inkFaint,
+                  size: 16,
                 ),
-                QueenMark.crown => const FractionallySizedBox(
-                  key: ValueKey('q'),
-                  widthFactor: 0.72,
-                  heightFactor: 0.72,
-                  child: FittedBox(child: GameArt(ArtKind.crown, size: 40)),
+                QueenMark.crown => FractionallySizedBox(
+                  key: const ValueKey('q'),
+                  widthFactor: 0.6,
+                  heightFactor: 0.6,
+                  child: CustomPaint(painter: _CrownPainter(conflict ? AppColors.danger : AppColors.ink)),
                 ),
               },
             ),
@@ -252,6 +255,35 @@ class _Cell extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Flat crown glyph (three points on a band).
+class _CrownPainter extends CustomPainter {
+  const _CrownPainter([this.color = AppColors.ink]);
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size s) {
+    final w = s.width, h = s.height;
+    final paint = Paint()..color = color;
+    final body = Path()
+      ..moveTo(w * 0.08, h * 0.28)
+      ..lineTo(w * 0.3, h * 0.52)
+      ..lineTo(w * 0.5, h * 0.18)
+      ..lineTo(w * 0.7, h * 0.52)
+      ..lineTo(w * 0.92, h * 0.28)
+      ..lineTo(w * 0.84, h * 0.74)
+      ..lineTo(w * 0.16, h * 0.74)
+      ..close();
+    canvas.drawPath(body, paint);
+    canvas.drawRRect(RRect.fromLTRBR(w * 0.16, h * 0.8, w * 0.84, h * 0.9, Radius.circular(h * 0.04)), paint);
+    for (final x in [0.08, 0.5, 0.92]) {
+      canvas.drawCircle(Offset(w * x, h * (x == 0.5 ? 0.14 : 0.24)), w * 0.065, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CrownPainter old) => old.color != color;
 }
 
 /// Exposed for tests/screenshots.

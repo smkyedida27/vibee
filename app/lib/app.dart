@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'core/audio/sfx.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/palette.dart';
-import 'core/ui/candy_background.dart';
+import 'core/ui/phone_frame.dart';
 import 'core/ui/pressable.dart';
 import 'features/daily/daily_screen.dart';
 import 'features/home/home_screen.dart';
@@ -15,20 +15,22 @@ import 'features/profile/profile_screen.dart';
 import 'features/rewards/rewards.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/shop/shop_screen.dart';
+import 'games/common/game_flow.dart';
 import 'games/common/game_launcher.dart';
+import 'games/common/results_overlay.dart';
 import 'games/common/game_type.dart';
 import 'services/content_repo.dart';
 import 'services/services.dart';
 
-class PuzzleHubApp extends StatefulWidget {
-  const PuzzleHubApp({super.key, required this.services});
+class QuintileApp extends StatefulWidget {
+  const QuintileApp({super.key, required this.services});
   final AppServices services;
 
   @override
-  State<PuzzleHubApp> createState() => _PuzzleHubAppState();
+  State<QuintileApp> createState() => _QuintileAppState();
 }
 
-class _PuzzleHubAppState extends State<PuzzleHubApp> with WidgetsBindingObserver {
+class _QuintileAppState extends State<QuintileApp> with WidgetsBindingObserver {
   late final GoRouter _router = buildRouter(widget.services);
 
   @override
@@ -67,7 +69,7 @@ class _PuzzleHubAppState extends State<PuzzleHubApp> with WidgetsBindingObserver
         builder: (context) {
           final reduce = context.player.data.settings.reducedMotion;
           return MaterialApp.router(
-            title: 'Puzzle Hub',
+            title: 'Quintile',
             debugShowCheckedModeBanner: false,
             theme: buildAppTheme(),
             routerConfig: _router,
@@ -79,7 +81,7 @@ class _PuzzleHubAppState extends State<PuzzleHubApp> with WidgetsBindingObserver
                   disableAnimations: mq.disableAnimations || reduce,
                   textScaler: mq.textScaler.clamp(minScaleFactor: 0.85, maxScaleFactor: 1.3),
                 ),
-                child: child!,
+                child: PhoneFrame(child: child!),
               );
             },
           );
@@ -101,73 +103,67 @@ GoRouter buildRouter(AppServices s) {
       return null;
     },
     routes: [
-      GoRoute(path: '/onboarding', builder: (_, _) => const OnboardingScreen()),
+      GoRoute(path: '/onboarding', pageBuilder: (_, st) => _page(st, const OnboardingScreen())),
       ShellRoute(
         navigatorKey: shellKey,
         builder: (context, state, child) => MainShell(location: state.matchedLocation, child: child),
         routes: [
-          GoRoute(
-            path: '/',
-            pageBuilder: (_, _) => const NoTransitionPage(child: HomeScreen()),
-          ),
-          GoRoute(
-            path: '/journey',
-            pageBuilder: (_, _) => const NoTransitionPage(child: JourneyScreen()),
-          ),
-          GoRoute(
-            path: '/daily',
-            pageBuilder: (_, _) => const NoTransitionPage(child: DailyScreen()),
-          ),
-          GoRoute(
-            path: '/leaders',
-            pageBuilder: (_, _) => const NoTransitionPage(child: LeaderboardScreen()),
-          ),
-          GoRoute(
-            path: '/shop',
-            pageBuilder: (_, _) => const NoTransitionPage(child: ShopScreen()),
-          ),
+          GoRoute(path: '/', pageBuilder: (_, st) => _tabPage(st, const HomeScreen())),
+          GoRoute(path: '/journey', pageBuilder: (_, st) => _tabPage(st, const JourneyScreen())),
+          GoRoute(path: '/daily', pageBuilder: (_, st) => _tabPage(st, const DailyScreen())),
+          GoRoute(path: '/leaders', pageBuilder: (_, st) => _tabPage(st, const LeaderboardScreen())),
+          GoRoute(path: '/shop', pageBuilder: (_, st) => _tabPage(st, const ShopScreen())),
         ],
       ),
-      GoRoute(path: '/profile', builder: (_, _) => const ProfileScreen()),
-      GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
-      GoRoute(path: '/spin', builder: (_, _) => const SpinScreen()),
+      GoRoute(path: '/profile', pageBuilder: (_, st) => _page(st, const ProfileScreen())),
+      GoRoute(path: '/settings', pageBuilder: (_, st) => _page(st, const SettingsScreen())),
+      GoRoute(path: '/spin', pageBuilder: (_, st) => _page(st, const SpinScreen())),
+      // Design-review only (`--dart-define=PREVIEW=true`); never part of a normal build.
+      if (const bool.fromEnvironment('PREVIEW'))
+        GoRoute(path: '/preview/results', builder: (_, _) => const _ResultsPreview()),
       GoRoute(
         path: '/play/level/:n',
-        builder: (_, st) {
+        pageBuilder: (_, st) {
           final n = int.tryParse(st.pathParameters['n'] ?? '') ?? 1;
-          return GameLauncher(resolve: (_) async => PlayRequest.level(n));
+          return _page(st, GameLauncher(resolve: (_) async => PlayRequest.level(n)));
         },
       ),
       GoRoute(
         path: '/play/daily/:game',
-        builder: (_, st) {
+        pageBuilder: (_, st) {
           final g = GameType.values.byName(st.pathParameters['game']!);
-          return GameLauncher(
-            resolve: (svc) async {
-              final set = await svc.content.daily();
-              final p = set.puzzles[g];
-              if (p == null) throw StateError("Today's ${g.title} puzzle isn't available. Try another game!");
-              return PlayRequest(game: g, difficulty: p.difficulty, source: PlaySource.daily, seed: 0, daily: p);
-            },
+          return _page(
+            st,
+            GameLauncher(
+              resolve: (svc) async {
+                final set = await svc.content.daily();
+                final p = set.puzzles[g];
+                if (p == null) throw StateError("Today's ${g.title} puzzle isn't available. Try another game!");
+                return PlayRequest(game: g, difficulty: p.difficulty, source: PlaySource.daily, seed: 0, daily: p);
+              },
+            ),
           );
         },
       ),
       GoRoute(
         path: '/play/quick/:game',
-        builder: (_, st) {
+        pageBuilder: (_, st) {
           final g = GameType.values.byName(st.pathParameters['game']!);
-          return GameLauncher(
-            resolve: (svc) async {
-              // Quick play scales with the player's journey progress.
-              final lvl = svc.player.data.currentLevel;
-              final diff = Difficulty.values[(lvl ~/ 40).clamp(0, 3)];
-              return PlayRequest(
-                game: g,
-                difficulty: diff,
-                source: PlaySource.quick,
-                seed: DateTime.now().microsecondsSinceEpoch & 0x7FFFFFFF,
-              );
-            },
+          return _page(
+            st,
+            GameLauncher(
+              resolve: (svc) async {
+                // Quick play scales with the player's journey progress.
+                final lvl = svc.player.data.currentLevel;
+                final diff = Difficulty.values[(lvl ~/ 40).clamp(0, 3)];
+                return PlayRequest(
+                  game: g,
+                  difficulty: diff,
+                  source: PlaySource.quick,
+                  seed: DateTime.now().microsecondsSinceEpoch & 0x7FFFFFFF,
+                );
+              },
+            ),
           );
         },
       ),
@@ -175,7 +171,37 @@ GoRouter buildRouter(AppServices s) {
   );
 }
 
-/// Bottom-tab shell with a raised candy "Play" button for the Journey.
+/// Pushed screens: a quick fade with a slight rise, smooth on low-end phones.
+CustomTransitionPage<void> _page(GoRouterState st, Widget child) => CustomTransitionPage<void>(
+  key: st.pageKey,
+  child: child,
+  transitionDuration: const Duration(milliseconds: 320),
+  reverseTransitionDuration: const Duration(milliseconds: 240),
+  transitionsBuilder: (context, anim, _, child) {
+    final curved = CurvedAnimation(parent: anim, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
+    return FadeTransition(
+      opacity: curved,
+      child: SlideTransition(
+        position: Tween(begin: const Offset(0, 0.04), end: Offset.zero).animate(curved),
+        child: child,
+      ),
+    );
+  },
+);
+
+/// Bottom tabs cross-fade instead of cutting.
+CustomTransitionPage<void> _tabPage(GoRouterState st, Widget child) => CustomTransitionPage<void>(
+  key: st.pageKey,
+  child: child,
+  transitionDuration: const Duration(milliseconds: 220),
+  reverseTransitionDuration: const Duration(milliseconds: 220),
+  transitionsBuilder: (context, anim, _, child) => FadeTransition(
+    opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
+    child: child,
+  ),
+);
+
+/// Bottom-tab shell: a clean white tab bar with a raised primary "Play" button.
 class MainShell extends StatelessWidget {
   const MainShell({super.key, required this.location, required this.child});
   final String location;
@@ -183,40 +209,37 @@ class MainShell extends StatelessWidget {
 
   static const _tabs = [
     ('/', Icons.home_rounded, 'Home'),
-    ('/daily', Icons.today_rounded, 'Daily'),
-    ('/journey', Icons.map_rounded, 'Play'),
-    ('/leaders', Icons.emoji_events_rounded, 'Ranks'),
-    ('/shop', Icons.storefront_rounded, 'Shop'),
+    ('/daily', Icons.calendar_today_rounded, 'Daily'),
+    ('/journey', Icons.play_arrow_rounded, 'Play'),
+    ('/leaders', Icons.leaderboard_rounded, 'Ranks'),
+    ('/shop', Icons.shopping_bag_rounded, 'Shop'),
   ];
 
   @override
   Widget build(BuildContext context) {
     final isMap = location == '/journey';
     return Scaffold(
-      extendBody: true,
-      body: isMap ? child : CandyBackground(child: child),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Container(
-          height: 78,
-          margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
-            gradient: const LinearGradient(colors: [Color(0xFF2A0B5E), Color(0xFF451092)]),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 2),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 20, offset: const Offset(0, 8)),
-            ],
-          ),
-          child: Row(
-            children: [
-              for (final t in _tabs)
-                Expanded(
-                  child: t.$1 == '/journey'
-                      ? _PlayTab(selected: isMap)
-                      : _Tab(icon: t.$2, label: t.$3, selected: location == t.$1, path: t.$1),
-                ),
-            ],
+      backgroundColor: AppColors.bg,
+      body: child,
+      bottomNavigationBar: DecoratedBox(
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          border: Border(top: BorderSide(color: AppColors.border)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 64,
+            child: Row(
+              children: [
+                for (final t in _tabs)
+                  Expanded(
+                    child: t.$1 == '/journey'
+                        ? _PlayTab(selected: isMap)
+                        : _Tab(icon: t.$2, label: t.$3, selected: location == t.$1, path: t.$1),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -233,6 +256,7 @@ class _Tab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = selected ? AppColors.primary : AppColors.inkFaint;
     return Pressable(
       onTap: () => context.go(path),
       sound: Sfx.tap,
@@ -240,21 +264,20 @@ class _Tab extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          AnimatedScale(
-            scale: selected ? 1.18 : 1,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.elasticOut,
-            child: Icon(
-              icon,
-              color: selected ? AppColors.gold : Colors.white60,
-              size: 28,
-              shadows: selected ? const [Shadow(color: Color(0xFFE08A00), offset: Offset(0, 2))] : null,
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+            decoration: BoxDecoration(
+              color: selected ? Candy.gold.light : Colors.transparent,
+              borderRadius: BorderRadius.circular(14),
             ),
+            child: Icon(icon, color: color, size: 23),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 3),
           Text(
             label,
-            style: AppText.body(11, color: selected ? Colors.white : Colors.white60, weight: FontWeight.w700),
+            style: AppText.body(11, color: color, weight: selected ? FontWeight.w700 : FontWeight.w600),
           ),
         ],
       ),
@@ -272,34 +295,52 @@ class _PlayTab extends StatelessWidget {
       onTap: () => context.go('/journey'),
       sound: Sfx.pop,
       semanticLabel: 'Journey',
-      child: OverflowBox(
-        maxHeight: 110,
-        child: Transform.translate(
-          offset: const Offset(0, -16),
-          child: Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                center: const Alignment(-0.3, -0.5),
-                colors: [Candy.green.light, Candy.green.base, Candy.green.dark],
+      child: Center(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: selected ? 0.45 : 0.28),
+                blurRadius: selected ? 16 : 10,
+                offset: const Offset(0, 4),
               ),
-              border: Border.all(color: Colors.white, width: 4),
-              boxShadow: [
-                BoxShadow(color: Candy.green.dark, offset: const Offset(0, 5)),
-                BoxShadow(color: Candy.green.base.withValues(alpha: selected ? 0.8 : 0.3), blurRadius: 18),
-              ],
-            ),
-            child: const Icon(
-              Icons.play_arrow_rounded,
-              color: Colors.white,
-              size: 46,
-              shadows: [Shadow(color: Color(0xFF0E8A45), offset: Offset(0, 2))],
-            ),
+            ],
           ),
+          child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 32),
         ),
       ),
     );
   }
+}
+
+class _ResultsPreview extends StatefulWidget {
+  const _ResultsPreview();
+  @override
+  State<_ResultsPreview> createState() => _ResultsPreviewState();
+}
+
+class _ResultsPreviewState extends State<_ResultsPreview> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showResults(
+        context,
+        request: PlayRequest(game: GameType.connect, difficulty: Difficulty.medium, source: PlaySource.daily, seed: 1),
+        result: RoundResult(won: true, stars: 3, submission: const {}, detail: 'Perfect — no mistakes!'),
+        elapsed: const Duration(minutes: 1, seconds: 42),
+        hintsUsed: 0,
+        dailyCoins: 60,
+        xpGained: 60,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => const Scaffold(backgroundColor: AppColors.bg);
 }

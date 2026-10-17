@@ -73,4 +73,13 @@ void main() {
       expect(buildInviteShare(null), endsWith(storeUrl));
     });
   });
+
+  test('player level matches XP thresholds', () {
+    for (final (xp, level) in [(0, 1), (119, 1), (120, 2), (359, 2), (360, 3), (720, 4), (5000, 9)]) {
+      final d = PlayerData()..xp = xp;
+      expect(d.playerLevel, level, reason: 'xp $xp');
+      expect(d.levelProgress, inInclusiveRange(0, 1));
+      expect(xp >= PlayerData.xpForLevel(level) && xp < PlayerData.xpForLevel(level + 1), isTrue);
+    }
+  });
 }

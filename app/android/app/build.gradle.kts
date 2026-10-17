@@ -45,7 +45,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.puzzlehub.app"
+        applicationId = "com.quintile.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -77,6 +77,7 @@ android {
                             else signingConfigs.getByName("debug")
             isMinifyEnabled = true
             isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }

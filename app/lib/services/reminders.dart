@@ -82,6 +82,8 @@ class ReminderService {
   String? zoneId;
   String? _lastSignature;
 
+  bool _scheduledThisRun = false;
+
   /// Invoked when the player taps a reminder (the app routes to the daily screen).
   VoidCallback? onOpenDaily;
   bool _launchedFromReminder = false;
@@ -155,6 +157,9 @@ class ReminderService {
         '${d.dailyDone.isNotEmpty}|${d.streak}';
     if (!force && sig == _lastSignature) return;
     _lastSignature = sig;
+    // Reminders off and nothing scheduled in this app run: don't touch the native plugin at all.
+    // (Turning reminders off always happens in a run that scheduled them, which cancels them.)
+    if (!d.settings.reminders && !_scheduledThisRun) return;
     await init();
     if (!_ready) return;
     try {
@@ -175,6 +180,7 @@ class ReminderService {
         ),
         iOS: DarwinNotificationDetails(),
       );
+      if (slots.isNotEmpty) _scheduledThisRun = true;
       for (var i = 0; i < slots.length && i < _maxSlots; i++) {
         final s = slots[i];
         await _plugin.zonedSchedule(

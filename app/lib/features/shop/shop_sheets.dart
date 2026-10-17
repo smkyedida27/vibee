@@ -9,7 +9,6 @@ import '../../core/theme/palette.dart';
 import '../../core/ui/candy_button.dart';
 import '../../core/ui/dialogs.dart';
 import '../../core/ui/game_art.dart';
-import '../../core/ui/outlined_text.dart';
 import '../../services/api_client.dart';
 import '../../services/services.dart';
 import '../../state/player.dart';
@@ -58,9 +57,12 @@ class _LivesBodyState extends State<_LivesBody> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             for (var i = 0; i < Economy.maxHearts; i++)
-              Opacity(
-                opacity: i < p.data.hearts || p.unlimitedHearts ? 1 : 0.25,
-                child: const GameArt(ArtKind.heart, size: 44),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 3),
+                child: Opacity(
+                  opacity: i < p.data.hearts || p.unlimitedHearts ? 1 : 0.18,
+                  child: const GameArt(ArtKind.heart, size: 40),
+                ),
               ),
           ],
         ),
@@ -72,16 +74,16 @@ class _LivesBodyState extends State<_LivesBody> {
               ? 'Your lives are full. Go crush some puzzles!'
               : 'Next life in ${next!.inMinutes}:${(next.inSeconds % 60).toString().padLeft(2, '0')}',
           textAlign: TextAlign.center,
-          style: AppText.body(17, color: AppColors.inkSoft),
+          style: AppText.body(16, color: AppColors.inkSoft, weight: FontWeight.w600),
         ),
         if (!full) ...[
           const SizedBox(height: 16),
           CandyButton(
             label: 'Refill  •  ${Economy.heartRefillGems}',
-            candy: Candy.green,
-            height: 60,
+            candy: Candy.ink,
+            height: 56,
             pulse: true,
-            trailing: const GameArt(ArtKind.gem, size: 26),
+            trailing: const GameArt(ArtKind.gem, size: 22),
             onTap: () async {
               final ok = await _spendGems(context, 'HEART_REFILL', Economy.heartRefillGems);
               if (ok) {
@@ -95,8 +97,8 @@ class _LivesBodyState extends State<_LivesBody> {
           CandyButton(
             label: 'Watch ad  •  +1 life',
             icon: Icons.ondemand_video_rounded,
-            candy: Candy.blue,
-            height: 54,
+            candy: Candy.white,
+            height: 52,
             onTap: () async {
               if (await s.ads.showRewarded('life')) {
                 s.player.addHeart();
@@ -110,8 +112,8 @@ class _LivesBodyState extends State<_LivesBody> {
           CandyButton(
             label: 'Get VIP — unlimited lives',
             candy: Candy.gold,
-            height: 54,
-            trailing: const GameArt(ArtKind.crown, size: 26),
+            height: 52,
+            trailing: const GameArt(ArtKind.crown, size: 22),
             onTap: () {
               Navigator.pop(context);
               context.go('/shop');
@@ -168,5 +170,5 @@ Future<bool> spendGemsFor(BuildContext context, String sku, int cost) => _spendG
 class ShopHeader extends StatelessWidget {
   const ShopHeader({super.key});
   @override
-  Widget build(BuildContext context) => const OutlinedText('Candy Shop', size: 34);
+  Widget build(BuildContext context) => Text('Shop', style: AppText.display(30));
 }

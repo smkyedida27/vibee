@@ -74,7 +74,7 @@ variable "firebase_project_id" {
 
 variable "play_package_name" {
   type    = string
-  default = "com.puzzlehub.app"
+  default = "com.quintile.app"
 }
 
 variable "alert_emails" {

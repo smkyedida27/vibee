@@ -1,6 +1,6 @@
 # Architecture
 
-Puzzle Hub is a mobile-first daily mini-games hub: a Flutter app, a Spring Boot
+Quintile is a mobile-first daily mini-games hub: a Flutter app, a Spring Boot
 **modular monolith**, and PostgreSQL as the transactional source of truth, hosted on
 AWS managed services. The guiding rule (from the product spec): *add infrastructure
 only when metrics justify it.*

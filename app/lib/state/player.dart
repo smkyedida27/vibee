@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -128,6 +129,19 @@ class PlayerData {
   Settings settings = Settings();
   int snapshotVersion = 0;
 
+  /// Experience from every solve; drives the player level shown on Home.
+  int xp = 0;
+
+  /// Level L starts at 60·L·(L−1) XP (0, 120, 360, 720, …): quick early levels, then steadier.
+  static int xpForLevel(int level) => 60 * level * (level - 1);
+  int get playerLevel => ((1 + math.sqrt(1 + xp / 15)) / 2).floor();
+  double get levelProgress {
+    final lo = xpForLevel(playerLevel), hi = xpForLevel(playerLevel + 1);
+    return ((xp - lo) / (hi - lo)).clamp(0.0, 1.0);
+  }
+
+  int get xpToNextLevel => xpForLevel(playerLevel + 1) - xp;
+
   int get highestCleared => levelStars.keys.fold(0, (m, k) => k > m ? k : m);
   int get currentLevel => highestCleared + 1;
   int get totalStars => levelStars.values.fold(0, (a, b) => a + b);
@@ -167,6 +181,7 @@ class PlayerData {
     'rewardedCounts': rewardedCounts,
     'settings': settings.toJson(),
     'snapshotVersion': snapshotVersion,
+    'xp': xp,
   };
 
   static PlayerData fromJson(Map<String, dynamic> j) {
@@ -203,7 +218,9 @@ class PlayerData {
       ..rewardedDate = j['rewardedDate']
       ..rewardedCounts = ((j['rewardedCounts'] ?? {}) as Map).map((k, v) => MapEntry('$k', (v as num).toInt()))
       ..settings = Settings.fromJson(((j['settings'] ?? {}) as Map).cast<String, dynamic>())
-      ..snapshotVersion = j['snapshotVersion'] ?? 0;
+      ..snapshotVersion = j['snapshotVersion'] ?? 0
+      // Players from before XP existed start with XP for the stars they already earned.
+      ..xp = j['xp'] ?? (((j['levelStars'] ?? {}) as Map).values.fold<int>(0, (a, v) => a + (v as int)) * 25);
     return d;
   }
 }
@@ -416,6 +433,7 @@ class PlayerStore extends ChangeNotifier {
     data.coins += coins;
     _recordStat(game, won: true, durationMs: durationMs);
     data.levelsSinceInterstitial++;
+    data.xp += firstClear ? 20 + 10 * stars : 5 + 5 * stars;
     _changed();
     return LevelReward(coins: coins, stars: stars, newBest: best, firstClear: firstClear);
   }
@@ -468,8 +486,15 @@ class PlayerStore extends ChangeNotifier {
     if (data.dailyDone.length == GameType.values.length) coins += 300; // full-set bonus
     if (data.isVip) coins *= 2;
     data.coins += coins;
+    data.xp += 60;
     _changed();
     return coins;
+  }
+
+  /// XP for practice (quick play) wins.
+  void addXp(int n) {
+    data.xp += n;
+    _changed();
   }
 
   // ---------------------------------------------------------------- rewards

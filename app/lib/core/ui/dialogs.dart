@@ -20,8 +20,8 @@ Future<T?> showCandyDialog<T>(
     context: context,
     barrierDismissible: dismissible,
     barrierLabel: title,
-    barrierColor: const Color(0xB3120428),
-    transitionDuration: const Duration(milliseconds: 420),
+    barrierColor: const Color(0x8C17171C),
+    transitionDuration: const Duration(milliseconds: 260),
     pageBuilder: (ctx, _, _) => SafeArea(
       child: Center(
         // Scrolls instead of overflowing on short screens or with large text.
@@ -31,31 +31,41 @@ Future<T?> showCandyDialog<T>(
             constraints: const BoxConstraints(maxWidth: 420),
             child: Material(
               type: MaterialType.transparency,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 30),
-                    child: CandyPanel(
-                      rim: ribbon,
-                      padding: const EdgeInsets.fromLTRB(18, 42, 18, 18),
-                      child: builder(ctx),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: const [BoxShadow(color: Color(0x2917171C), blurRadius: 40, offset: Offset(0, 16))],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        if (showClose) const SizedBox(width: 36),
+                        Expanded(child: RibbonBanner(title, candy: ribbon, fontSize: 22)),
+                        if (showClose)
+                          Semantics(
+                            button: true,
+                            label: 'Close',
+                            child: GestureDetector(
+                              onTap: () => Navigator.of(ctx).maybePop(),
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: const BoxDecoration(color: AppColors.bg, shape: BoxShape.circle),
+                                child: const Icon(Icons.close_rounded, size: 20, color: AppColors.inkSoft),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                  ),
-                  Positioned(left: 20, right: 20, top: 0, child: RibbonBanner(title, candy: ribbon, fontSize: 26)),
-                  if (showClose)
-                    Positioned(
-                      right: -6,
-                      top: 16,
-                      child: CandyIconButton(
-                        icon: Icons.close_rounded,
-                        candy: Candy.red,
-                        size: 42,
-                        semanticLabel: 'Close',
-                        onTap: () => Navigator.of(ctx).maybePop(),
-                      ),
-                    ),
-                ],
+                    const SizedBox(height: 14),
+                    builder(ctx),
+                  ],
+                ),
               ),
             ),
           ),
@@ -66,12 +76,12 @@ Future<T?> showCandyDialog<T>(
       final reduce = MediaQuery.maybeDisableAnimationsOf(ctx) ?? false;
       final curved = CurvedAnimation(
         parent: anim,
-        curve: reduce ? Curves.linear : Curves.elasticOut,
+        curve: reduce ? Curves.linear : Curves.easeOutBack,
         reverseCurve: Curves.easeIn,
       );
       return FadeTransition(
         opacity: CurvedAnimation(parent: anim, curve: const Interval(0, 0.4)),
-        child: ScaleTransition(scale: Tween(begin: 0.6, end: 1.0).animate(curved), child: child),
+        child: ScaleTransition(scale: Tween(begin: 0.92, end: 1.0).animate(curved), child: child),
       );
     },
   );

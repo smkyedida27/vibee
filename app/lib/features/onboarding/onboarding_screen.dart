@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -10,11 +9,11 @@ import '../../core/theme/palette.dart';
 import '../../core/ui/candy_background.dart';
 import '../../core/ui/candy_button.dart';
 import '../../core/ui/hud.dart';
-import '../../core/ui/outlined_text.dart';
 import '../../core/ui/pressable.dart';
 import '../../games/common/game_type.dart';
 import '../../services/services.dart';
 import '../home/home_screen.dart';
+import '../splash/splash_screen.dart' show QuintileMark;
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -44,9 +43,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       s.analytics.log('onboarding_complete', {'avatar': _avatar});
       unawaited(s.pushProfile());
       Audio.instance.fx(Sfx.unlock, HapticKind.heavy);
-      // First session goes straight into a quick, satisfying first level.
+      // Land on the Home dashboard; the player chooses what to play first.
       context.go('/');
-      context.push('/play/level/1');
     }
   }
 
@@ -65,7 +63,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ? null
                       : () =>
                             _pages.animateToPage(2, duration: const Duration(milliseconds: 500), curve: Curves.easeOut),
-                  child: Text(_page == 2 ? '' : 'Skip', style: AppText.body(16, color: Colors.white70)),
+                  child: Text(
+                    _page == 2 ? '' : 'Skip',
+                    style: AppText.body(15, color: AppColors.inkSoft, weight: FontWeight.w600),
+                  ),
                 ),
               ),
               Expanded(
@@ -86,22 +87,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 250),
                       margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: i == _page ? 26 : 10,
-                      height: 10,
+                      width: i == _page ? 24 : 8,
+                      height: 8,
                       decoration: BoxDecoration(
-                        color: i == _page ? AppColors.gold : Colors.white38,
-                        borderRadius: BorderRadius.circular(5),
+                        color: i == _page ? AppColors.primary : AppColors.border,
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                 ],
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 18, 24, 20),
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
                 child: CandyButton(
-                  label: _page == 2 ? "Let's play!" : 'Next',
-                  candy: _page == 2 ? Candy.green : Candy.pink,
-                  height: 68,
-                  pulse: true,
+                  label: _page == 2 ? "Let's play" : 'Continue',
+                  candy: Candy.ink,
+                  height: 56,
                   onTap: _next,
                 ),
               ),
@@ -113,67 +113,47 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-class _Welcome extends StatefulWidget {
+class _Welcome extends StatelessWidget {
   const _Welcome();
-  @override
-  State<_Welcome> createState() => _WelcomeState();
-}
-
-class _WelcomeState extends State<_Welcome> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          height: 250,
-          child: AnimatedBuilder(
-            animation: _c,
-            builder: (_, _) {
-              final t = _c.value * 2 * math.pi;
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  for (var i = 0; i < GameType.values.length; i++)
-                    Transform.translate(
-                      offset: Offset(
-                        math.cos(t * 0.5 + i * 2 * math.pi / 5) * 105,
-                        math.sin(t * 0.5 + i * 2 * math.pi / 5) * 70 + math.sin(t + i) * 6,
-                      ),
-                      child: Transform.rotate(
-                        angle: math.sin(t + i) * 0.18,
-                        child: GameBadge(game: GameType.values[i], size: 66),
-                      ),
-                    ),
-                  Transform.scale(scale: 1 + math.sin(t * 2) * 0.03, child: const _Logo()),
-                ],
-              );
-            },
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const _Logo(),
+          const SizedBox(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (var i = 0; i < GameType.values.length; i++)
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: 1),
+                  duration: Duration(milliseconds: 350 + i * 90),
+                  curve: Curves.easeOutCubic,
+                  builder: (_, v, child) => Opacity(
+                    opacity: v,
+                    child: Transform.translate(offset: Offset(0, 16 * (1 - v)), child: child),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: GameBadge(game: GameType.values[i], size: 52),
+                  ),
+                ),
+            ],
           ),
-        ),
-        const SizedBox(height: 24),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 30),
-          child: OutlinedText('Five brain games.\nOne sweet habit.', size: 30),
-        ),
-        const SizedBox(height: 10),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 36),
-          child: Text(
+          const SizedBox(height: 40),
+          Text('Five brain games.\nOne daily habit.', textAlign: TextAlign.center, style: AppText.display(30)),
+          const SizedBox(height: 12),
+          Text(
             'Fresh puzzles every day. A few minutes is all it takes to feel sharper.',
             textAlign: TextAlign.center,
-            style: AppText.body(16, color: Colors.white.withValues(alpha: 0.85)),
+            style: AppText.body(16, color: AppColors.inkSoft),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -181,21 +161,12 @@ class _WelcomeState extends State<_Welcome> with SingleTickerProviderStateMixin 
 class _Logo extends StatelessWidget {
   const _Logo();
   @override
-  Widget build(BuildContext context) => const Column(
+  Widget build(BuildContext context) => Column(
     mainAxisSize: MainAxisSize.min,
     children: [
-      OutlinedText(
-        'PUZZLE',
-        size: 46,
-        gradient: LinearGradient(colors: [Color(0xFFFFF59A), Color(0xFFFFB800)]),
-        stroke: Color(0xFF7A2B00),
-      ),
-      OutlinedText(
-        'HUB',
-        size: 58,
-        gradient: LinearGradient(colors: [Color(0xFFFF9BE2), Color(0xFFFF3D7F)]),
-        stroke: Color(0xFF6B0636),
-      ),
+      SizedBox.square(dimension: 84, child: CustomPaint(painter: QuintileMark(1))),
+      const SizedBox(height: 16),
+      Text('Quintile', style: AppText.display(34)),
     ],
   );
 }
@@ -205,35 +176,46 @@ class _Games extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
       children: [
-        const OutlinedText('Pick a puzzle,\nany puzzle', size: 32),
-        const SizedBox(height: 16),
+        Text('THE GAMES', style: AppText.label(11)),
+        const SizedBox(height: 4),
+        Text('Pick a puzzle,\nany puzzle', style: AppText.display(30)),
+        const SizedBox(height: 24),
         for (var i = 0; i < GameType.values.length; i++)
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: 1),
             duration: Duration(milliseconds: 400 + i * 120),
-            curve: Curves.easeOutBack,
+            curve: Curves.easeOutCubic,
             builder: (_, v, child) => Opacity(
               opacity: v.clamp(0, 1),
-              child: Transform.translate(offset: Offset(60 * (1 - v), 0), child: child),
+              child: Transform.translate(offset: Offset(24 * (1 - v), 0), child: child),
             ),
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                children: [
-                  GameBadge(game: GameType.values[i], size: 58),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(GameType.values[i].title, style: AppText.display(20)),
-                        Text(GameType.values[i].tagline, style: AppText.body(13, color: Colors.white70)),
-                      ],
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  children: [
+                    GameBadge(game: GameType.values[i], size: 48),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(GameType.values[i].title, style: AppText.display(16)),
+                          const SizedBox(height: 2),
+                          Text(GameType.values[i].tagline, style: AppText.body(13, color: AppColors.inkSoft)),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -254,17 +236,20 @@ class _Pal extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         children: [
-          const OutlinedText('Meet your Puzzle Pal', size: 30),
           const SizedBox(height: 16),
+          Text('YOUR PROFILE', style: AppText.label(11)),
+          const SizedBox(height: 4),
+          Text('Meet your Puzzle Pal', textAlign: TextAlign.center, style: AppText.display(30)),
+          const SizedBox(height: 24),
           TweenAnimationBuilder<double>(
             key: ValueKey(avatar),
-            tween: Tween(begin: 0.7, end: 1),
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.elasticOut,
+            tween: Tween(begin: 0.9, end: 1),
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.easeOutBack,
             builder: (_, s, child) => Transform.scale(scale: s, child: child),
-            child: Avatar(index: avatar, size: 130, ring: true),
+            child: Avatar(index: avatar, size: 112, ring: true),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -278,30 +263,47 @@ class _Pal extends StatelessWidget {
                     padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: avatar == i ? AppColors.gold : Colors.white24, width: 3),
+                      border: Border.all(
+                        color: avatar == i ? AppColors.primary : AppColors.border,
+                        width: avatar == i ? 2.5 : 1.5,
+                      ),
                     ),
                     child: Avatar(index: i, size: 54),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           TextField(
             controller: name,
             maxLength: 20,
             textAlign: TextAlign.center,
-            style: AppText.display(24, color: AppColors.ink),
+            style: AppText.display(20),
+            cursorColor: AppColors.primary,
             decoration: InputDecoration(
               hintText: 'Your name',
+              hintStyle: AppText.display(20, color: AppColors.inkFaint),
               counterText: '',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: AppColors.surface,
               contentPadding: const EdgeInsets.symmetric(vertical: 16),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide.none),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+              ),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
             ),
           ),
-          const SizedBox(height: 8),
-          Text('No sign-up needed. You can change this any time.', style: AppText.body(13, color: Colors.white70)),
+          const SizedBox(height: 12),
+          Text(
+            'No sign-up needed. You can change this any time.',
+            textAlign: TextAlign.center,
+            style: AppText.body(13, color: AppColors.inkSoft),
+          ),
         ],
       ),
     );

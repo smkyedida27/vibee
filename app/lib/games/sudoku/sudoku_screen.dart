@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import '../../core/audio/sfx.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/palette.dart';
-import '../../core/ui/candy_button.dart';
+import '../../core/ui/celebrations.dart';
+import '../../core/ui/pressable.dart';
 import '../../core/ui/game_art.dart';
 import '../../services/content_repo.dart';
 import '../common/game_flow.dart';
-import '../common/results_overlay.dart';
 import 'sudoku_logic.dart';
 
 class SudokuScreen extends StatefulWidget {
@@ -24,6 +24,7 @@ class _SudokuScreenState extends State<SudokuScreen> with GameFlow {
   static const maxMistakes = 3;
   int? _sel;
   bool _notes = false;
+  int _streak = 0; // consecutive completed units without a mistake
   int? _hintFlash;
 
   @override
@@ -49,8 +50,18 @@ class _SudokuScreenState extends State<SudokuScreen> with GameFlow {
     final ok = board.enter(i, d);
     setState(() {});
     if (ok) {
-      Audio.instance.fx(_unitComplete(i) ? Sfx.success : Sfx.pop, HapticKind.light);
+      final unit = _unitComplete(i);
+      Audio.instance.fx(unit ? Sfx.success : Sfx.pop, HapticKind.light);
+      if (unit && !board.solved) {
+        _streak++;
+        PraiseOverlay.show(
+          context,
+          _streak >= 3 ? 'On fire!' : (_streak == 2 ? 'Great!' : 'Nice!'),
+          color: Candy.blue.base,
+        );
+      }
     } else {
+      _streak = 0;
       Audio.instance.fx(Sfx.wrong, HapticKind.heavy);
     }
     _checkSolved(i);
@@ -111,7 +122,7 @@ class _SudokuScreenState extends State<SudokuScreen> with GameFlow {
       status: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Mistakes', style: AppText.body(15, color: Colors.white70)),
+          Text('Mistakes', style: AppText.body(14, color: AppColors.inkSoft)),
           const SizedBox(width: 8),
           for (var i = 0; i < maxMistakes; i++)
             Padding(
@@ -119,7 +130,7 @@ class _SudokuScreenState extends State<SudokuScreen> with GameFlow {
               child: AnimatedScale(
                 scale: i < _mistakesLeft ? 1 : 0.7,
                 duration: const Duration(milliseconds: 300),
-                child: Opacity(opacity: i < _mistakesLeft ? 1 : 0.25, child: const GameArt(ArtKind.heart, size: 24)),
+                child: Opacity(opacity: i < _mistakesLeft ? 1 : 0.2, child: const GameArt(ArtKind.heart, size: 20)),
               ),
             ),
         ],
@@ -129,10 +140,14 @@ class _SudokuScreenState extends State<SudokuScreen> with GameFlow {
           padding: const EdgeInsets.fromLTRB(10, 10, 10, 6),
           child: AspectRatio(
             aspectRatio: 1,
-            child: BoardFrame(
-              candy: Candy.blue,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: AppColors.ink, width: 2),
+              ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(4),
                 child: LayoutBuilder(
                   builder: (context, box) {
                     final cell = box.maxWidth / 9;
@@ -203,15 +218,15 @@ class _SudokuScreenState extends State<SudokuScreen> with GameFlow {
     final sel = _sel;
     final given = board.isGiven(i);
     final wrong = v != 0 && v != widget.puzzle.solution[i];
-    var bg = Colors.white;
+    Color bg = AppColors.surface;
     if (sel != null) {
       final sameUnit = i ~/ 9 == sel ~/ 9 || i % 9 == sel % 9 || SudokuLogic.box(i) == SudokuLogic.box(sel);
-      if (sameUnit) bg = const Color(0xFFE8F1FF);
-      if (v != 0 && v == board.values[sel]) bg = const Color(0xFFBFD7FF);
-      if (i == sel) bg = const Color(0xFF8DB8FF);
+      if (sameUnit) bg = const Color(0xFFF4F2EC);
+      if (v != 0 && v == board.values[sel]) bg = const Color(0xFFE4DEFD);
+      if (i == sel) bg = const Color(0xFFCFC4FC);
     }
-    if (wrong) bg = const Color(0xFFFFD5DA);
-    if (i == _hintFlash) bg = const Color(0xFFFFF0A8);
+    if (wrong) bg = Candy.red.light;
+    if (i == _hintFlash) bg = Candy.gold.light;
     return Semantics(
       button: true,
       label: 'Row ${i ~/ 9 + 1} column ${i % 9 + 1}, ${v == 0 ? 'empty' : v}',
@@ -230,16 +245,19 @@ class _SudokuScreenState extends State<SudokuScreen> with GameFlow {
           child: v != 0
               ? TweenAnimationBuilder<double>(
                   key: ValueKey('$i-$v'),
-                  tween: Tween(begin: given ? 1 : 0.4, end: 1),
-                  duration: const Duration(milliseconds: 360),
-                  curve: Curves.elasticOut,
+                  tween: Tween(begin: given ? 1 : 0.7, end: 1),
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutBack,
                   builder: (_, s, child) => Transform.scale(scale: s, child: child),
                   child: Text(
                     '$v',
-                    style: AppText.display(
-                      size * 0.58,
-                      color: wrong ? AppColors.danger : (given ? AppColors.ink : const Color(0xFF2E6BFF)),
-                    ),
+                    style: given
+                        ? AppText.display(size * 0.56, color: AppColors.ink)
+                        : AppText.body(
+                            size * 0.56,
+                            color: wrong ? AppColors.danger : AppColors.primary,
+                            weight: FontWeight.w600,
+                          ),
                   ),
                 )
               : board.notes[i].isEmpty
@@ -277,23 +295,31 @@ class _DigitKey extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final done = remaining <= 0;
-    return Opacity(
-      opacity: done ? 0.35 : 1,
-      child: CandyButton(
-        label: '',
-        height: 62,
-        depth: 6,
-        radius: 14,
-        candy: notes ? Candy.gold : Candy.white,
-        sound: Sfx.tap,
-        onTap: done ? null : onTap,
-        leading: Column(
-          mainAxisSize: MainAxisSize.min,
+    final fg = done ? AppColors.inkFaint : (notes ? AppColors.inkSoft : AppColors.ink);
+    return Pressable(
+      onTap: done ? null : onTap,
+      scale: 0.94,
+      sound: Sfx.tap,
+      semanticLabel: '$digit, $remaining left',
+      child: Container(
+        height: 58,
+        decoration: BoxDecoration(
+          color: done ? AppColors.bg : AppColors.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('$digit', style: AppText.display(26, color: notes ? Colors.white : AppColors.royal)),
+            Text(
+              '$digit',
+              style: notes
+                  ? AppText.body(22, color: fg, weight: FontWeight.w600)
+                  : AppText.display(24, color: fg, height: 1.05),
+            ),
             Text(
               '$remaining',
-              style: AppText.body(9, color: notes ? Colors.white : AppColors.inkSoft, weight: FontWeight.w700),
+              style: AppText.body(9, color: AppColors.inkFaint, weight: FontWeight.w700),
             ),
           ],
         ),
@@ -307,11 +333,11 @@ class _GridPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final cell = size.width / 9;
     final thin = Paint()
-      ..color = const Color(0xFFB9C6E8)
+      ..color = AppColors.border
       ..strokeWidth = 1;
     final thick = Paint()
       ..color = AppColors.ink
-      ..strokeWidth = 2.6;
+      ..strokeWidth = 2;
     for (var k = 1; k < 9; k++) {
       final p = k % 3 == 0 ? thick : thin;
       canvas.drawLine(Offset(k * cell, 0), Offset(k * cell, size.height), p);

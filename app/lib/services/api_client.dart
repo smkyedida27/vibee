@@ -21,7 +21,7 @@ class ApiException implements Exception {
   String toString() => 'ApiException($status, $code, $message)';
 }
 
-/// Thin typed client for the Puzzle Hub API (docs/CONTRACT.md).
+/// Thin typed client for the Quintile API (docs/CONTRACT.md).
 ///
 /// * Creates a guest session on demand — players never have to sign up to play.
 /// * Refreshes the access token once on 401 and retries.

@@ -6,11 +6,10 @@ import 'package:flutter/services.dart';
 import '../../core/audio/sfx.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/palette.dart';
+import '../../core/ui/celebrations.dart';
 import '../../core/ui/dialogs.dart';
-import '../../core/ui/outlined_text.dart';
 import '../../services/content_repo.dart';
 import '../common/game_flow.dart';
-import '../common/results_overlay.dart';
 import 'merge_logic.dart';
 
 class MergeScreen extends StatefulWidget {
@@ -63,6 +62,13 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
     });
     if (gained > 0) {
       Audio.instance.fx(Sfx.merge, gained >= 128 ? HapticKind.heavy : HapticKind.medium);
+      if (gained >= 64 && !game.won) {
+        PraiseOverlay.show(
+          context,
+          gained >= 256 ? 'Massive!' : (gained >= 128 ? 'Huge merge!' : 'Combo!'),
+          color: Candy.green.base,
+        );
+      }
     } else {
       Audio.instance.play(Sfx.whoosh, volume: 0.25);
     }
@@ -206,12 +212,12 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
               borderRadius: BorderRadius.circular(10),
               child: Stack(
                 children: [
-                  Container(height: 16, color: Colors.white12),
+                  Container(height: 8, color: AppColors.divider),
                   AnimatedFractionallySizedBox(
                     duration: const Duration(milliseconds: 400),
-                    curve: Curves.easeOutBack,
+                    curve: Curves.easeOutCubic,
                     widthFactor: progress,
-                    child: Container(height: 16, decoration: BoxDecoration(gradient: Candy.green.face)),
+                    child: Container(height: 8, color: Candy.green.base),
                   ),
                 ],
               ),
@@ -235,8 +241,13 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
                         : (v.dy > 0 ? MoveDir.down : MoveDir.up),
                   );
                 },
-                child: BoardFrame(
-                  candy: Candy.green,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border),
+                    boxShadow: AppColors.cardShadow,
+                  ),
                   child: LayoutBuilder(
                     builder: (context, box) {
                       final n = game.size;
@@ -245,12 +256,6 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
                       Offset pos(int r, int c) => Offset(gap + c * (cell + gap), gap + r * (cell + gap));
                       return Stack(
                         children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE6DDF7),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
                           for (var r = 0; r < n; r++)
                             for (var c = 0; c < n; c++)
                               Positioned(
@@ -260,8 +265,8 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
                                 height: cell,
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFD3C6EE),
-                                    borderRadius: BorderRadius.circular(cell * 0.18),
+                                    color: AppColors.divider,
+                                    borderRadius: BorderRadius.circular(cell * 0.14),
                                   ),
                                 ),
                               ),
@@ -286,9 +291,9 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
                               height: cell,
                               child: TweenAnimationBuilder<double>(
                                 key: ValueKey('${t.id}-${t.value}'),
-                                tween: Tween(begin: t.spawnedThisMove ? 0.0 : (t.mergedThisMove ? 1.25 : 1.0), end: 1),
-                                duration: Duration(milliseconds: t.spawnedThisMove ? 220 : 260),
-                                curve: t.spawnedThisMove ? Curves.easeOutBack : Curves.elasticOut,
+                                tween: Tween(begin: t.spawnedThisMove ? 0.0 : (t.mergedThisMove ? 1.12 : 1.0), end: 1),
+                                duration: Duration(milliseconds: t.spawnedThisMove ? 200 : 180),
+                                curve: t.spawnedThisMove ? Curves.easeOutBack : Curves.easeOut,
                                 builder: (_, s, child) => Transform.scale(scale: s, child: child),
                                 child: _TileView(value: t.value, size: cell),
                               ),
@@ -311,13 +316,16 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
                   ? Text(
                       'Swipe to merge matching tiles',
                       key: const ValueKey('t'),
-                      style: AppText.body(15, color: Colors.white70),
+                      style: AppText.body(14, color: AppColors.inkSoft),
                     )
                   : Row(
                       key: ValueKey(_suggestion),
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('Try swiping', style: AppText.body(16, color: Colors.white)),
+                        Text(
+                          'Try swiping',
+                          style: AppText.body(15, color: AppColors.ink, weight: FontWeight.w600),
+                        ),
                         const SizedBox(width: 8),
                         Transform.rotate(
                           angle: switch (_suggestion!) {
@@ -326,7 +334,7 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
                             MoveDir.left => math.pi,
                             MoveDir.up => -math.pi / 2,
                           },
-                          child: const Icon(Icons.arrow_forward_rounded, color: AppColors.gold, size: 36),
+                          child: const Icon(Icons.arrow_forward_rounded, color: AppColors.primary, size: 30),
                         ),
                       ],
                     ),
@@ -361,21 +369,17 @@ class _ScoreBox extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            gradient: candy.face,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: candy.dark, width: 2),
-            boxShadow: [BoxShadow(color: candy.dark, offset: const Offset(0, 4))],
+            color: candy == Candy.purple ? AppColors.surface : candy.light,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: candy == Candy.purple ? AppColors.border : candy.base.withValues(alpha: 0.4)),
           ),
           child: Column(
             children: [
-              Text(
-                label,
-                style: AppText.body(11, color: Colors.white70, weight: FontWeight.w800),
-              ),
+              Text(label, style: AppText.label(10, color: candy == Candy.purple ? AppColors.inkSoft : candy.dark)),
               TweenAnimationBuilder<int>(
                 tween: IntTween(end: value),
                 duration: const Duration(milliseconds: 300),
-                builder: (_, v, _) => Text('$v', style: AppText.display(24)),
+                builder: (_, v, _) => Text('$v', style: AppText.display(22)),
               ),
             ],
           ),
@@ -392,7 +396,7 @@ class _ScoreBox extends StatelessWidget {
                 opacity: 1 - t,
                 child: Transform.translate(
                   offset: Offset(0, -24 * t),
-                  child: OutlinedText('+$gain', size: 18, stroke: Candy.green.dark),
+                  child: Text('+$gain', style: AppText.display(15, color: Candy.green.dark)),
                 ),
               ),
             ),
@@ -407,65 +411,33 @@ class _TileView extends StatelessWidget {
   final int value;
   final double size;
 
-  static const _ramp = [
-    Candy(Color(0xFFFFFFFF), Color(0xFFF1ECFF), Color(0xFFC6B9EA)), // 2
-    Candy(Color(0xFFFFF6D6), Color(0xFFFFE7A3), Color(0xFFD9B456)), // 4
-    Candy.orange, // 8
-    Candy.red, // 16
-    Candy.pink, // 32
-    Candy.purple, // 64
-    Candy.blue, // 128
-    Candy.teal, // 256
-    Candy.green, // 512
-    Candy.gold, // 1024
-    Candy(Color(0xFFFFF59A), Color(0xFFFF9D00), Color(0xFF9E5200)), // 2048+
+  /// (fill, text) per power of two: warm greys first, then rising through the accents.
+  static const _ramp = <(Color, Color)>[
+    (Color(0xFFEEEBE4), AppColors.ink), // 2
+    (Color(0xFFE2DCCE), AppColors.ink), // 4
+    (Color(0xFFF7C79E), AppColors.ink), // 8
+    (Color(0xFFE4572E), Colors.white), // 16
+    (Color(0xFFE5484D), Colors.white), // 32
+    (Color(0xFFD9577E), Colors.white), // 64
+    (Color(0xFF8E5BA8), Colors.white), // 128
+    (Color(0xFF2D5BD3), Colors.white), // 256
+    (Color(0xFF0F9F95), Colors.white), // 512
+    (Color(0xFFE9B23D), AppColors.ink), // 1024
+    (AppColors.ink, Colors.white), // 2048+
   ];
 
   @override
   Widget build(BuildContext context) {
     final idx = (math.log(value) / math.ln2).round() - 1;
-    final c = _ramp[idx.clamp(0, _ramp.length - 1)];
-    final light = idx <= 1;
+    final (fill, fg) = _ramp[idx.clamp(0, _ramp.length - 1)];
     final digits = '$value'.length;
     return Container(
-      decoration: BoxDecoration(
-        gradient: c.face,
-        borderRadius: BorderRadius.circular(size * 0.18),
-        border: Border.all(color: c.dark, width: 2),
-        boxShadow: [
-          BoxShadow(color: c.dark, offset: Offset(0, size * 0.06)),
-          if (value >= 128) BoxShadow(color: c.base.withValues(alpha: 0.6), blurRadius: 14),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: size * 0.12,
-            right: size * 0.12,
-            top: size * 0.06,
-            height: size * 0.3,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(size),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.white.withValues(alpha: 0.6), Colors.white.withValues(alpha: 0)],
-                ),
-              ),
-            ),
-          ),
-          Center(
-            child: light
-                ? Text('$value', style: AppText.display(size * (digits <= 2 ? 0.46 : 0.34), color: AppColors.royal))
-                : OutlinedText(
-                    '$value',
-                    size: size * (digits <= 2 ? 0.46 : (digits == 3 ? 0.36 : 0.28)),
-                    stroke: c.dark,
-                    shadow: false,
-                  ),
-          ),
-        ],
+      alignment: Alignment.center,
+      decoration: BoxDecoration(color: fill, borderRadius: BorderRadius.circular(size * 0.14)),
+      child: Text(
+        '$value',
+        maxLines: 1,
+        style: AppText.display(size * (digits <= 2 ? 0.44 : (digits == 3 ? 0.36 : 0.28)), color: fg),
       ),
     );
   }

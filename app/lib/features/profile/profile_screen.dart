@@ -11,7 +11,6 @@ import '../../core/ui/candy_button.dart';
 import '../../core/ui/dialogs.dart';
 import '../../core/ui/game_art.dart';
 import '../../core/ui/hud.dart';
-import '../../core/ui/outlined_text.dart';
 import '../../core/ui/panels.dart';
 import '../../core/ui/pressable.dart';
 import '../../games/common/game_type.dart';
@@ -75,12 +74,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: AppText.display(24, color: AppColors.ink),
             decoration: InputDecoration(
               filled: true,
-              fillColor: const Color(0xFFF3EAFF),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+              fillColor: AppColors.bg,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
             ),
           ),
           const SizedBox(height: 8),
-          CandyButton(label: 'Save', candy: Candy.green, height: 56, onTap: () => Navigator.pop(ctx, ctrl.text)),
+          CandyButton(label: 'Save', candy: Candy.ink, height: 56, onTap: () => Navigator.pop(ctx, ctrl.text)),
         ],
       ),
     );
@@ -131,9 +133,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      OutlinedText(d.displayName, size: 32),
+                      Flexible(
+                        child: Text(
+                          d.displayName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppText.display(28),
+                        ),
+                      ),
                       const SizedBox(width: 6),
-                      const Icon(Icons.edit_rounded, color: Colors.white70),
+                      const Icon(Icons.edit_rounded, color: AppColors.inkFaint, size: 20),
                     ],
                   ),
                 ),
@@ -142,7 +151,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const Center(
                   child: Padding(
                     padding: EdgeInsets.only(top: 4),
-                    child: Pill('VIP MEMBER', color: Color(0xFFE08A00), icon: Icons.workspace_premium_rounded),
+                    child: Pill('VIP MEMBER', color: AppColors.goldDeep, icon: Icons.workspace_premium_rounded),
                   ),
                 ),
               const SizedBox(height: 12),
@@ -162,7 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: d.avatar == i ? AppColors.gold : Colors.transparent, width: 3),
+                        border: Border.all(color: d.avatar == i ? AppColors.primary : Colors.transparent, width: 2.5),
                       ),
                       child: Avatar(index: i, size: 52),
                     ),
@@ -175,7 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Expanded(
                     child: _BigStat(
                       icon: Icons.local_fire_department_rounded,
-                      color: const Color(0xFFFF7A1A),
+                      color: Candy.orange.base,
                       value: '${d.streak}',
                       label: 'Day streak',
                     ),
@@ -192,7 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SectionTitle('Game stats'),
               CandyPanel(
-                rim: Candy.purple,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 child: Column(children: [for (final g in GameType.values) _GameStatRow(game: g)]),
               ),
               const SectionTitle('Invite & earn'),
@@ -202,17 +211,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 future: _remote,
                 builder: (context, snap) {
                   final code = snap.data?['friendCode'] as String?;
-                  return GlassPanel(
+                  return CandyPanel(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Your friend code', style: AppText.body(13, color: Colors.white70)),
+                        Text('YOUR FRIEND CODE', style: AppText.label(11)),
                         Row(
                           children: [
                             Expanded(
                               child: Text(
                                 code ?? (snap.hasError ? 'Go online to get your code' : '…'),
-                                style: AppText.display(code == null ? 16 : 26, color: Colors.white),
+                                style: AppText.display(
+                                  code == null ? 16 : 26,
+                                  color: code == null ? AppColors.inkSoft : AppColors.ink,
+                                ),
                               ),
                             ),
                             if (code != null)
@@ -248,12 +260,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             child: Text(
                                               '${f['displayName']}',
                                               overflow: TextOverflow.ellipsis,
-                                              style: AppText.display(18, color: Colors.white),
+                                              style: AppText.body(16, weight: FontWeight.w700),
                                             ),
                                           ),
                                           IconButton(
                                             tooltip: 'Remove friend',
-                                            icon: const Icon(Icons.person_remove_rounded, color: Colors.white70),
+                                            icon: const Icon(Icons.person_remove_rounded, color: AppColors.inkFaint),
                                             onPressed: () => _removeFriend(f),
                                           ),
                                         ],
@@ -268,8 +280,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         CandyButton(
                           label: 'Add a friend',
                           icon: Icons.person_add_alt_1_rounded,
-                          candy: Candy.blue,
-                          height: 52,
+                          candy: Candy.white,
+                          depth: 0,
+                          height: 50,
                           onTap: () => _addFriend(context),
                         ),
                       ],
@@ -301,12 +314,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: InputDecoration(
               hintText: 'FRIEND CODE',
               filled: true,
-              fillColor: const Color(0xFFF3EAFF),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+              fillColor: AppColors.bg,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
             ),
           ),
           const SizedBox(height: 12),
-          CandyButton(label: 'Add', candy: Candy.green, height: 56, onTap: () => Navigator.pop(ctx, ctrl.text.trim())),
+          CandyButton(label: 'Add', candy: Candy.ink, height: 56, onTap: () => Navigator.pop(ctx, ctrl.text.trim())),
         ],
       ),
     );
@@ -331,13 +347,14 @@ class _BigStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => CandyPanel(
-    rim: Candy.white,
-    padding: const EdgeInsets.symmetric(vertical: 10),
+    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+    radius: 18,
     child: Column(
       children: [
-        if (art != null) GameArt(art!, size: 32) else Icon(icon, color: color, size: 32),
-        Text(value, style: AppText.display(24, color: AppColors.ink)),
-        Text(label, style: AppText.body(11, color: AppColors.inkSoft)),
+        if (art != null) GameArt(art!, size: 26) else Icon(icon, color: color, size: 28),
+        const SizedBox(height: 6),
+        Text(value, style: AppText.display(22)),
+        Text(label, style: AppText.body(12, color: AppColors.inkSoft)),
       ],
     ),
   );
@@ -379,9 +396,9 @@ class _GameStatRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                   child: LinearProgressIndicator(
                     value: rate,
-                    minHeight: 8,
+                    minHeight: 6,
                     color: game.candy.base,
-                    backgroundColor: const Color(0xFFEDE4FF),
+                    backgroundColor: AppColors.divider,
                   ),
                 ),
               ],
@@ -393,7 +410,7 @@ class _GameStatRow extends StatelessWidget {
             child: Text(
               best == null ? '—' : '${best ~/ 60000}:${((best ~/ 1000) % 60).toString().padLeft(2, '0')}',
               textAlign: TextAlign.right,
-              style: AppText.display(15, color: AppColors.royal),
+              style: AppText.display(15, color: AppColors.inkSoft),
             ),
           ),
         ],

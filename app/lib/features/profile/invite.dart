@@ -42,20 +42,25 @@ class _InviteCardState extends State<InviteCard> {
         final invited = (st?['invited'] as num?)?.toInt() ?? 0;
         final canRedeem = st?['canRedeem'] == true;
         return CandyPanel(
-          rim: Candy.pink,
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  const GameArt(ArtKind.gem, size: 40),
-                  const SizedBox(width: 10),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(color: Candy.blue.light, borderRadius: BorderRadius.circular(14)),
+                    child: const GameArt(ArtKind.gem, size: 28),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Invite friends', style: AppText.display(20, color: AppColors.ink)),
+                        Text('Invite friends', style: AppText.display(17)),
                         Text(
                           'You both get 20 gems when they join with your code',
                           style: AppText.body(13, color: AppColors.inkSoft),
@@ -66,13 +71,18 @@ class _InviteCardState extends State<InviteCard> {
                 ],
               ),
               if (!widget.compact) ...[
-                const SizedBox(height: 10),
+                const SizedBox(height: 14),
+                Text('YOUR INVITE CODE', style: AppText.label(11)),
+                const SizedBox(height: 2),
                 Row(
                   children: [
                     Expanded(
                       child: Text(
                         code ?? (snap.hasError ? 'Go online to get your code' : '…'),
-                        style: AppText.display(code == null ? 16 : 26, color: AppColors.royal),
+                        style: AppText.display(
+                          code == null ? 16 : 24,
+                          color: code == null ? AppColors.inkSoft : AppColors.ink,
+                        ),
                       ),
                     ),
                     if (code != null)
@@ -94,12 +104,12 @@ class _InviteCardState extends State<InviteCard> {
                     style: AppText.body(13, color: AppColors.inkSoft, weight: FontWeight.w700),
                   ),
               ],
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               CandyButton(
                 label: 'Invite friends',
                 icon: Icons.ios_share_rounded,
-                candy: Candy.pink,
-                height: 50,
+                candy: Candy.ink,
+                height: 48,
                 onTap: () => growth.shareInvite(context),
               ),
               if (canRedeem && !widget.compact) ...[
@@ -111,7 +121,7 @@ class _InviteCardState extends State<InviteCard> {
                     },
                     child: Text(
                       'Have an invite code?',
-                      style: AppText.body(14, color: AppColors.royal, weight: FontWeight.w800),
+                      style: AppText.body(14, color: AppColors.primary, weight: FontWeight.w700),
                     ),
                   ),
                 ),
@@ -152,12 +162,15 @@ Future<bool> showRedeemInvite(BuildContext context) async {
             hintText: 'ABCD2345',
             counterText: '',
             filled: true,
-            fillColor: const Color(0xFFF3EAFF),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+            fillColor: AppColors.bg,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
           ),
         ),
         const SizedBox(height: 12),
-        CandyButton(label: 'Claim gems', candy: Candy.green, height: 56, onTap: () => Navigator.pop(ctx, ctrl.text)),
+        CandyButton(label: 'Claim gems', candy: Candy.ink, height: 56, onTap: () => Navigator.pop(ctx, ctrl.text)),
       ],
     ),
   );

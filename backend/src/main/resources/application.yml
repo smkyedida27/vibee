@@ -69,7 +69,7 @@ puzzlehub:
     project-id: ${APP_FIREBASE_PROJECT_ID:${FIREBASE_PROJECT_ID:}}
   play:
     mode: ${PLAY_MODE:google}
-    package-name: ${APP_PLAY_PACKAGE_NAME:com.puzzlehub.app}
+    package-name: ${APP_PLAY_PACKAGE_NAME:com.quintile.app}
     # Either the JSON content (APP_PLAY_SERVICE_ACCOUNT_JSON, from Secrets Manager) or a file path.
     service-account-json: ${APP_PLAY_SERVICE_ACCOUNT_JSON:}
     service-account-json-path: ${PLAY_SERVICE_ACCOUNT_JSON_PATH:}

@@ -1,13 +1,9 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/palette.dart';
-import '../../core/ui/candy_background.dart';
 import '../../core/ui/candy_button.dart';
-import '../../core/ui/outlined_text.dart';
 import '../../services/content_repo.dart';
 import '../../services/services.dart';
 import '../connect/connect_logic.dart';
@@ -31,6 +27,8 @@ class GameLauncher extends StatefulWidget {
   @override
   State<GameLauncher> createState() => _GameLauncherState();
 }
+
+const _primary = Candy(Color(0xFFF0E8F5), AppColors.primary, Color(0xFF4329C9));
 
 class _GameLauncherState extends State<GameLauncher> {
   late Future<(PlayRequest, Object)> _load;
@@ -60,24 +58,26 @@ class _GameLauncherState extends State<GameLauncher> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const OutlinedText('Oops!', size: 40),
+                const Icon(Icons.cloud_off_rounded, size: 40, color: AppColors.inkFaint),
+                const SizedBox(height: 12),
+                Text('Something went wrong', textAlign: TextAlign.center, style: AppText.display(22)),
                 const SizedBox(height: 8),
                 Text(
                   snap.error is StateError
                       ? (snap.error! as StateError).message
                       : 'We couldn\'t load this puzzle. Check your connection and try again.',
                   textAlign: TextAlign.center,
-                  style: AppText.body(16, color: Colors.white),
+                  style: AppText.body(15, color: AppColors.inkSoft),
                 ),
                 const SizedBox(height: 20),
                 CandyButton(
                   label: 'Try again',
-                  candy: Candy.orange,
+                  candy: _primary,
                   width: 220,
                   onTap: () => setState(() => _load = _run()),
                 ),
                 const SizedBox(height: 12),
-                CandyButton(label: 'Back', candy: Candy.grey, width: 220, onTap: () => context.pop()),
+                CandyButton(label: 'Back', candy: Candy.white, width: 220, depth: 0, onTap: () => context.pop()),
               ],
             ),
           );
@@ -102,62 +102,36 @@ class _LoadingScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    body: CandyBackground(
-      child: SafeArea(
-        child: Center(
-          child: Padding(padding: const EdgeInsets.all(24), child: child),
-        ),
+    backgroundColor: AppColors.bg,
+    body: SafeArea(
+      child: Center(
+        child: Padding(padding: const EdgeInsets.all(24), child: child),
       ),
     ),
   );
 }
 
-class _Loader extends StatefulWidget {
+class _Loader extends StatelessWidget {
   const _Loader();
-  @override
-  State<_Loader> createState() => _LoaderState();
-}
-
-class _LoaderState extends State<_Loader> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
-    ..repeat();
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
-    const candies = [Candy.pink, Candy.gold, Candy.blue, Candy.green];
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        AnimatedBuilder(
-          animation: _c,
-          builder: (_, _) => Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var i = 0; i < 4; i++)
-                Transform.translate(
-                  offset: Offset(0, -18 * math.sin(((_c.value + i * 0.18) % 1.0) * math.pi)),
-                  child: Container(
-                    margin: const EdgeInsets.all(6),
-                    width: 26,
-                    height: 26,
-                    decoration: BoxDecoration(
-                      gradient: candies[i].face,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: candies[i].dark, width: 2),
-                    ),
-                  ),
-                ),
-            ],
+        const SizedBox.square(
+          dimension: 32,
+          child: CircularProgressIndicator(
+            strokeWidth: 3,
+            color: AppColors.primary,
+            backgroundColor: AppColors.divider,
           ),
         ),
-        const SizedBox(height: 16),
-        const OutlinedText('Baking your puzzle…', size: 22),
+        const SizedBox(height: 18),
+        Text(
+          'Preparing your puzzle…',
+          style: AppText.body(15, color: AppColors.inkSoft, weight: FontWeight.w600),
+        ),
       ],
     );
   }

@@ -11,7 +11,7 @@ import 'analytics.dart';
 import 'api_client.dart';
 
 /// Play Store listing; the `referrer` parameter survives install via the Play Install Referrer.
-const storeUrl = 'https://play.google.com/store/apps/details?id=com.puzzlehub.app';
+const storeUrl = 'https://play.google.com/store/apps/details?id=com.quintile.app';
 
 String inviteLink(String? code) =>
     code == null ? storeUrl : '$storeUrl&referrer=${Uri.encodeQueryComponent('invite=$code')}';
@@ -35,10 +35,10 @@ String buildResultShare({
   final b = StringBuffer();
   b.writeln(
     daily
-        ? '🧩 Puzzle Hub Daily · ${game.title}${date == null ? '' : ' · $date'}'
+        ? '🧩 Quintile Daily · ${game.title}${date == null ? '' : ' · $date'}'
         : level != null
-        ? '🧩 Puzzle Hub · Level $level · ${game.title}'
-        : '🧩 Puzzle Hub · ${game.title}',
+        ? '🧩 Quintile · Level $level · ${game.title}'
+        : '🧩 Quintile · ${game.title}',
   );
   if (grid != null && grid.isNotEmpty) b.writeln(grid);
   final starLine = '${'⭐' * stars}${'☆' * (3 - stars).clamp(0, 3)}';
@@ -54,7 +54,7 @@ String buildResultShare({
 
 String buildInviteShare(String? code) {
   final b = StringBuffer()
-    ..writeln('🧩 I\'m playing Puzzle Hub: Word Connect, Crowns, Sudoku, Word Ladder and Number Merge.')
+    ..writeln('🧩 I\'m playing Quintile: Word Connect, Crowns, Sudoku, Word Ladder and Number Merge.')
     ..writeln('A new daily challenge every day. Come race me on the leaderboard!');
   if (code != null) b.writeln('Enter my invite code $code and we both get 20 💎');
   b.write(inviteLink(code));

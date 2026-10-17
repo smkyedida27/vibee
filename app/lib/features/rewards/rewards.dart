@@ -11,7 +11,6 @@ import '../../core/ui/candy_button.dart';
 import '../../core/ui/confetti.dart';
 import '../../core/ui/dialogs.dart';
 import '../../core/ui/game_art.dart';
-import '../../core/ui/outlined_text.dart';
 import '../../services/services.dart';
 import '../../state/player.dart';
 
@@ -56,12 +55,22 @@ class _CalendarState extends State<_Calendar> {
         ),
         const SizedBox(height: 16),
         if (_claimed != null)
-          OutlinedText('Collected!', size: 26, stroke: Candy.green.dark)
+          SizedBox(
+            height: 56,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 26),
+                const SizedBox(width: 8),
+                Text('Collected!', style: AppText.display(22, color: AppColors.success)),
+              ],
+            ),
+          )
         else
           CandyButton(
             label: canClaim ? 'Collect' : 'Come back tomorrow',
-            candy: Candy.green,
-            height: 60,
+            candy: Candy.ink,
+            height: 56,
             pulse: canClaim,
             onTap: canClaim
                 ? () {
@@ -95,20 +104,16 @@ class _DayTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final art = reward.gems > 0 ? ArtKind.gem : (reward.hints > 0 && reward.coins == 0 ? ArtKind.bulb : ArtKind.coin);
     final amount = reward.gems > 0 ? reward.gems : (reward.coins > 0 ? reward.coins : reward.hints);
+    final Color fill = claimed ? Candy.green.light : AppColors.surface;
+    final Color edge = today ? AppColors.primary : (claimed ? Candy.green.light : AppColors.border);
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 250),
       width: big ? 160 : 74,
       height: 92,
       decoration: BoxDecoration(
+        color: fill,
         borderRadius: BorderRadius.circular(16),
-        gradient: today
-            ? Candy.gold.face
-            : (claimed ? Candy.green.face : const LinearGradient(colors: [Color(0xFFF1EAFF), Color(0xFFE2D6FA)])),
-        border: Border.all(
-          color: today ? Candy.gold.dark : (claimed ? Candy.green.dark : AppColors.panelEdge),
-          width: 2.5,
-        ),
-        boxShadow: today ? [BoxShadow(color: AppColors.gold.withValues(alpha: 0.7), blurRadius: 14)] : null,
+        border: Border.all(color: edge, width: today ? 2 : 1),
       ),
       child: Stack(
         alignment: Alignment.center,
@@ -117,23 +122,27 @@ class _DayTile extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'DAY $day',
-                style: AppText.body(
-                  11,
-                  color: today || claimed ? Colors.white : AppColors.inkSoft,
-                  weight: FontWeight.w800,
-                ),
+                today ? 'TODAY' : 'DAY $day',
+                style: AppText.label(10, color: today ? AppColors.primary : AppColors.inkSoft),
+              ),
+              const SizedBox(height: 4),
+              Opacity(
+                opacity: claimed ? 0.45 : 1,
+                child: big ? const GameArt(ArtKind.chest, size: 36) : GameArt(art, size: 28),
               ),
               const SizedBox(height: 2),
-              big ? const GameArt(ArtKind.chest, size: 40) : GameArt(art, size: 32),
               Text(
                 big ? 'MEGA' : '×$amount',
-                style: AppText.display(15, color: today || claimed ? Colors.white : AppColors.ink),
+                style: AppText.display(14, color: claimed ? AppColors.inkSoft : AppColors.ink),
               ),
             ],
           ),
           if (claimed)
-            const Positioned(right: 4, top: 4, child: Icon(Icons.check_circle_rounded, color: Colors.white, size: 20)),
+            const Positioned(
+              right: 5,
+              top: 5,
+              child: Icon(Icons.check_circle_rounded, color: AppColors.success, size: 18),
+            ),
         ],
       ),
     );
@@ -166,14 +175,14 @@ class SpinScreen extends StatefulWidget {
 
 class _SpinScreenState extends State<SpinScreen> with SingleTickerProviderStateMixin {
   static const rewards = [
-    SpinReward('50', ArtKind.coin, Color(0xFFFF3D7F), coins: 50, weight: 22),
-    SpinReward('2', ArtKind.bulb, Color(0xFFFFB800), hints: 2, weight: 12),
-    SpinReward('100', ArtKind.coin, Color(0xFF2E8BFF), coins: 100, weight: 18),
-    SpinReward('5', ArtKind.gem, Color(0xFF22D36B), gems: 5, weight: 10),
-    SpinReward('250', ArtKind.coin, Color(0xFF9B4DFF), coins: 250, weight: 10),
-    SpinReward('1h', ArtKind.heart, Color(0xFFFF7A1A), lifeMinutes: 60, weight: 8),
-    SpinReward('1', ArtKind.bulb, Color(0xFF14C8C0), hints: 1, weight: 16),
-    SpinReward('25', ArtKind.gem, Color(0xFFFF3B4E), gems: 25, weight: 4),
+    SpinReward('50', ArtKind.coin, Color(0xFF8E5BA8), coins: 50, weight: 22), // Candy.purple.base
+    SpinReward('2', ArtKind.bulb, Color(0xFFF0E8F5), hints: 2, weight: 12), // Candy.purple.light
+    SpinReward('100', ArtKind.coin, Color(0xFF2D5BD3), coins: 100, weight: 18), // Candy.blue.base
+    SpinReward('5', ArtKind.gem, Color(0xFFE4EAFA), gems: 5, weight: 10), // Candy.blue.light
+    SpinReward('250', ArtKind.coin, Color(0xFF0F9F95), coins: 250, weight: 10), // Candy.teal.base
+    SpinReward('1h', ArtKind.heart, Color(0xFFE0F5F3), lifeMinutes: 60, weight: 8), // Candy.teal.light
+    SpinReward('1', ArtKind.bulb, Color(0xFFD9577E), hints: 1, weight: 16), // Candy.pink.base
+    SpinReward('25', ArtKind.gem, Color(0xFFFBE7EC), gems: 25, weight: 4), // Candy.pink.light
   ];
 
   late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 4200));
@@ -270,8 +279,8 @@ class _SpinScreenState extends State<SpinScreen> with SingleTickerProviderStateM
     final p = context.player;
     final r = _won == null ? null : rewards[_won!];
     return Scaffold(
+      backgroundColor: AppColors.bg,
       body: CandyBackground(
-        gradient: AppColors.nightBg,
         child: Stack(
           children: [
             SafeArea(
@@ -291,8 +300,9 @@ class _SpinScreenState extends State<SpinScreen> with SingleTickerProviderStateM
                       ],
                     ),
                   ),
-                  const OutlinedText('Lucky Spin', size: 42),
-                  Text('Spin once a day for free!', style: AppText.body(16, color: Colors.white70)),
+                  Text('Lucky Spin', style: AppText.display(32)),
+                  const SizedBox(height: 4),
+                  Text('Spin once a day for free', style: AppText.body(15, color: AppColors.inkSoft)),
                   Expanded(
                     child: Center(
                       child: LayoutBuilder(
@@ -327,7 +337,7 @@ class _SpinScreenState extends State<SpinScreen> with SingleTickerProviderStateM
                                     ),
                                   ),
                                 ),
-                                Positioned(top: 20 + size / 2 - 34, child: const _Hub()),
+                                Positioned(top: 20 + size / 2 - 28, child: const _Hub()),
                                 const Positioned(top: 0, child: _Pointer()),
                               ],
                             ),
@@ -344,10 +354,11 @@ class _SpinScreenState extends State<SpinScreen> with SingleTickerProviderStateM
                             key: ValueKey(_won),
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const OutlinedText('You won', size: 26),
-                              const SizedBox(width: 8),
-                              GameArt(r.art, size: 36),
-                              OutlinedText(r.lifeMinutes > 0 ? '∞ ${r.label}' : '×${r.label}', size: 26),
+                              Text('You won', style: AppText.display(22)),
+                              const SizedBox(width: 10),
+                              GameArt(r.art, size: 28),
+                              const SizedBox(width: 4),
+                              Text(r.lifeMinutes > 0 ? '∞ ${r.label}' : '×${r.label}', style: AppText.display(22)),
                             ],
                           ),
                   ),
@@ -356,16 +367,16 @@ class _SpinScreenState extends State<SpinScreen> with SingleTickerProviderStateM
                     child: p.canFreeSpin
                         ? CandyButton(
                             label: 'Spin!',
-                            candy: Candy.green,
-                            height: 68,
+                            candy: Candy.ink,
+                            height: 60,
                             pulse: !_spinning,
                             onTap: _spinning ? null : () => _spin(free: true),
                           )
                         : CandyButton(
                             label: 'Spin again',
                             icon: Icons.ondemand_video_rounded,
-                            candy: Candy.blue,
-                            height: 64,
+                            candy: Candy.ink,
+                            height: 60,
                             onTap: _spinning ? null : () => _spin(free: false),
                           ),
                   ),
@@ -394,8 +405,15 @@ class _SpinScreenState extends State<SpinScreen> with SingleTickerProviderStateM
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            GameArt(rewards[i].art, size: 28),
-            OutlinedText(rewards[i].label, size: 16, stroke: Colors.black.withValues(alpha: 0.6), shadow: false),
+            GameArt(rewards[i].art, size: 26),
+            const SizedBox(height: 2),
+            Text(
+              rewards[i].label,
+              style: AppText.display(
+                15,
+                color: rewards[i].color.computeLuminance() > 0.5 ? AppColors.ink : Colors.white,
+              ),
+            ),
           ],
         ),
       ),
@@ -411,41 +429,37 @@ class _WheelPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final c = size.center(Offset.zero);
     final r = size.width / 2;
-    canvas.drawCircle(c, r, Paint()..color = const Color(0xFFFFC21A));
-    canvas.drawCircle(c, r - 4, Paint()..color = const Color(0xFFB86B00));
-    final inner = r - 14;
+    // Soft drop shadow, white rim with a hairline edge.
+    canvas.drawCircle(
+      c.translate(0, 4),
+      r - 2,
+      Paint()
+        ..color = const Color(0x1417171C)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+    );
+    canvas.drawCircle(c, r, Paint()..color = AppColors.surface);
+    canvas.drawCircle(
+      c,
+      r - 0.5,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1
+        ..color = AppColors.border,
+    );
+    final inner = r - 8;
     final seg = 2 * math.pi / rewards.length;
+    final rect = Rect.fromCircle(center: c, radius: inner);
     for (var i = 0; i < rewards.length; i++) {
       final start = i * seg - math.pi / 2 - seg / 2;
-      final rect = Rect.fromCircle(center: c, radius: inner);
-      canvas.drawArc(
-        rect,
-        start,
-        seg,
-        true,
-        Paint()
-          ..shader = RadialGradient(colors: [Color.lerp(rewards[i].color, Colors.white, 0.35)!, rewards[i].color])
-              .createShader(rect),
-      );
-      canvas.drawArc(
-        rect,
-        start,
-        seg,
-        true,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3
-          ..color = Colors.white.withValues(alpha: 0.85),
-      );
+      canvas.drawArc(rect, start, seg, true, Paint()..color = rewards[i].color);
     }
-    // Bulbs around the rim.
-    for (var i = 0; i < 24; i++) {
-      final a = i * 2 * math.pi / 24;
-      canvas.drawCircle(
-        c + Offset(math.cos(a), math.sin(a)) * (r - 7),
-        4,
-        Paint()..color = i.isEven ? Colors.white : const Color(0xFFFFF59A),
-      );
+    // Thin white separators.
+    final sep = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 2;
+    for (var i = 0; i < rewards.length; i++) {
+      final a = i * seg - math.pi / 2 - seg / 2;
+      canvas.drawLine(c, c + Offset(math.cos(a), math.sin(a)) * inner, sep);
     }
   }
 
@@ -457,25 +471,22 @@ class _Hub extends StatelessWidget {
   const _Hub();
   @override
   Widget build(BuildContext context) => Container(
-    width: 68,
-    height: 68,
+    width: 56,
+    height: 56,
     decoration: BoxDecoration(
       shape: BoxShape.circle,
-      gradient: const RadialGradient(
-        center: Alignment(-0.3, -0.4),
-        colors: [Color(0xFFFFF59A), Color(0xFFFFB800), Color(0xFFC27A00)],
-      ),
-      border: Border.all(color: Colors.white, width: 4),
-      boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 10, offset: Offset(0, 4))],
+      color: AppColors.surface,
+      border: Border.all(color: AppColors.border),
+      boxShadow: AppColors.cardShadow,
     ),
-    child: const Center(child: GameArt(ArtKind.star, size: 36)),
+    child: const Center(child: GameArt(ArtKind.star, size: 28)),
   );
 }
 
 class _Pointer extends StatelessWidget {
   const _Pointer();
   @override
-  Widget build(BuildContext context) => CustomPaint(size: const Size(44, 52), painter: _PointerPainter());
+  Widget build(BuildContext context) => CustomPaint(size: const Size(36, 44), painter: _PointerPainter());
 }
 
 class _PointerPainter extends CustomPainter {
@@ -486,16 +497,16 @@ class _PointerPainter extends CustomPainter {
       ..lineTo(0, s.height * 0.3)
       ..arcToPoint(Offset(s.width, s.height * 0.3), radius: Radius.circular(s.width / 2))
       ..close();
-    canvas.drawShadow(path, Colors.black, 4, false);
-    canvas.drawPath(path, Paint()..shader = Candy.red.face.createShader(Offset.zero & s));
+    canvas.drawPath(path, Paint()..color = AppColors.ink);
     canvas.drawPath(
       path,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 3
+        ..strokeWidth = 2
+        ..strokeJoin = StrokeJoin.round
         ..color = Colors.white,
     );
-    canvas.drawCircle(Offset(s.width / 2, s.height * 0.3), 6, Paint()..color = Colors.white);
+    canvas.drawCircle(Offset(s.width / 2, s.height * 0.3), 4, Paint()..color = Colors.white);
   }
 
   @override

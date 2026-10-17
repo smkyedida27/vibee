@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧩 Puzzle Hub
+# 🧩 Quintile
 
 **Five original brain games. One daily challenge. Fair to play.**
 
@@ -61,7 +61,7 @@ Prerequisites: Docker, Java 21+, Flutter (stable), Make. Terraform only for infr
 make up            # Postgres + API on http://localhost:8080 (Swagger UI at /swagger-ui.html)
 make smoke         # hit the local API end to end
 make app-run       # run the app; Android emulator reaches the host API at 10.0.2.2:8080
-make up-obs        # + Prometheus :9090 and Grafana :3000 (dashboard "Puzzle Hub — API")
+make up-obs        # + Prometheus :9090 and Grafana :3000 (dashboard "Quintile — API")
 make down
 ```
 

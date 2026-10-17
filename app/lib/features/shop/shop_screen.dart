@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../../core/audio/sfx.dart';
@@ -9,7 +7,6 @@ import '../../core/ui/candy_button.dart';
 import '../../core/ui/dialogs.dart';
 import '../../core/ui/game_art.dart';
 import '../../core/ui/hud.dart';
-import '../../core/ui/outlined_text.dart';
 import '../../core/ui/panels.dart';
 import '../../services/purchase_service.dart';
 import '../../services/services.dart';
@@ -78,8 +75,14 @@ class _ShopScreenState extends State<ShopScreen> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
                   children: [
-                    const Center(child: RibbonBanner('Candy Shop', candy: Candy.pink, fontSize: 30, width: 300)),
-                    const SizedBox(height: 14),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(2, 8, 2, 2),
+                      child: Text('Shop', style: AppText.display(30)),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(2, 0, 2, 16),
+                      child: Text('Gems, boosters and VIP', style: AppText.body(15, color: AppColors.inkSoft)),
+                    ),
                     _VipCard(
                       active: d.isVip,
                       price: iap.priceOf(Catalog.byId('vip_monthly')),
@@ -92,7 +95,7 @@ class _ShopScreenState extends State<ShopScreen> {
                       physics: const NeverScrollableScrollPhysics(),
                       mainAxisSpacing: 12,
                       crossAxisSpacing: 12,
-                      childAspectRatio: 0.86,
+                      childAspectRatio: 0.82,
                       children: [
                         for (var i = 0; i < gemPacks.length; i++)
                           _GemPack(
@@ -170,21 +173,24 @@ class _ShopScreenState extends State<ShopScreen> {
                         title: 'Remove Ads',
                         subtitle: 'No more interstitials. Forever.',
                         cta: iap.priceOf(Catalog.byId('remove_ads')),
-                        candy: Candy.purple,
+                        candy: Candy.ink,
                         onTap: () => _buy(Catalog.byId('remove_ads')),
                       ),
                     const SizedBox(height: 10),
                     Center(
                       child: TextButton(
                         onPressed: iap.restore,
-                        child: Text('Restore purchases', style: AppText.body(15, color: Colors.white70)),
+                        child: Text(
+                          'Restore purchases',
+                          style: AppText.body(15, color: AppColors.primary, weight: FontWeight.w700),
+                        ),
                       ),
                     ),
                     Text(
                       'Prices include applicable taxes. VIP renews monthly until cancelled in Google Play. '
                       'Purchases are verified securely before items are granted.',
                       textAlign: TextAlign.center,
-                      style: AppText.body(11, color: Colors.white54, weight: FontWeight.w500),
+                      style: AppText.body(11, color: AppColors.inkFaint, weight: FontWeight.w500),
                     ),
                   ],
                 ),
@@ -195,13 +201,13 @@ class _ShopScreenState extends State<ShopScreen> {
         if (busy)
           Positioned.fill(
             child: ColoredBox(
-              color: Colors.black45,
+              color: AppColors.ink.withValues(alpha: 0.28),
               child: Center(
                 child: CandyPanel(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const CircularProgressIndicator(color: AppColors.royal),
+                      const CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3),
                       const SizedBox(height: 12),
                       Text(
                         iap.state == PurchaseState.verifying ? 'Verifying purchase…' : 'Talking to Google Play…',
@@ -218,135 +224,83 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 }
 
-class _VipCard extends StatefulWidget {
+class _VipCard extends StatelessWidget {
   const _VipCard({required this.active, required this.price, this.onTap});
   final bool active;
   final String price;
   final VoidCallback? onTap;
 
   @override
-  State<_VipCard> createState() => _VipCardState();
-}
-
-class _VipCardState extends State<_VipCard> with SingleTickerProviderStateMixin {
-  late final AnimationController _shine = AnimationController(vsync: this, duration: const Duration(seconds: 3))
-    ..repeat();
-
-  @override
-  void dispose() {
-    _shine.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     const perks = ['No ads', 'Unlimited lives', '2× coins', '3 free hints daily'];
     return Container(
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF2A0B5E), Color(0xFF6A1B9A), Color(0xFFB8327F)],
-        ),
-        border: Border.all(color: const Color(0xFFFFD54A), width: 3),
-        boxShadow: [BoxShadow(color: const Color(0xFFFFB800).withValues(alpha: 0.45), blurRadius: 24)],
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppColors.cardShadow,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(25),
-        child: Stack(
-          children: [
-            // Moving shine sweep.
-            Positioned.fill(
-              child: AnimatedBuilder(
-                animation: _shine,
-                builder: (_, _) => FractionalTranslation(
-                  translation: Offset(_shine.value * 3 - 1.5, 0),
-                  child: Transform.rotate(
-                    angle: 0.4,
-                    child: Container(
-                      width: 60,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.white.withValues(alpha: 0),
-                            Colors.white.withValues(alpha: 0.18),
-                            Colors.white.withValues(alpha: 0),
-                          ],
-                        ),
-                      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const GameArt(ArtKind.crown, size: 36),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('PUZZLE PASS', style: AppText.label(11, color: Colors.white.withValues(alpha: 0.75))),
+                    const SizedBox(height: 2),
+                    Text('VIP', style: AppText.display(26, color: Colors.white)),
+                    Text(
+                      active ? 'You\'re a VIP — thank you!' : 'The ultimate puzzle experience',
+                      style: AppText.body(14, color: Colors.white.withValues(alpha: 0.85)),
                     ),
-                  ),
+                  ],
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const GameArt(ArtKind.crown, size: 52),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const OutlinedText(
-                              'Puzzle Pass VIP',
-                              size: 26,
-                              textAlign: TextAlign.left,
-                              gradient: LinearGradient(colors: [Color(0xFFFFF59A), Color(0xFFFFB800)]),
-                            ),
-                            Text(
-                              widget.active ? 'You\'re a VIP — thank you!' : 'The ultimate puzzle experience',
-                              style: AppText.body(14, color: Colors.white70),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final p in perks)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.check_circle_rounded, color: Color(0xFF7CFFB2), size: 16),
-                              const SizedBox(width: 4),
-                              Text(
-                                p,
-                                style: AppText.body(13, color: Colors.white, weight: FontWeight.w700),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  CandyButton(
-                    label: widget.active ? 'Active' : 'Join for ${widget.price}',
-                    candy: Candy.gold,
-                    height: 58,
-                    pulse: !widget.active,
-                    onTap: widget.onTap,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 16,
+            runSpacing: 8,
+            children: [
+              for (final p in perks)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.check_rounded, color: Colors.white, size: 18),
+                    const SizedBox(width: 6),
+                    Text(
+                      p,
+                      style: AppText.body(14, color: Colors.white, weight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          CandyButton(
+            label: active ? 'Active' : 'Join for $price',
+            candy: Candy.white,
+            height: 54,
+            depth: 0,
+            pulse: !active,
+            onTap: onTap,
+          ),
+        ],
       ),
     );
   }
@@ -361,53 +315,34 @@ class _GemPack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        CandyPanel(
-          rim: tier >= 3 ? Candy.gold : Candy.purple,
-          padding: const EdgeInsets.fromLTRB(8, 12, 8, 10),
-          child: Column(
-            children: [
-              Expanded(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    for (var i = 0; i <= tier; i++)
-                      Transform.translate(
-                        offset: Offset(
-                          math.cos(i * 2.1) * 16 * (tier > 0 ? 1 : 0),
-                          math.sin(i * 2.1) * 10 * (tier > 0 ? 1 : 0),
-                        ),
-                        child: GameArt(ArtKind.gem, size: 40 + tier * 4.0),
-                      ),
-                  ],
-                ),
-              ),
-              Text(item.subtitle, style: AppText.display(20, color: AppColors.ink)),
-              const SizedBox(height: 6),
-              CandyButton(label: price, candy: Candy.green, height: 46, onTap: onTap),
-            ],
-          ),
-        ),
-        if (item.badge != null)
-          Positioned(
-            top: -8,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.heart,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                child: Text(item.badge!, style: AppText.display(12)),
+    final badge = item.badge;
+    return CandyPanel(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(color: Candy.blue.light, borderRadius: BorderRadius.circular(14)),
+              child: Stack(
+                children: [
+                  Center(child: GameArt(ArtKind.gem, size: 36 + tier * 6.0)),
+                  if (badge != null)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Pill(badge, color: tier >= 3 ? AppColors.goldDeep : AppColors.primary),
+                    ),
+                ],
               ),
             ),
           ),
-      ],
+          const SizedBox(height: 10),
+          Text(item.subtitle, textAlign: TextAlign.center, style: AppText.display(17)),
+          const SizedBox(height: 8),
+          CandyButton(label: price, candy: Candy.ink, height: 42, fontSize: 15, onTap: onTap),
+        ],
+      ),
     );
   }
 }
@@ -433,29 +368,37 @@ class _OfferRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 10),
       child: CandyPanel(
-        rim: candy,
-        padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+        padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            GameArt(art, size: 48),
-            const SizedBox(width: 12),
+            Container(
+              width: 56,
+              height: 56,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(color: candy.light, borderRadius: BorderRadius.circular(14)),
+              child: GameArt(art, size: 32),
+            ),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: AppText.display(19, color: AppColors.ink)),
-                  Text(subtitle, style: AppText.body(12, color: AppColors.inkSoft)),
+                  Text(title, style: AppText.display(17)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: AppText.body(13, color: AppColors.inkSoft)),
                 ],
               ),
             ),
+            const SizedBox(width: 10),
             CandyButton(
               label: cta,
-              candy: Candy.green,
-              height: 48,
-              width: 110,
-              trailing: ctaArt == null ? null : GameArt(ctaArt!, size: 22),
+              candy: Candy.ink,
+              height: 40,
+              width: 96,
+              fontSize: 15,
+              trailing: ctaArt == null ? null : GameArt(ctaArt!, size: 18),
               onTap: onTap,
             ),
           ],
