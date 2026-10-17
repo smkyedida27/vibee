@@ -60,3 +60,4 @@ override.tf.json
 tfplan
 plan.txt
 ci.auto.tfvars
+.vercel
