@@ -124,6 +124,7 @@ class _LadderScreenState extends State<LadderScreen> with GameFlow, SingleTicker
       request: request,
       elapsed: elapsed,
       roundOver: finished,
+      clock: clock,
       confetti: confetti,
       onHint: () async {
         if (finished) return;

@@ -91,6 +91,7 @@ class _QueensScreenState extends State<QueensScreen> with GameFlow {
       request: request,
       elapsed: elapsed,
       roundOver: finished,
+      clock: clock,
       confetti: confetti,
       onHint: () async {
         if (await requestHint()) {

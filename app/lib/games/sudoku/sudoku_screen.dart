@@ -109,6 +109,7 @@ class _SudokuScreenState extends State<SudokuScreen> with GameFlow {
       request: request,
       elapsed: elapsed,
       roundOver: finished,
+      clock: clock,
       confetti: confetti,
       onHint: () async {
         if (await requestHint()) {

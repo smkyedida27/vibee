@@ -190,6 +190,7 @@ class _MergeScreenState extends State<MergeScreen> with GameFlow {
         request: request,
         elapsed: elapsed,
         roundOver: finished,
+        clock: clock,
         confetti: confetti,
         onHint: () async {
           if (await requestHint()) setState(() => _suggestion = _bestMove());

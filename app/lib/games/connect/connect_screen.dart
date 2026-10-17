@@ -138,6 +138,7 @@ class _ConnectScreenState extends State<ConnectScreen> with GameFlow, TickerProv
       request: request,
       elapsed: elapsed,
       roundOver: finished,
+      clock: clock,
       confetti: confetti,
       onHint: () async {
         if (finished || _busy || game.hint() == null) return;

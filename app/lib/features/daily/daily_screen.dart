@@ -96,9 +96,11 @@ class DailyScreen extends StatelessWidget {
               ),
               Positioned(
                 top: -40,
-                child: GameBadge(game: game, size: 96)
-                    .animate(onPlay: (c) => c.repeat(reverse: true))
-                    .moveY(begin: -3, end: 3, duration: 1500.ms, curve: Curves.easeInOut),
+                child: RepaintBoundary(
+                  child: GameBadge(game: game, size: 96)
+                      .animate(onPlay: (c) => c.repeat(reverse: true))
+                      .moveY(begin: -3, end: 3, duration: 1500.ms, curve: Curves.easeInOut),
+                ),
               ),
             ],
           ),

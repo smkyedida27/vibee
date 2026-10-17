@@ -84,7 +84,7 @@ class _CandyButtonState extends State<CandyButton> with TickerProviderStateMixin
     final fs = widget.fontSize ?? widget.height * 0.38;
     final faceH = widget.height - widget.depth;
 
-    return Semantics(
+    final button = Semantics(
       button: true,
       enabled: _enabled,
       label: widget.label,
@@ -226,6 +226,8 @@ class _CandyButtonState extends State<CandyButton> with TickerProviderStateMixin
         ),
       ),
     );
+    // A breathing button repaints every frame; keep that on its own layer.
+    return widget.pulse ? RepaintBoundary(child: button) : button;
   }
 }
 

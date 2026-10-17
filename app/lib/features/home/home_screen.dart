@@ -95,9 +95,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          const Center(child: OutlinedText('Quintile', size: 50, stroke: Color(0xFF172873)))
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .moveY(begin: -2, end: 2, duration: 1800.ms, curve: Curves.easeInOut),
+          // Looping animations get their own layer so they never repaint the page.
+          RepaintBoundary(
+            child: const Center(child: OutlinedText('Quintile', size: 50, stroke: Color(0xFF172873)))
+                .animate(onPlay: (c) => c.repeat(reverse: true))
+                .moveY(begin: -2, end: 2, duration: 1800.ms, curve: Curves.easeInOut),
+          ),
           const SizedBox(height: 30),
           const _DailyHero(),
           const SizedBox(height: 18),
@@ -208,9 +211,11 @@ class _DailyHero extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 30, 16, 16),
           child: Row(
             children: [
-              GameBadge(game: game, size: 86)
-                  .animate(onPlay: (c) => c.repeat(reverse: true))
-                  .rotate(begin: -0.02, end: 0.02, duration: 1400.ms, curve: Curves.easeInOut),
+              RepaintBoundary(
+                child: GameBadge(game: game, size: 86)
+                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .rotate(begin: -0.02, end: 0.02, duration: 1400.ms, curve: Curves.easeInOut),
+              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -352,9 +357,11 @@ class _RewardButton extends StatelessWidget {
       ),
     );
     return ready
-        ? tile
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .scaleXY(begin: 1, end: 1.03, duration: 800.ms, curve: Curves.easeInOut)
+        ? RepaintBoundary(
+            child: tile
+                .animate(onPlay: (c) => c.repeat(reverse: true))
+                .scaleXY(begin: 1, end: 1.03, duration: 800.ms, curve: Curves.easeInOut),
+          )
         : tile;
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -55,6 +56,9 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
   bool finished = false;
   Future<String?>? _attempt;
   Timer? _clockTick;
+
+  /// Ticks once a second for the timer pill.
+  final ValueNotifier<Duration> clock = ValueNotifier(Duration.zero);
   AppLifecycleListener? _lifecycle;
   bool _pausedInBackground = false;
 
@@ -78,8 +82,9 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
         }
       },
     );
+    // Only the timer pill listens to this; the board itself never rebuilds per second.
     _clockTick = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted && !finished) setState(() {});
+      if (mounted && !finished) clock.value = stopwatch.elapsed;
     });
     final s = context.services;
     s.analytics.puzzleStart(request.game.wire, request.source.name, request.difficulty.wire);
@@ -100,6 +105,7 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
   @override
   void dispose() {
     _clockTick?.cancel();
+    clock.dispose();
     _lifecycle?.dispose();
     confetti.dispose();
     super.dispose();
@@ -362,7 +368,11 @@ class GameScaffold extends StatelessWidget {
     this.confetti,
     this.showTimer = true,
     this.roundOver = false,
+    this.clock,
   });
+
+  /// Live play time from [GameFlow.clock]; when given, only the timer pill rebuilds.
+  final ValueListenable<Duration>? clock;
 
   final PlayRequest request;
   final Widget body;
@@ -437,7 +447,13 @@ class GameScaffold extends StatelessWidget {
                               ],
                             ),
                           ),
-                          if (showTimer) _TimerPill(elapsed),
+                          if (showTimer)
+                            clock == null
+                                ? _TimerPill(elapsed)
+                                : ValueListenableBuilder<Duration>(
+                                    valueListenable: clock!,
+                                    builder: (_, d, _) => _TimerPill(d),
+                                  ),
                           if (onHint != null) ...[
                             const SizedBox(width: 8),
                             CandyIconButton(
