@@ -319,6 +319,28 @@
   footer .wrap { padding-block: 34px; display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: center; justify-content: space-between; }
   footer .fine { font-size: 14px; }
 
+
+  /* Direct Android download (early access APK). */
+  .download {
+    display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: #fff;
+    font-family: var(--font-display); font-size: 24px; letter-spacing: 0.3px;
+    padding: 14px 26px 14px 18px; border-radius: 20px; border: 3px solid #fff;
+    background: linear-gradient(180deg, #A6F57A, var(--green));
+    box-shadow: 0 6px 0 var(--green-dark), 0 14px 28px rgba(22, 129, 12, 0.35);
+    text-shadow: 0 2px 0 var(--green-dark);
+    transition: transform 0.15s ease;
+  }
+  .download:hover { transform: translateY(-2px); }
+  .download:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--green-dark); }
+  .download svg { width: 34px; height: 34px; flex: none; filter: drop-shadow(0 2px 0 var(--green-dark)); }
+  .download small { display: block; font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 0; text-shadow: none; opacity: 0.95; }
+  .download-row { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 28px; }
+  .download-note { font-size: 14px; font-weight: 600; color: var(--navy); }
+  @media (max-width: 880px) { .hero-copy .download-row { align-items: center; } }
+  .launch .download-row { align-items: center; }
+  .launch .download-note { color: #fff; }
+  @media (prefers-reduced-motion: reduce) { .download { transition: none; } }
+
   @media (prefers-reduced-motion: reduce) {
     .cloud, .phone.front { animation: none; }
     .tile { transition: none; }
@@ -341,7 +363,7 @@
       <a href="#screens">Screens</a>
       <a href="#faq">FAQ</a>
     </nav>
-    <a class="nav-cta" href="#launch">Coming soon</a>
+    <a class="nav-cta" href="https://github.com/smkyedida27/vibee/releases/latest/download/Quintile.apk" rel="noopener">Download</a>
   </div>
 </header>
 
@@ -354,9 +376,16 @@
 
     <div class="wrap hero-grid">
       <div class="hero-copy">
-        <span class="kicker"><span class="dot" aria-hidden="true"></span>Launching soon on mobile</span>
+        <span class="kicker"><span class="dot" aria-hidden="true"></span>Early access on Android</span>
         <h1 id="hero-title" class="outlined">Five puzzles.<br>One daily streak.</h1>
         <p class="lede">Word Connect, Crowns, Sudoku, Word Ladder and Number Merge in one bright little world. A new daily puzzle every day, 100 levels in every difficulty.</p>
+        <div class="download-row">
+          <a class="download" href="https://github.com/smkyedida27/vibee/releases/latest/download/Quintile.apk" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M17.6 9.5 19.4 6.4a.5.5 0 0 0-.9-.5l-1.8 3.1A10.9 10.9 0 0 0 12 8a10.9 10.9 0 0 0-4.7 1L5.5 5.9a.5.5 0 1 0-.9.5l1.8 3.1A9.9 9.9 0 0 0 1.5 17h21a9.9 9.9 0 0 0-4.9-7.5zM7 14.3a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm10 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
+            <span>Download now<small>Early access for Android · free</small></span>
+          </a>
+          <span class="download-note">Android 7+ · 62 MB APK · iPhone coming soon</span>
+        </div>
         <div class="badges">
           <span class="store" role="img" aria-label="Coming soon on Google Play">
             <span class="soon">Soon</span>
@@ -507,7 +536,14 @@
     <div class="wrap">
       <div class="launch">
         <h2 id="launch-title" class="outlined">Coming soon to your phone</h2>
-        <p>Quintile is getting its final polish. It will be free on Google Play and the App Store. Tell a friend who loves puzzles.</p>
+        <p>Play the early-access Android version today. Google Play and App Store releases are on the way, free. Tell a friend who loves puzzles.</p>
+        <div class="download-row">
+          <a class="download" href="https://github.com/smkyedida27/vibee/releases/latest/download/Quintile.apk" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M17.6 9.5 19.4 6.4a.5.5 0 0 0-.9-.5l-1.8 3.1A10.9 10.9 0 0 0 12 8a10.9 10.9 0 0 0-4.7 1L5.5 5.9a.5.5 0 1 0-.9.5l1.8 3.1A9.9 9.9 0 0 0 1.5 17h21a9.9 9.9 0 0 0-4.9-7.5zM7 14.3a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm10 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
+            <span>Download now<small>Early access for Android · free</small></span>
+          </a>
+          <span class="download-note">Android 7+ · 62 MB APK · iPhone coming soon</span>
+        </div>
         <div class="badges">
           <span class="store" role="img" aria-label="Coming soon on Google Play">
             <span class="soon">Soon</span>
@@ -543,7 +579,11 @@
       <div class="faq">
         <details open>
           <summary>When does Quintile launch?</summary>
-          <p>Soon. We're finishing the final polish now. The store badges on this page will turn into download buttons on launch day.</p>
+          <p>You can play the early-access Android version right now with the Download button. The Google Play and App Store versions are coming soon, and the badges on this page will link to them on launch day.</p>
+        </details>
+        <details>
+          <summary>How do I install the Android download?</summary>
+          <p>Tap Download now on your Android phone. When the file finishes, open it and allow installing apps from your browser if Android asks. Quintile appears on your home screen. When the Google Play version launches, you can switch to it for automatic updates.</p>
         </details>
         <details>
           <summary>Is it free?</summary>
