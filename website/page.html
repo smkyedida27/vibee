@@ -1,0 +1,579 @@
+<title>Quintile</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Quintile — five brain puzzles and one daily streak. Coming soon to Google Play and the App Store.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Fredoka:wght@400;500;600;700&display=swap">
+<style>
+  /* Layout: a daylight game world — sky hero with drifting clouds and hills, then cream "parchment" sections. Single deliberate daytime look (matches the app). */
+  :root {
+    --sky-top: #3A9CFF;
+    --sky-mid: #7FCBFF;
+    --sky-low: #C9F0FF;
+    --navy: #172873;
+    --ink: #22306B;
+    --ink-soft: #55608F;
+    --cream: #FFF8EA;
+    --cream-edge: #F1D8A6;
+    --gold: #FFC21A;
+    --gold-dark: #C77800;
+    --green: #3CC61E;
+    --green-dark: #16810C;
+    --hill-far: #9BE3A6;
+    --hill-mid: #62D058;
+    --hill-near: #3CB82F;
+    --c-connect: #FFC21A;
+    --c-crowns: #FF7B1C;
+    --c-sudoku: #2D8CFF;
+    --c-ladder: #3CC61E;
+    --c-merge: #9B4DFF;
+    --font-display: "Lilita One", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+    --font-body: "Fredoka", "Nunito", "Segoe UI", system-ui, sans-serif;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  img { max-width: 100%; display: block; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 8px; }
+  .wrap {
+    width: 100%;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 400; letter-spacing: 0.3px; line-height: 1.05; margin: 0; text-wrap: balance; }
+  p { margin: 0; }
+
+  /* Game-style outlined title text. */
+  .outlined {
+    color: #fff;
+    -webkit-text-stroke: 0.16em var(--navy);
+    paint-order: stroke fill;
+    text-shadow: 0 0.1em 0 rgba(23, 40, 115, 0.35);
+  }
+
+  /* ---------- Nav ---------- */
+  .nav {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 20;
+    background: rgba(23, 40, 115, 0.88);
+    backdrop-filter: blur(10px);
+    border-bottom: 3px solid rgba(255, 255, 255, 0.85);
+  }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--navy); }
+  .nav .wrap { display: flex; align-items: center; gap: 20px; padding-block: 10px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .brand .name { font-family: var(--font-display); font-size: 26px; color: #fff; }
+  .logo {
+    width: 40px; height: 40px; border-radius: 11px; position: relative; flex: none;
+    background: linear-gradient(180deg, #4A6BDB, #2E4BB8);
+    border: 2.5px solid #fff;
+    box-shadow: 0 3px 0 var(--navy);
+    display: grid; place-items: center;
+  }
+  .logo span { font-family: var(--font-display); color: #fff; font-size: 24px; line-height: 1; transform: translate(-2px, -1px); }
+  .logo i {
+    position: absolute; right: 4px; bottom: 4px; width: 12px; height: 12px; border-radius: 3px;
+    background: var(--gold); transform: rotate(12deg); box-shadow: 0 1px 0 var(--gold-dark);
+  }
+  .nav-links { display: flex; gap: 22px; margin-left: auto; }
+  .nav-links a { color: #fff; text-decoration: none; font-weight: 600; opacity: 0.9; }
+  .nav-links a:hover { opacity: 1; text-decoration: underline; text-underline-offset: 4px; }
+  .nav-cta {
+    font-family: var(--font-display); font-size: 17px; color: #fff; text-decoration: none;
+    padding: 8px 16px; border-radius: 999px; border: 2.5px solid #fff;
+    background: linear-gradient(180deg, #A6F57A, var(--green));
+    box-shadow: 0 3px 0 var(--green-dark);
+    text-shadow: 0 1px 0 var(--green-dark);
+  }
+  @media (max-width: 760px) { .nav-links { display: none; } .nav-cta { margin-left: auto; } }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 55%, var(--sky-low) 100%);
+    padding-block: 56px 0;
+  }
+  .sun {
+    position: absolute; right: 8%; top: 40px; width: 110px; height: 110px; border-radius: 50%;
+    background: radial-gradient(circle, #FFE15A 0 45%, #FFF3A8 46% 58%, rgba(255, 246, 176, 0) 72%);
+    filter: drop-shadow(0 0 40px rgba(255, 240, 150, 0.6));
+  }
+  .cloud {
+    position: absolute; height: 36px; border-radius: 40px; background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.06);
+    animation: drift linear infinite;
+  }
+  .cloud::before, .cloud::after { content: ""; position: absolute; background: inherit; border-radius: 50%; }
+  .cloud::before { width: 60px; height: 60px; left: 22px; top: -30px; }
+  .cloud::after { width: 44px; height: 44px; left: 70px; top: -20px; }
+  .c1 { width: 140px; top: 90px; left: -160px; animation-duration: 70s; }
+  .c2 { width: 110px; top: 200px; left: -140px; animation-duration: 95s; animation-delay: -40s; transform: scale(0.8); }
+  .c3 { width: 160px; top: 40px; left: -180px; animation-duration: 120s; animation-delay: -70s; }
+  @keyframes drift { from { translate: 0 0; } to { translate: calc(100vw + 400px) 0; } }
+
+  .hero-grid {
+    position: relative; z-index: 2;
+    display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 32px; align-items: center;
+  }
+  .hero-copy { min-width: 0; padding-bottom: 120px; }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-weight: 700; font-size: 14px; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--navy); background: var(--cream); border: 2.5px solid #fff; border-radius: 999px;
+    padding: 6px 14px; box-shadow: 0 3px 0 rgba(23, 40, 115, 0.25);
+  }
+  .kicker .dot { width: 9px; height: 9px; border-radius: 50%; background: #FF3B4E; box-shadow: 0 0 0 4px rgba(255, 59, 78, 0.2); }
+  .hero h1 { font-size: clamp(46px, 7vw, 86px); margin-top: 18px; }
+  .hero .lede { margin-top: 18px; max-width: 34ch; font-size: 20px; font-weight: 500; color: var(--navy); }
+
+  .badges { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 28px; }
+  .store {
+    display: inline-flex; align-items: center; gap: 12px; min-width: 210px;
+    background: #0E0F14; color: #fff; text-decoration: none;
+    padding: 10px 18px 10px 14px; border-radius: 14px; border: 2px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 5px 0 #000, 0 12px 24px rgba(23, 40, 115, 0.3);
+    position: relative; cursor: default;
+  }
+  .store svg { width: 30px; height: 30px; flex: none; }
+  .store small { display: block; font-size: 11.5px; letter-spacing: 0.6px; text-transform: uppercase; opacity: 0.85; font-weight: 600; }
+  .store strong { display: block; font-size: 21px; font-weight: 600; line-height: 1.1; }
+  .store .soon {
+    position: absolute; top: -11px; right: -10px;
+    font-family: var(--font-display); font-size: 13px; color: var(--navy);
+    background: linear-gradient(180deg, #FFE885, var(--gold)); border: 2px solid #fff; border-radius: 999px;
+    padding: 2px 10px; box-shadow: 0 2px 0 var(--gold-dark); transform: rotate(6deg);
+  }
+  .hero-meta { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 18px; font-weight: 600; color: var(--navy); font-size: 15px; }
+  .hero-meta span::before { content: "✓"; margin-right: 6px; color: var(--green-dark); font-weight: 700; }
+
+  .phones { position: relative; height: 560px; min-width: 0; }
+  .phone {
+    position: absolute; width: 250px; aspect-ratio: 540 / 1170; max-width: 60%;
+    border-radius: 34px; border: 8px solid var(--navy); background: var(--navy);
+    overflow: hidden;
+    box-shadow: 0 8px 0 rgba(23, 40, 115, 0.35), 0 30px 60px rgba(23, 40, 115, 0.35);
+  }
+  .phone img { width: 100%; height: 100%; object-fit: cover; }
+  .phone.front { left: 8%; top: 10px; z-index: 2; animation: float 6s ease-in-out infinite; }
+  .phone.back { right: 2%; top: 70px; transform: rotate(7deg); width: 225px; }
+  @keyframes float { 50% { translate: 0 -10px; } }
+
+  .hills { position: absolute; left: 0; right: 0; bottom: -1px; height: 150px; z-index: 1; pointer-events: none; }
+  .hills svg { width: 100%; height: 100%; display: block; }
+
+  @media (max-width: 880px) {
+    .hero-grid { grid-template-columns: minmax(0, 1fr); }
+    .hero-copy { padding-bottom: 0; text-align: center; }
+    .hero .lede { margin-inline: auto; }
+    .badges, .hero-meta { justify-content: center; }
+    .phones { height: 480px; margin-bottom: 40px; }
+    .phone.front { left: 50%; translate: -70% 0; }
+    .phone.back { right: auto; left: 50%; translate: 5% 0; }
+    @keyframes float { 50% { translate: -70% -10px; } }
+  }
+
+  /* ---------- Sections ---------- */
+  section { padding-block: 84px; }
+  .sec-head { text-align: center; max-width: 640px; margin: 0 auto 44px; }
+  .sec-head h2 { font-size: clamp(34px, 5vw, 52px); color: var(--navy); }
+  .sec-head p { margin-top: 12px; color: var(--ink-soft); font-size: 18px; }
+  .eyebrow { font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; font-size: 13px; color: var(--gold-dark); display: block; margin-bottom: 8px; }
+
+  /* Five puzzles — glossy candy tiles like in the game. */
+  .games { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; }
+  .tile {
+    --c: var(--c-connect);
+    position: relative; border-radius: 26px; padding: 22px 16px 20px; text-align: center; color: #fff;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--c) 55%, #fff), var(--c));
+    border: 4px solid #fff;
+    box-shadow: 0 7px 0 color-mix(in srgb, var(--c) 70%, #000), 0 16px 26px rgba(23, 40, 115, 0.18);
+    transition: transform 0.2s ease;
+  }
+  .tile:hover { transform: translateY(-4px) rotate(-1deg); }
+  .tile::before {
+    content: ""; position: absolute; left: 14px; right: 14px; top: 6px; height: 34px; border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
+  }
+  .tile .glyph {
+    width: 72px; height: 72px; margin: 0 auto 12px; border-radius: 20px; background: #fff;
+    display: grid; place-items: center; position: relative;
+    box-shadow: 0 4px 0 color-mix(in srgb, var(--c) 70%, #000);
+    font-family: var(--font-display); color: color-mix(in srgb, var(--c) 75%, #000); font-size: 32px;
+  }
+  .tile h3 { font-size: 22px; -webkit-text-stroke: 0.14em color-mix(in srgb, var(--c) 65%, #000); paint-order: stroke fill; }
+  .tile p { margin-top: 8px; font-size: 14.5px; font-weight: 600; line-height: 1.35; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15); }
+  .tile.connect { --c: var(--c-connect); }
+  .tile.crowns { --c: var(--c-crowns); }
+  .tile.sudoku { --c: var(--c-sudoku); }
+  .tile.ladder { --c: var(--c-ladder); }
+  .tile.merge { --c: var(--c-merge); }
+  .mini-grid { display: grid; grid-template-columns: repeat(2, 18px); gap: 4px; }
+  .mini-grid b { width: 18px; height: 18px; border-radius: 5px; background: var(--c-connect); font: 700 11px/18px var(--font-body); color: #7a4a00; }
+  @media (max-width: 960px) { .games { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 600px) { .games { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tile.merge { grid-column: 1 / -1; } }
+
+  /* Features: parchment panels with gold rims. */
+  .features-band { background: linear-gradient(180deg, var(--cream), #FFF2D6); }
+  .features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .feature {
+    background: #fff; border-radius: 24px; padding: 24px;
+    border: 3px solid var(--cream-edge);
+    box-shadow: 0 6px 0 var(--cream-edge);
+    min-width: 0;
+  }
+  .feature.wide { grid-column: span 2; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: center; }
+  .feature .ico {
+    width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; margin-bottom: 14px;
+    border: 3px solid #fff; box-shadow: 0 4px 0 rgba(23, 40, 115, 0.18);
+  }
+  .feature.wide .ico { margin-bottom: 0; width: 72px; height: 72px; }
+  .feature .ico svg { width: 30px; height: 30px; }
+  .feature h3 { font-size: 24px; color: var(--navy); }
+  .feature p { margin-top: 6px; color: var(--ink-soft); }
+  .stat { display: flex; gap: 18px; margin-top: 14px; flex-wrap: wrap; }
+  .stat div { font-family: var(--font-display); font-size: 30px; color: var(--navy); line-height: 1; }
+  .stat small { display: block; font-family: var(--font-body); font-size: 13px; color: var(--ink-soft); font-weight: 600; margin-top: 4px; }
+  .week { display: flex; gap: 8px; margin-top: 14px; }
+  .week span {
+    width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+    font-weight: 700; font-size: 13px; background: #F0E1C2; color: var(--ink-soft);
+  }
+  .week span.on { background: linear-gradient(180deg, #FFC489, #FF7B1C); color: #fff; }
+  @media (max-width: 900px) { .features { grid-template-columns: minmax(0, 1fr); } .feature.wide { grid-column: auto; grid-template-columns: minmax(0, 1fr); } .feature.wide .ico { margin-bottom: 4px; } }
+
+  /* Screens gallery. */
+  .gallery-band { background: linear-gradient(180deg, var(--sky-mid), var(--sky-top)); position: relative; overflow: hidden; }
+  .gallery-band .sec-head h2 { color: #fff; -webkit-text-stroke: 0.14em var(--navy); paint-order: stroke fill; }
+  .gallery-band .sec-head p { color: #fff; font-weight: 500; }
+  .gallery {
+    display: flex; gap: 22px; overflow-x: auto; scroll-snap-type: x mandatory;
+    padding: 10px max(16px, env(safe-area-inset-left, 0px)) 30px;
+    scrollbar-width: thin;
+  }
+  .gallery figure { margin: 0; flex: none; width: 230px; scroll-snap-align: center; text-align: center; }
+  .gallery .phone { position: relative; width: 100%; max-width: 100%; }
+  .gallery figcaption { margin-top: 14px; color: #fff; font-family: var(--font-display); font-size: 19px; -webkit-text-stroke: 0.12em var(--navy); paint-order: stroke fill; }
+  @media (min-width: 1200px) { .gallery { justify-content: center; } }
+
+  /* Launch banner. */
+  .launch {
+    position: relative; text-align: center; color: #fff;
+    background: linear-gradient(180deg, #4A6BDB, #2E4BB8 60%, #223C9E);
+    border: 4px solid #fff; border-radius: 32px; padding: 48px 24px;
+    box-shadow: 0 8px 0 var(--navy), 0 24px 50px rgba(23, 40, 115, 0.3);
+    overflow: hidden;
+  }
+  .launch::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.18), transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(255, 194, 26, 0.25), transparent 45%);
+  }
+  .launch h2 { font-size: clamp(34px, 5vw, 56px); position: relative; }
+  .launch p { position: relative; margin: 12px auto 0; max-width: 46ch; font-size: 18px; opacity: 0.95; }
+  .launch .badges { justify-content: center; position: relative; }
+  .share {
+    position: relative; margin-top: 26px; display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
+  }
+  .share button {
+    font-family: var(--font-display); font-size: 18px; color: var(--navy); cursor: pointer;
+    padding: 12px 22px; border-radius: 999px; border: 3px solid #fff;
+    background: linear-gradient(180deg, #FFE885, var(--gold));
+    box-shadow: 0 4px 0 var(--gold-dark);
+  }
+  .share button:active { translate: 0 2px; box-shadow: 0 2px 0 var(--gold-dark); }
+  .share output { font-weight: 600; min-height: 1.4em; }
+
+  /* FAQ. */
+  .faq { max-width: 760px; margin: 0 auto; display: grid; gap: 12px; }
+  .faq details { background: #fff; border: 3px solid var(--cream-edge); border-radius: 18px; padding: 16px 20px; box-shadow: 0 4px 0 var(--cream-edge); }
+  .faq summary { cursor: pointer; font-family: var(--font-display); font-size: 20px; color: var(--navy); list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; font-size: 26px; line-height: 1; color: var(--gold-dark); transition: transform 0.2s; }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq p { margin-top: 10px; color: var(--ink-soft); }
+
+  /* Footer. */
+  footer { background: var(--navy); color: rgba(255, 255, 255, 0.85); }
+  footer .wrap { padding-block: 34px; display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: center; justify-content: space-between; }
+  footer .fine { font-size: 14px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cloud, .phone.front { animation: none; }
+    .tile { transition: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Quintile home">
+      <span class="logo" aria-hidden="true"><span>Q</span><i></i></span>
+      <span class="name">Quintile</span>
+    </a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#games">Puzzles</a>
+      <a href="#features">Features</a>
+      <a href="#screens">Screens</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="nav-cta" href="#launch">Coming soon</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="sun" aria-hidden="true"></div>
+    <div class="cloud c1" aria-hidden="true"></div>
+    <div class="cloud c2" aria-hidden="true"></div>
+    <div class="cloud c3" aria-hidden="true"></div>
+
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="kicker"><span class="dot" aria-hidden="true"></span>Launching soon on mobile</span>
+        <h1 id="hero-title" class="outlined">Five puzzles.<br>One daily streak.</h1>
+        <p class="lede">Word Connect, Crowns, Sudoku, Word Ladder and Number Merge in one bright little world. A new daily puzzle every day, 100 levels in every difficulty.</p>
+        <div class="badges">
+          <span class="store" role="img" aria-label="Coming soon on Google Play">
+            <span class="soon">Soon</span>
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M5 3.5 18.2 16 5 28.5c-.6-.3-1-1-1-1.8V5.3c0-.8.4-1.5 1-1.8z" fill="#2DD4FF"/>
+              <path d="M22.6 11.8 18.2 16 5 3.5c.4-.2.9-.2 1.4.1z" fill="#3CC61E"/>
+              <path d="M22.6 20.2 6.4 28.4c-.5.3-1 .3-1.4.1L18.2 16z" fill="#FF3B4E"/>
+              <path d="m22.6 11.8 4.6 2.6c1.3.7 1.3 2.5 0 3.2l-4.6 2.6L18.2 16z" fill="#FFC21A"/>
+            </svg>
+            <span><small>Coming soon</small><strong>Google Play</strong></span>
+          </span>
+          <span class="store" role="img" aria-label="Coming soon on the App Store">
+            <span class="soon">Soon</span>
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path fill="#fff" d="M21.6 16.9c0-3 2.5-4.5 2.6-4.6-1.4-2.1-3.6-2.4-4.4-2.4-1.9-.2-3.6 1.1-4.6 1.1-.9 0-2.4-1.1-3.9-1-2 0-3.9 1.2-4.9 3-2.1 3.7-.5 9.1 1.5 12.1 1 1.5 2.2 3.1 3.8 3 1.5-.1 2.1-1 3.9-1s2.4 1 3.9 1c1.6 0 2.7-1.5 3.7-3 1.2-1.7 1.6-3.3 1.7-3.4-.1 0-3.2-1.2-3.3-4.8zM18.6 8c.8-1 1.4-2.4 1.2-3.8-1.2.1-2.6.8-3.5 1.8-.8.9-1.4 2.3-1.2 3.7 1.3.1 2.7-.7 3.5-1.7z"/>
+            </svg>
+            <span><small>Coming soon</small><strong>App Store</strong></span>
+          </span>
+        </div>
+        <div class="hero-meta"><span>Free to play</span><span>Plays offline</span><span>New puzzle every day</span></div>
+      </div>
+
+      <div class="phones" aria-hidden="true">
+        <div class="phone back"><img src="shots/daily.jpg" alt=""></div>
+        <div class="phone front"><img src="shots/home.jpg" alt=""></div>
+      </div>
+    </div>
+
+    <div class="hills" aria-hidden="true">
+      <svg viewBox="0 0 1440 150" preserveAspectRatio="none">
+        <path d="M0 70 Q 360 10 720 60 T 1440 40 V150 H0z" fill="var(--hill-far)"/>
+        <path d="M0 100 Q 400 50 800 95 T 1440 80 V150 H0z" fill="var(--hill-mid)"/>
+        <path d="M0 125 Q 500 95 960 122 T 1440 115 V150 H0z" fill="var(--hill-near)"/>
+        <path d="M0 145 H1440 V150 H0z" fill="var(--cream)"/>
+      </svg>
+    </div>
+  </section>
+
+  <section id="games" aria-labelledby="games-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Meet the five</span>
+        <h2 id="games-title">A puzzle for every mood</h2>
+        <p>Pick any puzzle, any time. Each one has Easy, Medium, Hard and Expert, with 100 levels to climb in every difficulty.</p>
+      </div>
+      <div class="games">
+        <article class="tile connect">
+          <div class="glyph"><div class="mini-grid" aria-hidden="true"><b>A</b><b>B</b><b>C</b><b>D</b></div></div>
+          <h3>Word Connect</h3>
+          <p>Sixteen words, four hidden groups. Find what links them.</p>
+        </article>
+        <article class="tile crowns">
+          <div class="glyph" aria-hidden="true">
+            <svg width="40" height="34" viewBox="0 0 40 34"><path d="M3 30 5 8l9 9 6-14 6 14 9-9 2 22z" fill="#FF7B1C" stroke="#C14A00" stroke-width="2.5" stroke-linejoin="round"/><circle cx="20" cy="4" r="3" fill="#FF3F8E"/></svg>
+          </div>
+          <h3>Crowns</h3>
+          <p>One crown per row, column and colour. Crowns never touch.</p>
+        </article>
+        <article class="tile sudoku">
+          <div class="glyph" aria-hidden="true">9</div>
+          <h3>Sudoku</h3>
+          <p>The classic 9×9, every board with exactly one solution.</p>
+        </article>
+        <article class="tile ladder">
+          <div class="glyph" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#16810C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h5v-5h5v-5h5V5"/></svg>
+          </div>
+          <h3>Word Ladder</h3>
+          <p>Change one letter at a time to climb from start to target.</p>
+        </article>
+        <article class="tile merge">
+          <div class="glyph" aria-hidden="true">2K</div>
+          <h3>Number Merge</h3>
+          <p>Slide and merge matching tiles to reach the goal number.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="features-band" aria-labelledby="features-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Why you'll come back</span>
+        <h2 id="features-title">Small daily ritual, big satisfying wins</h2>
+      </div>
+      <div class="features">
+        <article class="feature wide">
+          <div class="ico" style="background: linear-gradient(180deg, #FFC489, #FF7B1C)" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-3 2-4 2-7 2 1 3 3 3 5 1-2 1-5 0-9z"/></svg>
+          </div>
+          <div>
+            <h3>One daily puzzle for everyone</h3>
+            <p>Each day features one puzzle, the same for every player. Solve it to grow your streak and see how you rank against friends and the world.</p>
+            <div class="week" aria-label="Example streak week">
+              <span class="on">M</span><span class="on">T</span><span class="on">W</span><span class="on">T</span><span class="on">F</span><span>S</span><span>S</span>
+            </div>
+          </div>
+        </article>
+        <article class="feature">
+          <div class="ico" style="background: linear-gradient(180deg, #A6F57A, #3CC61E)" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2.5 14.9 8.4l6.5.9-4.7 4.6 1.1 6.5L12 17.3l-5.8 3.1 1.1-6.5L2.6 9.3l6.5-.9z"/></svg>
+          </div>
+          <h3>2,000 levels</h3>
+          <p>Five puzzles, four difficulties, 100 levels each. Earn up to three stars per level.</p>
+          <div class="stat"><div>5<small>puzzles</small></div><div>4<small>difficulties</small></div><div>100<small>levels each</small></div></div>
+        </article>
+        <article class="feature">
+          <div class="ico" style="background: linear-gradient(180deg, #8FDBFF, #2D8CFF)" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M12 7v5l3 2"/></svg>
+          </div>
+          <h3>Plays offline</h3>
+          <p>No signal on the train? Every level and the daily puzzle work without internet. Scores sync when you're back.</p>
+        </article>
+        <article class="feature">
+          <div class="ico" style="background: linear-gradient(180deg, #D8B0FF, #9B4DFF)" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="#fff"><path d="M7 4h10v3a5 5 0 0 1-10 0zM5 5H3v2a4 4 0 0 0 4 4M19 5h2v2a4 4 0 0 1-4 4M10 14h4v3h3v3H7v-3h3z"/></svg>
+          </div>
+          <h3>Fair leaderboards</h3>
+          <p>Only your first try at the daily puzzle counts, so rankings reward real skill.</p>
+        </article>
+        <article class="feature">
+          <div class="ico" style="background: linear-gradient(180deg, #FF9CC2, #FF3F8E)" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6-8 11-8 11z"/></svg>
+          </div>
+          <h3>Play with friends</h3>
+          <p>Share your result, invite friends with your code, and both of you get a gem bonus.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="screens" class="gallery-band" aria-labelledby="screens-title">
+    <div class="sec-head wrap">
+      <h2 id="screens-title">A peek inside</h2>
+      <p>Real screens from the game.</p>
+    </div>
+    <div class="gallery" tabindex="0" aria-label="Game screenshots, scroll sideways">
+      <figure><div class="phone"><img src="shots/home.jpg" alt="Quintile home screen with today's puzzle and five puzzle tiles" loading="lazy"></div><figcaption>Choose any puzzle</figcaption></figure>
+      <figure><div class="phone"><img src="shots/levels.jpg" alt="Level map with stars and the current level glowing" loading="lazy"></div><figcaption>100 levels each</figcaption></figure>
+      <figure><div class="phone"><img src="shots/sudoku.jpg" alt="Sudoku board in the game" loading="lazy"></div><figcaption>Sudoku</figcaption></figure>
+      <figure><div class="phone"><img src="shots/connect.jpg" alt="Word Connect board with sixteen word tiles" loading="lazy"></div><figcaption>Word Connect</figcaption></figure>
+      <figure><div class="phone"><img src="shots/results.jpg" alt="Results screen saying Brilliant with three stars" loading="lazy"></div><figcaption>Celebrate every win</figcaption></figure>
+      <figure><div class="phone"><img src="shots/daily.jpg" alt="Daily puzzle screen with streak week" loading="lazy"></div><figcaption>Keep the streak</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="launch" aria-labelledby="launch-title">
+    <div class="wrap">
+      <div class="launch">
+        <h2 id="launch-title" class="outlined">Coming soon to your phone</h2>
+        <p>Quintile is getting its final polish. It will be free on Google Play and the App Store. Tell a friend who loves puzzles.</p>
+        <div class="badges">
+          <span class="store" role="img" aria-label="Coming soon on Google Play">
+            <span class="soon">Soon</span>
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M5 3.5 18.2 16 5 28.5c-.6-.3-1-1-1-1.8V5.3c0-.8.4-1.5 1-1.8z" fill="#2DD4FF"/>
+              <path d="M22.6 11.8 18.2 16 5 3.5c.4-.2.9-.2 1.4.1z" fill="#3CC61E"/>
+              <path d="M22.6 20.2 6.4 28.4c-.5.3-1 .3-1.4.1L18.2 16z" fill="#FF3B4E"/>
+              <path d="m22.6 11.8 4.6 2.6c1.3.7 1.3 2.5 0 3.2l-4.6 2.6L18.2 16z" fill="#FFC21A"/>
+            </svg>
+            <span><small>Coming soon</small><strong>Google Play</strong></span>
+          </span>
+          <span class="store" role="img" aria-label="Coming soon on the App Store">
+            <span class="soon">Soon</span>
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path fill="#fff" d="M21.6 16.9c0-3 2.5-4.5 2.6-4.6-1.4-2.1-3.6-2.4-4.4-2.4-1.9-.2-3.6 1.1-4.6 1.1-.9 0-2.4-1.1-3.9-1-2 0-3.9 1.2-4.9 3-2.1 3.7-.5 9.1 1.5 12.1 1 1.5 2.2 3.1 3.8 3 1.5-.1 2.1-1 3.9-1s2.4 1 3.9 1c1.6 0 2.7-1.5 3.7-3 1.2-1.7 1.6-3.3 1.7-3.4-.1 0-3.2-1.2-3.3-4.8zM18.6 8c.8-1 1.4-2.4 1.2-3.8-1.2.1-2.6.8-3.5 1.8-.8.9-1.4 2.3-1.2 3.7 1.3.1 2.7-.7 3.5-1.7z"/>
+            </svg>
+            <span><small>Coming soon</small><strong>App Store</strong></span>
+          </span>
+        </div>
+        <div class="share">
+          <button type="button" id="share-btn">Copy link to share</button>
+          <output id="share-status" aria-live="polite"></output>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" aria-labelledby="faq-title" style="padding-top: 20px">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 id="faq-title">Questions</h2>
+      </div>
+      <div class="faq">
+        <details open>
+          <summary>When does Quintile launch?</summary>
+          <p>Soon. We're finishing the final polish now. The store badges on this page will turn into download buttons on launch day.</p>
+        </details>
+        <details>
+          <summary>Is it free?</summary>
+          <p>Yes. Every puzzle and level is free to play. Optional extras like hints and an ad-free pass will be available in the app.</p>
+        </details>
+        <details>
+          <summary>Does it work without internet?</summary>
+          <p>Yes. All levels and the daily puzzle play offline. Leaderboards and syncing need a connection.</p>
+        </details>
+        <details>
+          <summary>Which phones will it run on?</summary>
+          <p>Android phones first, through Google Play, then iPhone through the App Store.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Back to top">
+      <span class="logo" aria-hidden="true"><span>Q</span><i></i></span>
+      <span class="name">Quintile</span>
+    </a>
+    <p class="fine">© 2026 Quintile. Five puzzles, one daily streak.</p>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var btn = document.getElementById('share-btn');
+    var status = document.getElementById('share-status');
+    btn.addEventListener('click', function () {
+      var url = location.href.split('#')[0];
+      function done(msg) { status.textContent = msg; }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(
+          function () { done('Link copied. Share it with a puzzle friend!'); },
+          function () { done('Copy this link: ' + url); }
+        );
+      } else {
+        done('Copy this link: ' + url);
+      }
+    });
+  })();
+</script>
