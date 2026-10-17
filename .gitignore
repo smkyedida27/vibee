@@ -61,3 +61,4 @@ tfplan
 plan.txt
 ci.auto.tfvars
 .vercel
+website/*.apk
