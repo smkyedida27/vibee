@@ -165,8 +165,18 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
           dailyCoins = s.player.completeDaily(request.game, durationMs: ms);
           dailySubmit = _submitDaily(r, ms);
         case PlaySource.quick:
-          s.player.addCoins(10 + 5 * r.stars);
-          s.player.addXp(15 + 5 * r.stars);
+          if (request.stage != null) {
+            reward = s.player.completeStage(
+              game: request.game,
+              difficulty: request.difficulty,
+              stage: request.stage!,
+              stars: r.stars,
+              durationMs: ms,
+            );
+          } else {
+            s.player.addCoins(10 + 5 * r.stars);
+            s.player.addXp(15 + 5 * r.stars);
+          }
       }
       unawaited(s.sync.push());
       await Future<void>.delayed(const Duration(milliseconds: 650));
@@ -273,6 +283,13 @@ mixin GameFlow<T extends StatefulWidget> on State<T> {
     }
     if (!mounted) return;
     switch (action) {
+      case ResultAction.next when request.stage != null:
+        final next = request.stage! + 1;
+        if (next > PlayerStore.stagesPerTrack) {
+          router.pop();
+          return;
+        }
+        router.pushReplacement('/play/stage/${request.game.name}/${request.difficulty.name}/$next');
       case ResultAction.next:
         final next = (request.level ?? 0) + 1;
         if (!s.player.canPlayLevel) {
@@ -438,7 +455,7 @@ class GameScaffold extends StatelessWidget {
                                     _Tag(switch (request.source) {
                                       PlaySource.daily => 'Daily',
                                       PlaySource.level => 'Journey',
-                                      PlaySource.quick => 'Practice',
+                                      PlaySource.quick => request.stage != null ? request.game.title : 'Practice',
                                     }, c),
                                     const SizedBox(width: 6),
                                     _Tag(request.difficulty.label, request.difficulty.candy),

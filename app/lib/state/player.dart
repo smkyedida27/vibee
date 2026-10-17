@@ -132,6 +132,9 @@ class PlayerData {
   /// Experience from every solve; drives the player level shown on Home.
   int xp = 0;
 
+  /// Best stars per level inside each puzzle and difficulty, keyed `connect.easy.12`.
+  Map<String, int> stageStars = {};
+
   /// Level L starts at 60·L·(L−1) XP (0, 120, 360, 720, …): quick early levels, then steadier.
   static int xpForLevel(int level) => 60 * level * (level - 1);
   int get playerLevel => ((1 + math.sqrt(1 + xp / 15)) / 2).floor();
@@ -182,6 +185,7 @@ class PlayerData {
     'settings': settings.toJson(),
     'snapshotVersion': snapshotVersion,
     'xp': xp,
+    'stageStars': stageStars,
   };
 
   static PlayerData fromJson(Map<String, dynamic> j) {
@@ -220,6 +224,7 @@ class PlayerData {
       ..settings = Settings.fromJson(((j['settings'] ?? {}) as Map).cast<String, dynamic>())
       ..snapshotVersion = j['snapshotVersion'] ?? 0
       // Players from before XP existed start with XP for the stars they already earned.
+      ..stageStars = ((j['stageStars'] ?? {}) as Map).map((k, v) => MapEntry('$k', (v as num).toInt()))
       ..xp = j['xp'] ?? (((j['levelStars'] ?? {}) as Map).values.fold<int>(0, (a, v) => a + (v as int)) * 25);
     return d;
   }
@@ -489,6 +494,59 @@ class PlayerStore extends ChangeNotifier {
     data.xp += 60;
     _changed();
     return coins;
+  }
+
+  // ---------------------------------------------------------------- levels per difficulty
+  /// Levels in each puzzle × difficulty track.
+  static const stagesPerTrack = 100;
+
+  /// Stars needed in the previous difficulty to open each difficulty (Easy is always open).
+  static const unlockStars = [0, 10, 20, 30];
+
+  static String stageKey(GameType g, Difficulty d, int n) => '${g.name}.${d.name}.$n';
+
+  int stageStars(GameType g, Difficulty d, int n) => data.stageStars[stageKey(g, d, n)] ?? 0;
+
+  /// Total stars earned in one track.
+  int trackStars(GameType g, Difficulty d) {
+    final prefix = '${g.name}.${d.name}.';
+    return data.stageStars.entries.where((e) => e.key.startsWith(prefix)).fold(0, (a, e) => a + e.value);
+  }
+
+  /// The furthest playable level: one past the last level with stars.
+  int nextStage(GameType g, Difficulty d) {
+    var n = 1;
+    while (n < stagesPerTrack && stageStars(g, d, n) > 0) {
+      n++;
+    }
+    return n;
+  }
+
+  bool stageUnlocked(GameType g, Difficulty d, int n) => n <= nextStage(g, d);
+
+  bool difficultyUnlocked(GameType g, Difficulty d) =>
+      d.index == 0 || trackStars(g, Difficulty.values[d.index - 1]) >= unlockStars[d.index];
+
+  /// Records a finished level; returns the coins and whether it was a first clear or a new best.
+  LevelReward completeStage({
+    required GameType game,
+    required Difficulty difficulty,
+    required int stage,
+    required int stars,
+    required int durationMs,
+  }) {
+    final key = stageKey(game, difficulty, stage);
+    final prev = data.stageStars[key] ?? 0;
+    final firstClear = prev == 0;
+    final best = stars > prev;
+    if (best) data.stageStars[key] = stars;
+    var coins = firstClear ? 15 + 10 * stars + 5 * difficulty.index : (best ? 10 * (stars - prev) : 5);
+    if (data.isVip) coins *= 2;
+    data.coins += coins;
+    data.xp += firstClear ? 15 + 10 * stars + 10 * difficulty.index : 5;
+    _recordStat(game, won: true, durationMs: durationMs);
+    _changed();
+    return LevelReward(coins: coins, stars: stars, newBest: best, firstClear: firstClear);
   }
 
   /// XP for practice (quick play) wins.

@@ -1,3 +1,5 @@
+import 'package:puzzle_hub/services/content_repo.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:puzzle_hub/games/common/game_type.dart';
 import 'package:puzzle_hub/services/growth.dart';
@@ -95,5 +97,40 @@ void main() {
     }
     expect(seen, GameType.values.toSet());
     expect(dailyFeatured(DateTime.utc(2026, 10, 17, 1)), dailyFeatured(DateTime.utc(2026, 10, 17, 23)));
+  });
+
+  test('level tracks unlock in order and difficulties open with stars', () async {
+    SharedPreferences.setMockInitialValues({});
+    final store = PlayerStore(await SharedPreferences.getInstance());
+    addTearDown(store.dispose);
+    const g = GameType.sudoku;
+    expect(store.nextStage(g, Difficulty.easy), 1);
+    expect(store.stageUnlocked(g, Difficulty.easy, 2), isFalse);
+    expect(store.difficultyUnlocked(g, Difficulty.easy), isTrue);
+    expect(store.difficultyUnlocked(g, Difficulty.medium), isFalse);
+
+    final first = store.completeStage(game: g, difficulty: Difficulty.easy, stage: 1, stars: 2, durationMs: 1000);
+    expect(first.firstClear, isTrue);
+    expect(store.nextStage(g, Difficulty.easy), 2);
+    // Replaying with more stars improves the record; fewer stars never lowers it.
+    store.completeStage(game: g, difficulty: Difficulty.easy, stage: 1, stars: 3, durationMs: 900);
+    final worse = store.completeStage(game: g, difficulty: Difficulty.easy, stage: 1, stars: 1, durationMs: 900);
+    expect(worse.newBest, isFalse);
+    expect(store.stageStars(g, Difficulty.easy, 1), 3);
+
+    for (var n = 2; n <= 4; n++) {
+      store.completeStage(game: g, difficulty: Difficulty.easy, stage: n, stars: 3, durationMs: 1000);
+    }
+    expect(store.trackStars(g, Difficulty.easy), 12);
+    expect(store.difficultyUnlocked(g, Difficulty.medium), isTrue, reason: '10 stars in Easy opens Medium');
+    expect(store.difficultyUnlocked(GameType.connect, Difficulty.medium), isFalse, reason: 'tracks are per puzzle');
+  });
+
+  test('a level is the same puzzle every time', () {
+    final a = PlayRequest.stage(GameType.queens, Difficulty.hard, 12);
+    final b = PlayRequest.stage(GameType.queens, Difficulty.hard, 12);
+    expect(a.seed, b.seed);
+    expect(PlayRequest.stage(GameType.queens, Difficulty.hard, 13).seed, isNot(a.seed));
+    expect(a.title, 'Level 12');
   });
 }

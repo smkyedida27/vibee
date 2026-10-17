@@ -14,6 +14,7 @@ import '../../core/ui/panels.dart';
 import '../../core/ui/pressable.dart';
 import '../../games/common/game_type.dart';
 import '../../services/services.dart';
+import '../../state/player.dart';
 import '../rewards/rewards.dart';
 
 export '../../core/ui/game_cover.dart' show GameBadge;
@@ -21,32 +22,99 @@ export '../../core/ui/game_cover.dart' show GameBadge;
 /// Issue number of today's puzzle set (No. 1 = launch day).
 int issueNumber(DateTime now) => now.toUtc().difference(DateTime.utc(2026, 1, 1)).inDays + 1;
 
-/// Asks for a difficulty, then starts a free game of [game] (no lives needed).
+/// Picks a difficulty for [game] (showing progress and what unlocks next), then opens its levels.
 Future<void> showPlayPicker(BuildContext context, GameType game) async {
   final picked = await showCandyDialog<Difficulty>(
     context,
     title: game.title,
     ribbon: game.candy,
-    builder: (ctx) => Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        GameBadge(game: game, size: 84),
-        const SizedBox(height: 10),
-        Text(
-          game.tagline,
-          textAlign: TextAlign.center,
-          style: AppText.body(15, color: AppColors.inkSoft),
-        ),
-        const SizedBox(height: 16),
-        for (final d in Difficulty.values)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: CandyButton(label: d.label, candy: d.candy, height: 54, onTap: () => Navigator.pop(ctx, d)),
+    builder: (ctx) {
+      final p = ctx.services.player;
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GameBadge(game: game, size: 76),
+          const SizedBox(height: 8),
+          Text(
+            game.tagline,
+            textAlign: TextAlign.center,
+            style: AppText.body(14, color: AppColors.inkSoft),
           ),
-      ],
-    ),
+          const SizedBox(height: 14),
+          for (final d in Difficulty.values) _DifficultyRow(game: game, difficulty: d, player: p),
+        ],
+      );
+    },
   );
-  if (picked != null && context.mounted) context.push('/play/quick/${game.name}?d=${picked.name}');
+  if (picked != null && context.mounted) context.push('/levels/${game.name}/${picked.name}');
+}
+
+class _DifficultyRow extends StatelessWidget {
+  const _DifficultyRow({required this.game, required this.difficulty, required this.player});
+  final GameType game;
+  final Difficulty difficulty;
+  final PlayerStore player;
+
+  @override
+  Widget build(BuildContext context) {
+    final d = difficulty;
+    final open = player.difficultyUnlocked(game, d);
+    final stars = player.trackStars(game, d);
+    final c = open ? d.candy : Candy.grey;
+    final String sub;
+    if (open) {
+      sub = stars == 0 ? '100 levels' : 'Level ${player.nextStage(game, d)} · $stars ★';
+    } else {
+      final prev = Difficulty.values[d.index - 1];
+      final need = PlayerStore.unlockStars[d.index] - player.trackStars(game, prev);
+      sub = 'Earn $need more ★ in ${prev.label}';
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Pressable(
+        onTap: open ? () => Navigator.pop(context, d) : null,
+        semanticLabel: '${d.label}, $sub',
+        child: Container(
+          height: 60,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            gradient: c.face,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white, width: 3),
+            boxShadow: [BoxShadow(color: c.dark, offset: const Offset(0, 4))],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    OutlinedText(
+                      d.label,
+                      size: 20,
+                      color: open ? Colors.white : AppColors.inkSoft,
+                      stroke: c.dark,
+                      shadow: false,
+                    ),
+                    Text(
+                      sub,
+                      style: AppText.body(12, color: open ? Colors.white : AppColors.inkSoft, weight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                open ? Icons.chevron_right_rounded : Icons.lock_rounded,
+                color: open ? Colors.white : AppColors.inkSoft,
+                size: 28,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Home: today's daily puzzle up top, then every puzzle to choose from freely.

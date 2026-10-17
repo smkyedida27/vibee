@@ -217,6 +217,11 @@ class SyncService {
     }
     merged['onboarded'] = local.onboarded || remote.onboarded;
     merged['xp'] = remote.xp > local.xp ? remote.xp : local.xp;
+    final stages = Map<String, int>.of(local.stageStars);
+    remote.stageStars.forEach((k, v) {
+      if (v > (stages[k] ?? 0)) stages[k] = v;
+    });
+    merged['stageStars'] = stages;
     _player.replaceFromSnapshot(merged);
   }
 }

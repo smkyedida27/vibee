@@ -170,6 +170,8 @@ class _ResultsBodyState extends State<_ResultsBody> with TickerProviderStateMixi
   String get _kicker => switch (widget.request.source) {
     PlaySource.daily => 'DAILY ${widget.request.game.title.toUpperCase()}',
     PlaySource.level => 'LEVEL ${widget.request.level} · ${widget.request.game.title.toUpperCase()}',
+    PlaySource.quick when widget.request.stage != null =>
+      '${widget.request.game.title.toUpperCase()} · ${widget.request.difficulty.label.toUpperCase()} · LEVEL ${widget.request.stage}',
     PlaySource.quick => 'PRACTICE · ${widget.request.game.title.toUpperCase()}',
   };
 
@@ -181,6 +183,7 @@ class _ResultsBodyState extends State<_ResultsBody> with TickerProviderStateMixi
     final primary = switch (r.source) {
       PlaySource.level => ('Next level', ResultAction.next),
       PlaySource.daily => ('See leaderboard', ResultAction.leaderboard),
+      PlaySource.quick when r.stage != null => ('Next level', ResultAction.next),
       PlaySource.quick => ('Continue', ResultAction.home),
     };
     return Material(

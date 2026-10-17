@@ -26,6 +26,7 @@ class PlayRequest {
     required this.seed,
     this.level,
     this.daily,
+    this.stage,
   });
 
   final GameType game;
@@ -34,6 +35,18 @@ class PlayRequest {
   final int seed;
   final int? level;
   final DailyPuzzle? daily;
+
+  /// Level number inside the [game] × [difficulty] track (1-based), for track play.
+  final int? stage;
+
+  /// A fixed level in a difficulty track: the same puzzle for every player.
+  factory PlayRequest.stage(GameType game, Difficulty difficulty, int n) => PlayRequest(
+    game: game,
+    difficulty: difficulty,
+    source: PlaySource.quick,
+    seed: (((game.index * 4 + difficulty.index) * 1000 + n) * 2654435761) & 0x7FFFFFFF,
+    stage: n,
+  );
 
   factory PlayRequest.level(int n) {
     final spec = Campaign.level(n);
@@ -49,7 +62,7 @@ class PlayRequest {
   String get title => switch (source) {
     PlaySource.level => 'Level $level',
     PlaySource.daily => 'Daily ${game.title}',
-    PlaySource.quick => game.title,
+    PlaySource.quick => stage != null ? 'Level $stage' : game.title,
   };
 }
 
@@ -111,10 +124,19 @@ class ContentRepo {
     switch (r.game) {
       case GameType.connect:
         // Campaign walks the curated set in order; later loops reshuffle the tiles.
-        final idx = r.level != null ? (_connectIndexForLevel(r.level!)) : rng.nextInt(connectPuzzles.length);
+        final idx = r.level != null
+            ? _connectIndexForLevel(r.level!)
+            : r.stage != null
+            // Each difficulty walks the curated set from a different starting point.
+            ? r.stage! - 1 + r.difficulty.index * 7
+            : rng.nextInt(connectPuzzles.length);
         final base = connectPuzzles[idx % connectPuzzles.length];
         final words = List.of(base.words);
-        if (r.level == null || r.level! > connectPuzzles.length * 5) rng.shuffle(words);
+        if ((r.level == null && r.stage == null) ||
+            (r.level ?? 0) > connectPuzzles.length * 5 ||
+            (r.stage ?? 0) > connectPuzzles.length) {
+          rng.shuffle(words);
+        }
         return ConnectPuzzle(id: base.id, words: words, groups: base.groups);
       case GameType.queens:
         final size = Campaign.queensSize(r.difficulty, r.seed);

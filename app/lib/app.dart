@@ -10,6 +10,7 @@ import 'core/ui/pressable.dart';
 import 'features/daily/daily_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/leaderboard/leaderboard_screen.dart';
+import 'features/levels/level_select_screen.dart';
 import 'features/map/journey_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/profile/profile_screen.dart';
@@ -22,6 +23,7 @@ import 'games/common/results_overlay.dart';
 import 'games/common/game_type.dart';
 import 'services/content_repo.dart';
 import 'services/services.dart';
+import 'state/player.dart';
 
 class QuintileApp extends StatefulWidget {
   const QuintileApp({super.key, required this.services});
@@ -145,6 +147,25 @@ GoRouter buildRouter(AppServices s) {
             ),
           );
         },
+      ),
+      GoRoute(
+        path: '/play/stage/:game/:diff/:n',
+        pageBuilder: (_, st) {
+          final g = GameType.values.byName(st.pathParameters['game']!);
+          final d = Difficulty.values.byName(st.pathParameters['diff']!);
+          final n = (int.tryParse(st.pathParameters['n'] ?? '') ?? 1).clamp(1, PlayerStore.stagesPerTrack);
+          return _page(st, GameLauncher(resolve: (_) async => PlayRequest.stage(g, d, n)));
+        },
+      ),
+      GoRoute(
+        path: '/levels/:game/:diff',
+        pageBuilder: (_, st) => _page(
+          st,
+          LevelSelectScreen(
+            game: GameType.values.byName(st.pathParameters['game']!),
+            difficulty: Difficulty.values.byName(st.pathParameters['diff']!),
+          ),
+        ),
       ),
       GoRoute(
         path: '/play/quick/:game',
